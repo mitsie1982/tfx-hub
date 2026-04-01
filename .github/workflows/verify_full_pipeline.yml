@@ -1,0 +1,75 @@
+name: Verify Full Pipeline (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        description: 'LaunchDarkly environment key'
+        required: false
+        default: 'staging'
+      flag:
+        description: 'LaunchDarkly flag key'
+        required: false
+        default: 'ams_canary_release'
+      prometheus_url:
+        description: 'Prometheus HTTP API URL (overrides secret)'
+        required: false
+        default: ''
+      pushgateway_url:
+        description: 'Pushgateway URL (optional)'
+        required: false
+        default: ''
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      # Map secrets into environment variables consumed by the script
+      ALERTMANAGER_URL: ${{ secrets.ALERTMANAGER_URL }}
+      ALERTMANAGER_AUTH_HEADER: ${{ secrets.ALERTMANAGER_AUTH_HEADER }}
+      PUSHGATEWAY_URL: ${{ secrets.PUSHGATEWAY_URL }}
+      LAUNCHDARKLY_API_TOKEN: ${{ secrets.LAUNCHDARKLY_API_TOKEN }}
+      PROMETHEUS_URL: ${{ secrets.PROMETHEUS_URL }}
+      # Optional device farm secrets (uncomment if used)
+      # FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      # APPCENTER_API_TOKEN: ${{ secrets.APPCENTER_API_TOKEN }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install repository dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Make verification script executable
+        run: chmod +x ./scripts/verify_full_pipeline.sh
+
+      - name: Run full pipeline verification
+        id: run_verify
+        env:
+          # Allow workflow_dispatch inputs to override secrets if provided
+          PROMETHEUS_URL: ${{ github.event.inputs.prometheus_url || env.PROMETHEUS_URL }}
+          PUSHGATEWAY_URL: ${{ github.event.inputs.pushgateway_url || env.PUSHGATEWAY_URL }}
+          LAUNCHDARKLY_API_TOKEN: ${{ secrets.LAUNCHDARKLY_API_TOKEN }}
+          ALERTMANAGER_URL: ${{ secrets.ALERTMANAGER_URL }}
+          ALERTMANAGER_AUTH_HEADER: ${{ secrets.ALERTMANAGER_AUTH_HEADER }}
+        run: |
+          set -euo pipefail
+          echo "Starting verification run"
+          ./scripts/verify_full_pipeline.sh "${{ github.event.inputs.env }}" "${{ github.event.inputs.flag }}"
+
+      - name: Upload verification logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-logs
+          path: artifacts/verification_*/
