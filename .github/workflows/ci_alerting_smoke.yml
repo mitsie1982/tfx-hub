@@ -1,0 +1,29 @@
+name: CI Alerting Smoke
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'monitoring/**'
+      - 'scripts/**'
+      - '.github/workflows/**'
+
+jobs:
+  alerting-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate required alerting files
+        run: |
+          set -e
+          test -f monitoring/alertmanager_receivers.yml
+          test -f scripts/test_alert_pipeline.sh
+          echo "Alerting artifacts exist."
+      - name: Basic YAML syntax check (alertmanager)
+        run: |
+          python - <<'PY'
+import sys, yaml
+with open('monitoring/alertmanager_receivers.yml', 'r', encoding='utf-8') as f:
+    yaml.safe_load(f)
+print('YAML parse OK')
+PY

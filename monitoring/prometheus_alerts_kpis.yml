@@ -1,0 +1,31 @@
+# monitoring/prometheus_alerts_kpis.yml
+# Placeholder Prometheus alert rules for TFX Hub KPIs
+groups:
+- name: tfxhub-mobile-alerts-kpis
+  rules:
+  - alert: HighCrashRate
+    expr: increase(mobile_crashes_total[10m]) / increase(mobile_active_users_total[10m]) > 0.005
+    for: 10m
+    labels:
+      severity: page
+    annotations:
+      summary: "High crash rate detected"
+      description: "Crash rate > 0.5% over last 10m"
+
+  - alert: HighAPIErrorRate
+    expr: increase(api_responses_total{status=~"5.."}[5m]) / increase(api_responses_total[5m]) > 0.01
+    for: 5m
+    labels:
+      severity: page
+    annotations:
+      summary: "High API 5xx rate"
+      description: "API 5xx rate > 1% over last 5m"
+
+  - alert: HighLatencyP95
+    expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 2
+    for: 10m
+    labels:
+      severity: ticket
+    annotations:
+      summary: "High P95 latency"
+      description: "P95 latency > 2s over last 10m"

@@ -1,0 +1,17 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Shared-Logic: Run Unit Tests",
+      "type": "shell",
+      "command": "pnpm --filter @tfx/shared-logic test",
+      "presentation": { "reveal": "always" }
+    },
+    {
+      "label": "Shared-Logic: Run Integration Tests",
+      "type": "shell",
+      "command": "pnpm --filter @tfx/shared-logic test:integration",
+      "presentation": { "reveal": "always" }
+    }
+  ]
+}

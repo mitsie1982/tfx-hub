@@ -1,0 +1,11 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "npm.packageManager": "pnpm",
+    "terminal.integrated.defaultProfile.windows": "PowerShell"
+  }
+}

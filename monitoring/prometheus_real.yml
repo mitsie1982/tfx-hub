@@ -1,0 +1,68 @@
+# monitoring/prometheus_real.yml
+# Real Prometheus configuration for TFX Hub production monitoring
+
+global:
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'tfxhub-prod'
+    environment: 'production'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - localhost:9093
+
+# Load rules files
+rule_files:
+  - '/etc/prometheus/rules/prometheus_alerts_real.yml'
+
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # TFX Hub API server
+  - job_name: 'tfxhub-api'
+    scrape_interval: 15s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['localhost:3000']
+        labels:
+          service: 'tfxhub-api'
+          env: 'production'
+
+  # Node Exporter (system metrics)
+  - job_name: 'node'
+    static_configs:
+      - targets: ['localhost:9100']
+
+  # PostgreSQL via postgres_exporter
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['localhost:9187']
+
+  # Redis (if used for sessions)
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['localhost:6379']
+
+  # Docker containers
+  - job_name: 'docker'
+    static_configs:
+      - targets: ['localhost:8080']
+
+remote_write:
+  # Optional: send metrics to cloud storage (Prometheus Cloud, Grafana Cloud, etc)
+  # - url: https://your-remote-storage/api/prom/write
+  #   basic_auth:
+  #     username: 'prometheus'
+  #     password: 'your-api-key'
+
+# Service discovery (if using Kubernetes/Consul)
+# consul_sd_configs:
+#   - server: 'localhost:8500'

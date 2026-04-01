@@ -1,0 +1,63 @@
+# monitoring/alertmanager_receivers.yml
+# Replace env placeholders before production usage.
+
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: default-slack
+  group_by: ['alertname', 'service', 'severity']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  routes:
+  - matchers:
+    - severity="critical"
+    receiver: critical-slack-pagerduty
+    group_wait: 10s
+    repeat_interval: 30m
+  - matchers:
+    - severity="warning"
+    receiver: warning-slack
+    group_wait: 1m
+    repeat_interval: 2h
+
+inhibit_rules:
+- source_matchers:
+  - severity="critical"
+  target_matchers:
+  - severity="warning"
+  equal: ['alertname', 'service']
+
+receivers:
+- name: default-slack
+  slack_configs:
+  - api_url: ${SLACK_WEBHOOK_URL}
+    channel: '#alerts'
+    send_resolved: true
+    title: '[TFXHub] {{ .Status | toUpper }} {{ .CommonLabels.alertname }}'
+    text: >-
+      {{ range .Alerts }}
+      *Summary:* {{ .Annotations.summary }}
+      *Description:* {{ .Annotations.description }}
+      *Service:* {{ .Labels.service }}
+      *Severity:* {{ .Labels.severity }}
+      {{ end }}
+
+- name: warning-slack
+  slack_configs:
+  - api_url: ${SLACK_WEBHOOK_URL}
+    channel: '#alerts-warning'
+    send_resolved: true
+
+- name: critical-slack-pagerduty
+  slack_configs:
+  - api_url: ${SLACK_WEBHOOK_URL}
+    channel: '#alerts-critical'
+    send_resolved: true
+  pagerduty_configs:
+  - routing_key: ${PAGERDUTY_ROUTING_KEY}
+    severity: 'critical'
+    description: '{{ .CommonLabels.alertname }}: {{ .CommonAnnotations.summary }}'
+
+- name: null-receiver

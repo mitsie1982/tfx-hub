@@ -1,0 +1,11 @@
+{
+  "name": "e2e-appium",
+  "private": true,
+  "scripts": {
+    "test": "node run_appium_test.js"
+  },
+  "dependencies": {
+    "appium": "^2.0.0",
+    "webdriverio": "^8.0.0"
+  }
+}

@@ -1,0 +1,14 @@
+﻿{
+  "name": "@tfx/customer-app",
+  "version": "0.0.1",
+  "private": true,
+  "main": "src/index.js",
+  "scripts": {
+    "build": "echo 'build @tfx/customer-app (no-op)'",
+    "test": "echo 'no tests yet'",
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "@tfx/shared-logic": "workspace:*"
+  }
+}

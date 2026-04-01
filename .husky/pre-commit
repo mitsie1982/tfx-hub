@@ -1,0 +1,23 @@
+#!/usr/bin/env sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Run lint and tests and secret scan before commit
+echo "Running pre-commit checks: lint, test (fast), secret scan"
+# Run lint if available
+if command -v pnpm >/dev/null 2>&1; then
+  pnpm -w -r lint || true
+else
+  npm run -w -r lint || true
+fi
+
+# Run lightweight tests if present (fast)
+if [ -f "package.json" ]; then
+  if command -v pnpm >/dev/null 2>&1; then
+    pnpm -w -r test --silent || true
+  else
+    npm test --silent || true
+  fi
+fi
+
+# Run local secret scanner
+node scripts/scan_secrets.js

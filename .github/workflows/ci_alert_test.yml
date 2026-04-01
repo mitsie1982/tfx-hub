@@ -1,0 +1,17 @@
+name: CI Alerting End-to-End Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  alert-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run alertmanager test
+        env:
+          ALERTMANAGER_URL: ${{ secrets.ALERTMANAGER_URL }}
+          ALERTMANAGER_AUTH_HEADER: ${{ secrets.ALERTMANAGER_AUTH_HEADER }}
+        run: |
+          chmod +x scripts/trigger_alert_test.sh
+          ./scripts/trigger_alert_test.sh

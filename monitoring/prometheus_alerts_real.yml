@@ -1,0 +1,197 @@
+# monitoring/prometheus_alerts_real.yml
+# Real Prometheus alert rules for TFX Hub with actual metric expressions
+global:
+  resolve_timeout: 5m
+
+groups:
+- name: tfxhub-core-alerts
+  interval: 30s
+  rules:
+  # ========== SERVICE HEALTH ==========
+  - alert: ServiceDown
+    expr: up{job=~"tfxhub-api|tfxhub-mobile"} == 0
+    for: 1m
+    labels:
+      severity: critical
+      component: service
+    annotations:
+      summary: "{{ $labels.job }} is down"
+      description: "{{ $labels.job }} has been unreachable for 1 minute"
+
+  # ========== ERROR RATE ALERTS ==========
+  - alert: HighErrorRate
+    expr: |
+      (
+        sum(rate(http_requests_total{status=~"5.."}[5m])) by (job)
+        /
+        sum(rate(http_requests_total[5m])) by (job)
+      ) > 0.01
+    for: 5m
+    labels:
+      severity: critical
+      component: api
+    annotations:
+      summary: "High error rate on {{ $labels.job }}"
+      description: "Error rate is {{ $value | humanizePercentage }} (threshold: 1%)"
+
+  - alert: UnhandledExceptionsSpike
+    expr: |
+      increase(mobile_unhandled_exceptions_total[5m]) >
+      (avg_over_time(increase(mobile_unhandled_exceptions_total[5m])[1h:5m]) * 2)
+    for: 5m
+    labels:
+      severity: warning
+      component: mobile
+    annotations:
+      summary: "Spike in mobile exceptions"
+      description: "Exception rate doubled in last 5 minutes"
+
+  # ========== LATENCY ALERTS ==========
+  - alert: HighAPILatency
+    expr: |
+      histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, job))
+      > 2
+    for: 10m
+    labels:
+      severity: warning
+      component: api
+    annotations:
+      summary: "High API latency on {{ $labels.job }}"
+      description: "P95 latency is {{ $value }}s (threshold: 2s)"
+
+  - alert: HighDatabaseLatency
+    expr: |
+      histogram_quantile(0.95, sum(rate(db_query_duration_seconds_bucket[5m])) by (le))
+      > 1
+    for: 10m
+    labels:
+      severity: warning
+      component: database
+    annotations:
+      summary: "High database query latency"
+      description: "P95 query latency is {{ $value }}s (threshold: 1s)"
+
+  # ========== CRASH RATE ALERTS ==========
+  - alert: HighCrashRate
+    expr: |
+      (
+        increase(mobile_crashes_total[10m])
+        /
+        increase(mobile_active_sessions_total[10m])
+      ) > 0.005
+    for: 10m
+    labels:
+      severity: critical
+      component: mobile
+    annotations:
+      summary: "High mobile crash rate"
+      description: "Crash rate is {{ $value | humanizePercentage }} (threshold: 0.5%)"
+
+  - alert: LowCrashFreeUsers
+    expr: |
+      (
+        increase(mobile_active_users_crash_free_total[24h])
+        /
+        increase(mobile_active_users_total[24h])
+      ) < 0.98
+    for: 15m
+    labels:
+      severity: critical
+      component: mobile
+    annotations:
+      summary: "Low crash-free users"
+      description: "Only {{ $value | humanizePercentage }} users are crash-free (threshold: 98%)"
+
+  # ========== RESOURCES ALERTS ==========
+  - alert: HighMemoryUsage
+    expr: |
+      (process_resident_memory_bytes / 1073741824) > 4
+    for: 10m
+    labels:
+      severity: warning
+      component: infrastructure
+    annotations:
+      summary: "High memory usage on {{ $labels.instance }}"
+      description: "Memory usage is {{ $value }}GB"
+
+  - alert: HighCPUUsage
+    expr: |
+      sum(rate(process_cpu_seconds_total[5m])) by (job) > 0.8
+    for: 10m
+    labels:
+      severity: warning
+      component: infrastructure
+    annotations:
+      summary: "High CPU usage on {{ $labels.job }}"
+      description: "CPU usage is {{ $value | humanizePercentage }}"
+
+  # ========== DATABASE ALERTS ==========
+  - alert: DatabaseConnectionPoolExhausted
+    expr: |
+      db_connection_pool_available{} < 2
+    for: 5m
+    labels:
+      severity: critical
+      component: database
+    annotations:
+      summary: "Database connection pool nearly exhausted"
+      description: "Only {{ $value }} connections available"
+
+  - alert: DatabaseSlowQueries
+    expr: |
+      increase(db_slow_queries_total[5m]) > 10
+    for: 5m
+    labels:
+      severity: warning
+      component: database
+    annotations:
+      summary: "Many slow database queries detected"
+      description: "{{ $value }} slow queries in the last 5 minutes"
+
+  # ========== FEATURE FLAG ALERTS ==========
+  - alert: CanaryRolloutHealthDegraded
+    expr: |
+      (
+        increase(mobile_crashes_total{canary="true"}[10m])
+        /
+        increase(mobile_active_sessions_total{canary="true"}[10m])
+      ) > 0.010
+    for: 5m
+    labels:
+      severity: critical
+      component: release
+    annotations:
+      summary: "Canary cohort experiencing elevated crash rate"
+      description: "Canary crash rate is {{ $value | humanizePercentage }} (>1% triggers rollback)"
+
+  # ========== BUSINESS METRICS ALERTS ==========
+  - alert: CheckoutConversionDrop
+    expr: |
+      (
+        sum(rate(checkout_completed_total[15m]))
+        /
+        sum(rate(checkout_started_total[15m]))
+      ) < (avg_over_time((
+        sum(rate(checkout_completed_total[15m]))
+        /
+        sum(rate(checkout_started_total[15m]))
+      )[1h:15m]) * 0.95)
+    for: 15m
+    labels:
+      severity: critical
+      component: business
+    annotations:
+      summary: "Checkout conversion rate dropped >5%"
+      description: "Conversion rate is {{ $value | humanizePercentage }}"
+
+  - alert: JobSubmissionRateDrop
+    expr: |
+      rate(job_submitted_total[5m]) < 
+      (avg_over_time(rate(job_submitted_total[5m])[1h:5m]) * 0.90)
+    for: 15m
+    labels:
+      severity: warning
+      component: business
+    annotations:
+      summary: "Job submission rate dropped >10%"
+      description: "Current rate is {{ $value }} (baseline: {{ .Value }}/sec)"

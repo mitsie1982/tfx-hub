@@ -1,0 +1,11 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Open Grafana Dashboard",
+      "type": "shell",
+      "command": "code -r monitoring/grafana_dashboard_concrete.json",
+      "presentation": { "reveal": "always" }
+    }
+  ]
+}

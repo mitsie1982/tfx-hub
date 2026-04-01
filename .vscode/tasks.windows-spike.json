@@ -1,0 +1,23 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Spike: Open RNW README",
+      "type": "shell",
+      "command": "code -r spikes/windows/rnw-sample/README.md || true",
+      "presentation": { "reveal": "always" }
+    },
+    {
+      "label": "Spike: Open Flutter README",
+      "type": "shell",
+      "command": "code -r spikes/windows/flutter-sample/README.md || true",
+      "presentation": { "reveal": "always" }
+    },
+    {
+      "label": "Spike: Tail spike log",
+      "type": "shell",
+      "command": "bash -lc \"tail -n 200 /mnt/c/Users/1hans/tfx-hub/artifacts/windows_spike_log_20260401T081833Z.txt || true\"",
+      "presentation": { "reveal": "always" }
+    }
+  ]
+}

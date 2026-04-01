@@ -1,0 +1,10 @@
+.env.local
+*.pem
+*.key
+*.jks
+.DS_Store
+node_modules/
+dist/
+build/
+.secrets.baseline
+artifacts/

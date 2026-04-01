@@ -1,0 +1,35 @@
+{
+  "name": "tfx-hub",
+  "version": "1.0.0",
+  "description": "TFX Hub workspace with shared mobile and client logic",
+  "main": "index.js",
+  "scripts": {
+    "test": "pnpm --filter @tfx/shared-logic test ; pnpm --filter @tfx/contractor-app test",
+    "test:shared-logic": "pnpm --filter @tfx/shared-logic test",
+    "test:shared-logic:integration": "pnpm --filter @tfx/shared-logic test:integration",
+    "test:contractor-app": "pnpm --filter @tfx/contractor-app test",
+    "demo:shared-logic": "node examples/shared_logic_demo.js",
+    "demo:contractor-app": "node packages/contractor-app/src/index.js",
+    "security:audit": "pnpm audit",
+    "security:secrets": "detect-secrets scan --baseline .secrets.baseline --all-files",
+    "security:lint": "pre-commit run eslint --all-files",
+    "security:all": "pre-commit run --all-files && pnpm audit && npm run security:secrets",
+    "security:install-hooks": "pip install pre-commit && pre-commit install && pre-commit install --hook-type commit-msg",
+    "security:scan": "node scripts/scan_secrets.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@tfx/contractor-app": "workspace:*",
+    "@tfx/shared-logging": "workspace:*",
+    "@tfx/shared-logic": "workspace:*",
+    "express": "^5.2.1"
+  },
+  "lint-staged": {
+    "*.{js,ts,tsx,jsx}": [
+      "eslint --fix"
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+name: CI Canary Integration
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'scripts/**'
+      - 'config/canary/**'
+      - '.github/workflows/**'
+
+jobs:
+  canary-integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure canary scripts exist
+        run: |
+          set -e
+          test -f scripts/canary_flag_adapter.sh
+          test -f scripts/canary_rollout_integrated.sh
+          test -f scripts/test_canary_lanes.sh
+          echo "Canary integration files present"

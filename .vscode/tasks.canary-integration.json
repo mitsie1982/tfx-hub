@@ -1,0 +1,29 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Canary: Check Status",
+      "type": "shell",
+      "command": "./scripts/canary_rollout_integrated.sh ams 1 status",
+      "presentation": { "reveal": "always" }
+    },
+    {
+      "label": "Canary: Promote to 5%",
+      "type": "shell",
+      "command": "./scripts/canary_rollout_integrated.sh ams 5 promote",
+      "presentation": { "reveal": "always" }
+    },
+    {
+      "label": "Canary: Rollback",
+      "type": "shell",
+      "command": "./scripts/canary_rollout_integrated.sh ams 1 rollback",
+      "presentation": { "reveal": "always" }
+    },
+    {
+      "label": "Canary: Run Test Lanes",
+      "type": "shell",
+      "command": "./scripts/test_canary_lanes.sh ams",
+      "presentation": { "reveal": "always" }
+    }
+  ]
+}

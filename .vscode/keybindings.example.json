@@ -1,0 +1,53 @@
+// OPTIONAL: Copy these keybindings to your VS Code settings for quick demo access
+// 
+// To use:
+// 1. Press Ctrl+Shift+P → Preferences: Open Keyboard Shortcuts (JSON)
+// 2. Copy the settings below into your keybindings.json file
+// 3. Restart VS Code or reload window (Ctrl+R)
+//
+// Keybindings:
+// - Ctrl+Alt+C : Demo: Contractor
+// - Ctrl+Alt+U : Demo: Customer  
+// - Ctrl+Alt+A : Demo: AMS
+// - Ctrl+Alt+M : Demo: Members
+// - Ctrl+Alt+S : Create Desktop Shortcuts
+// - Ctrl+Alt+K : Check Dependencies
+
+[
+  {
+    "key": "ctrl+alt+c",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Demo: Contractor",
+    "when": "!inDebugMode"
+  },
+  {
+    "key": "ctrl+alt+u",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Demo: Customer",
+    "when": "!inDebugMode"
+  },
+  {
+    "key": "ctrl+alt+a",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Demo: AMS",
+    "when": "!inDebugMode"
+  },
+  {
+    "key": "ctrl+alt+m",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Demo: Members",
+    "when": "!inDebugMode"
+  },
+  {
+    "key": "ctrl+alt+s",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Create Desktop Shortcuts",
+    "when": "!inDebugMode"
+  },
+  {
+    "key": "ctrl+alt+k",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Check Dependencies",
+    "when": "!inDebugMode"
+  }
+]

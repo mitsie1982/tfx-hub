@@ -1,0 +1,88 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "TFX Hub Mobile Overview",
+    "panels": [
+      {
+        "type": "graph",
+        "title": "Mobile Crash Rate (per 1k users)",
+        "targets": [
+          {
+            "expr": "1000 * increase(mobile_crashes_total[10m]) / max(1, increase(mobile_active_users_total[10m]))",
+            "legendFormat": "crashes_per_1k"
+          }
+        ]
+      },
+      {
+        "type": "graph",
+        "title": "Unhandled Exceptions (5m)",
+        "targets": [
+          {
+            "expr": "increase(mobile_unhandled_exceptions_total[5m])",
+            "legendFormat": "exceptions_5m"
+          }
+        ]
+      },
+      {
+        "type": "graph",
+        "title": "Backend 5xx Rate (%)",
+        "targets": [
+          {
+            "expr": "100 * increase(api_responses_total{status=~\"5..\"}[5m]) / max(1, increase(api_responses_total[5m]))",
+            "legendFormat": "5xx_percent"
+          }
+        ]
+      },
+      {
+        "type": "graph",
+        "title": "Backend P95 Latency (s)",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "p95_s"
+          }
+        ]
+      },
+      {
+        "type": "stat",
+        "title": "Crash Free Users (24h)",
+        "targets": [
+          {
+            "expr": "100 * (1 - increase(mobile_crashes_total[24h]) / max(1, increase(mobile_active_users_total[24h])))",
+            "legendFormat": "crash_free_pct"
+          }
+        ]
+      },
+      {
+        "type": "graph",
+        "title": "Payment Success Rate (%)",
+        "targets": [
+          {
+            "expr": "100 * (1 - increase(payment_failures_total[15m]) / max(1, increase(payment_attempts_total[15m])))",
+            "legendFormat": "payment_success_pct"
+          }
+        ]
+      },
+      {
+        "type": "graph",
+        "title": "Job Bid Submissions (rate)",
+        "targets": [
+          {
+            "expr": "rate(job_bid_submissions_total[5m])",
+            "legendFormat": "job_bid_rate"
+          }
+        ]
+      },
+      {
+        "type": "table",
+        "title": "Recent Error Groups (Sentry placeholder)",
+        "targets": [
+          {
+            "expr": "topk(10, increase(mobile_unhandled_exceptions_total[1h]))",
+            "legendFormat": "top_errors"
+          }
+        ]
+      }
+    ]
+  }
+}

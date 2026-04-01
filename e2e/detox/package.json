@@ -1,0 +1,14 @@
+{
+  "name": "e2e-detox",
+  "private": true,
+  "scripts": {
+    "build:ios": "detox build --configuration ios.sim.debug",
+    "test:ios": "detox test --configuration ios.sim.debug",
+    "build:android": "detox build --configuration android.emu.debug",
+    "test:android": "detox test --configuration android.emu.debug"
+  },
+  "devDependencies": {
+    "detox": "^23.0.0",
+    "jest": "^29.0.0"
+  }
+}

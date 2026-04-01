@@ -1,0 +1,15 @@
+{
+  "recommendations": [
+    "ms-vscode.PowerShell",
+    "ms-vscode.extension-test-runner",
+    "ms-vscode.vscode-serial-monitor",
+    "ms-vscode-remote.remote-wsl",
+    "ES7-React-JS-Snippets",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "ms-vscode.makefile-tools",
+    "eamodio.gitlens",
+    "FirstTimeInHistory.Typescript-Vue",
+    "dsznajder.es7-react-js-snippets"
+  ]
+}
