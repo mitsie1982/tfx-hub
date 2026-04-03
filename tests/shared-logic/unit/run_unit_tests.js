@@ -6,12 +6,20 @@ const path = require('path');
 
 async function main() {
   const tests = [
+    'test_admin_unit.js',
     'test_api_client_unit.js',
     'test_auth_unit.js',
+    'test_contractor_unit.js',
     'test_request_context_unit.js',
     'test_professionals_unit.js',
     'test_jobs_unit.js',
-    'test_onboarding_unit.js'
+    'test_session_unit.js',
+    'test_onboarding_unit.js',
+    'test_whatsapp_association_unit.js',
+    'test_whatsapp_admin_unit.js',
+    'test_whatsapp_contractor_unit.js',
+    'test_whatsapp_customer_unit.js',
+    'test_whatsapp_professional_unit.js'
   ];
 
   for (const testFile of tests) {
