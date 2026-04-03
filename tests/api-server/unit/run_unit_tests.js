@@ -7,6 +7,7 @@ async function main() {
     'test_admin_management_unit.js',
     'test_admin_runtime_smoke_unit.js',
     'test_password_reset_notifier_unit.js',
+    'test_whatsapp_admin_service_unit.js',
     'test_meta_whatsapp_webhook_unit.js',
     'test_meta_whatsapp_option1_preflight_unit.js',
     'test_meta_whatsapp_routes_unit.js',

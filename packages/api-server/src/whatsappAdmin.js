@@ -2,6 +2,7 @@
 
 const bcrypt = require('bcryptjs');
 const { normalizePhoneNumber } = require('./whatsappContractor');
+const ACTION_PAGE_SIZE = 5;
 
 function normalizeCommand(value) {
   return String(value || '').trim().toLowerCase();
@@ -22,8 +23,20 @@ function summarizeSession(session, user) {
     screen: session.screen,
     userId: session.userId || user?.id || null,
     activeProfessionalId: session.activeProfessionalId || null,
+    activeActionPageOffset: Number.isFinite(session.actionPageOffset) ? session.actionPageOffset : 0,
     lastProfessionalIds: session.lastProfessionalIds || []
   };
+}
+
+function clampActionPageOffset(total, offset) {
+  const normalizedOffset = Number.isFinite(offset) ? Math.max(0, offset) : 0;
+  if (total <= 0) {
+    return 0;
+  }
+  if (normalizedOffset >= total) {
+    return Math.max(0, Math.floor((total - 1) / ACTION_PAGE_SIZE) * ACTION_PAGE_SIZE);
+  }
+  return normalizedOffset;
 }
 
 function formatMenu(user) {
@@ -81,16 +94,24 @@ function formatContractorDetail(item) {
   ].join('\n');
 }
 
-function formatActions(items) {
+function formatActions(items, actionWindow = {}) {
+  const pageOffset = Number.isFinite(actionWindow.pageOffset) ? actionWindow.pageOffset : 0;
+  const totalItems = Number.isFinite(actionWindow.totalItems) ? actionWindow.totalItems : items.length;
+  const hasMore = Boolean(actionWindow.hasMore);
   if (!items.length) {
     return 'No admin actions recorded yet. Reply M for menu.';
   }
   const rows = ['Recent admin actions', ''];
-  items.slice(0, 5).forEach((item, index) => {
+  rows.push(`Showing ${pageOffset + 1}-${pageOffset + items.length} of ${totalItems} actions`);
+  rows.push('');
+  items.forEach((item, index) => {
     rows.push(`${index + 1}. ${item.summary}`);
     rows.push(`${item.actionType} | ${item.createdAt || 'Recently'}`);
     rows.push('');
   });
+  if (hasMore) {
+    rows.push('Reply MORE for older actions.');
+  }
   rows.push('Reply M for menu.');
   return rows.join('\n');
 }
@@ -106,6 +127,7 @@ function createWhatsappAdminService({ repository, logger, createId }) {
       screen: 'unlinked_entry',
       userId: null,
       activeProfessionalId: null,
+      actionPageOffset: 0,
       lastProfessionalIds: [],
       registrationDraft: null
     };
@@ -135,13 +157,26 @@ function createWhatsappAdminService({ repository, logger, createId }) {
     return { reply: formatMenu(user), options: ['1', '2', '3', '4'], session: summarizeSession(session, user) };
   }
 
-  async function buildRecentActions(session, user) {
+  async function buildRecentActions(session, user, options = {}) {
     const professionals = await repository.listProfessionals({});
     const actions = (await Promise.all(professionals.map((item) => repository.listAdminActions(item.id)))).flat();
     actions.sort((left, right) => String(right.createdAt || '').localeCompare(String(left.createdAt || '')));
-    session.screen = 'actions';
+    const pageOffset = options.resetPage === false
+      ? clampActionPageOffset(actions.length, options.pageOffset ?? session.actionPageOffset)
+      : 0;
+    const pageItems = actions.slice(pageOffset, pageOffset + ACTION_PAGE_SIZE);
+    session.actionPageOffset = pageOffset;
+    session.screen = 'recent_actions';
     await saveSession(session);
-    return { reply: formatActions(actions), options: ['M'], session: summarizeSession(session, user) };
+    return {
+      reply: formatActions(pageItems, {
+        pageOffset,
+        totalItems: actions.length,
+        hasMore: pageOffset + pageItems.length < actions.length
+      }),
+      options: pageOffset + pageItems.length < actions.length ? ['MORE', 'M'] : ['M'],
+      session: summarizeSession(session, user)
+    };
   }
 
   async function handleUnlinked(session, rawMessage) {
@@ -221,6 +256,12 @@ function createWhatsappAdminService({ repository, logger, createId }) {
     const command = normalizeCommand(rawMessage);
     if (!command || ['hi', 'hello', 'menu', 'm', 'start'].includes(command)) {
       return buildMenu(session, user);
+    }
+    if (session.screen === 'recent_actions' && (command === 'more' || command === 'next')) {
+      return buildRecentActions(session, user, {
+        resetPage: false,
+        pageOffset: (session.actionPageOffset || 0) + ACTION_PAGE_SIZE
+      });
     }
     if (session.screen === 'directory' && /^\d+$/.test(command)) {
       const professionalId = session.lastProfessionalIds[Number(command) - 1];
