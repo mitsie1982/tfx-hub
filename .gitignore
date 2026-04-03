@@ -8,3 +8,4 @@ dist/
 build/
 .secrets.baseline
 artifacts/
+apps/*/package-lock.json
