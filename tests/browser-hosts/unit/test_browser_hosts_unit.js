@@ -119,7 +119,19 @@ async function run() {
       urgency: 'Urgent',
       description: 'Need a plumber for a same-day leak repair.'
     });
-    assert.ok(customerRequestHtml.includes('Job request recorded in sample mode') || customerRequestHtml.includes('Customer job request submitted'));
+    assert.ok(customerRequestHtml.includes('Review Job Request'));
+    assert.ok(customerRequestHtml.includes('Need a plumber for a same-day leak repair.'));
+
+    const customerRequestConfirmHtml = await postForm(customer, '/actions/request-job', {
+      title: 'WhatsApp-inspired plumbing request',
+      trade: 'plumber',
+      location: 'Midrand',
+      budget: 'R5,000 - R8,000',
+      urgency: 'Urgent',
+      description: 'Need a plumber for a same-day leak repair.',
+      confirm: 'yes'
+    });
+    assert.ok(customerRequestConfirmHtml.includes('Job request recorded in sample mode') || customerRequestConfirmHtml.includes('Customer job request submitted'));
 
     const adminActionHtml = await postForm(admin, '/actions/admin-action', { professionalId: 'pro-001', actionType: 'tier-review' });
     assert.ok(adminActionHtml.includes('Tier review queued') || adminActionHtml.includes('Action recorded locally as sample data'));
