@@ -2,7 +2,15 @@
     "private":  true,
     "name":  "customer-app",
     "version":  "0.0.1",
+    "main":  "App.tsx",
+    "dependencies":  {
+                         "@tfx/customer-app":  "workspace:*",
+                         "@tfx/shared-logging":  "workspace:*",
+                         "@tfx/shared-logic":  "workspace:*",
+                         "react-native-keychain":  "^10.0.0"
+                     },
     "scripts":  {
-                    "start":  "node server.js"
+                    "start":  "node server.js",
+                    "test":  "node ../../tests/customer-mobile-app/unit/run_unit_tests.js"
                 }
 }
