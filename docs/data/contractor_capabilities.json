@@ -117,10 +117,10 @@
     {
       "role": "Contractor",
       "implementation": "Implemented",
-      "surface": "Browser and WhatsApp",
-      "appOrService": "apps/contractor-app browser host and API WhatsApp contractor flow",
-      "whatTheyCanDo": "Sign in with email, username, or RSA mobile number plus password, register, request and confirm a password reset token, open linked account help in WhatsApp, browse leads, page through lead results, search and filter leads in browser and WhatsApp, view lead detail, express interest, submit quotes, send homeowner messages, review activity, inspect the browser dashboard and lead history, enter a contractor mobile number from the browser or mobile shell to subscribe it to TFX Hub WhatsApp, and use in-chat onboarding, password reset, or account linking on WhatsApp.",
-      "whatTheyCanView": "Profile stats, browser dashboard metrics, lead lists, lead details, homeowner requirements, quote and message flows, activity history, browser and mobile sign-in fields that accept email, username, or RSA mobile number, subscription guidance for WhatsApp, password-reset prompts, linked account-help prompts, and menu-driven WhatsApp actions including active lead search, trade filters, lead-page progress, and the contractor stats snapshot."
+      "surface": "Browser, mobile app, package workspace, and WhatsApp",
+      "appOrService": "apps/contractor-app browser host and mobile shell, packages/contractor-app, and API WhatsApp contractor flow",
+      "whatTheyCanDo": "Sign in with email, username, or RSA mobile number plus password, register, request and confirm a password reset token, open linked account help in WhatsApp, browse leads, page through lead results, search and filter leads in browser and WhatsApp, view lead detail, express interest, review and confirm quotes before sending, preview homeowner messages before sending, review activity, inspect the browser dashboard and lead history, enter a contractor mobile number from the browser or mobile shell to subscribe it to TFX Hub WhatsApp, exercise contractor package views for jobs, onboarding, and profile state, and use in-chat onboarding, password reset, or account linking on WhatsApp.",
+      "whatTheyCanView": "Profile stats, browser dashboard metrics, mobile dashboard cards, lead lists, lead details, homeowner requirements, quote and message review flows, activity history, browser and mobile sign-in fields that accept email, username, or RSA mobile number, subscription guidance for WhatsApp, password-reset prompts, linked account-help prompts, contractor package profile and onboarding helpers, and menu-driven WhatsApp actions including active lead search, trade filters, lead-page progress, and the contractor stats snapshot."
     },
     {
       "role": "Client",
