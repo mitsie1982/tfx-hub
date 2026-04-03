@@ -95,9 +95,9 @@ This sheet is intended for client-facing or stakeholder-facing communication.
 | View homeowner requirements | Yes | Yes | Implemented |
 | Express interest in a lead | Yes | Yes | Implemented |
 | Submit quote amount, timeline, and note | Yes | Yes | Implemented |
-| Confirm quote before sending | No dedicated confirmation screen | Yes | Implemented only on WhatsApp as explicit step |
+| Confirm quote before sending | Yes | Yes | Implemented |
 | Send homeowner message | Yes | Yes | Implemented |
-| Preview message before sending | No dedicated preview screen | Yes | Implemented only on WhatsApp as explicit step |
+| Preview message before sending | Yes | Yes | Implemented |
 | View lead history or activity | Yes | Yes | Implemented |
 | View quote, message, and interest statuses | Yes | Yes | Implemented |
 | Help and usage guidance | Minimal | Yes | Implemented, stronger on WhatsApp |

@@ -278,9 +278,9 @@
     },
     {
       "capability": "Confirm quote before sending",
-      "browser": "No dedicated confirmation screen",
+      "browser": "Yes",
       "whatsapp": "Yes",
-      "status": "Implemented only on WhatsApp as explicit step"
+      "status": "Implemented"
     },
     {
       "capability": "Send homeowner message",
@@ -290,9 +290,9 @@
     },
     {
       "capability": "Preview message before sending",
-      "browser": "No dedicated preview screen",
+      "browser": "Yes",
       "whatsapp": "Yes",
-      "status": "Implemented only on WhatsApp as explicit step"
+      "status": "Implemented"
     },
     {
       "capability": "View lead history or activity",
