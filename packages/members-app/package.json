@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "build": "echo 'build @tfx/members-app (no-op)'",
-    "test": "echo 'no tests yet'",
+    "test": "node ../../tests/members-package/unit/run_unit_tests.js",
     "start": "node src/index.js"
   },
   "dependencies": {
