@@ -413,6 +413,60 @@ async function run() {
     assert.strictEqual(customerDetailResponse.status, 200);
     assert.ok(customerDetailPayload.reply.includes('Reply:'));
 
+    const customerResetStartResponse = await fetch(`${baseUrl}/whatsapp/customer/messages`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: '+27716660003', message: 'Hi' })
+    });
+    const customerResetStartPayload = await customerResetStartResponse.json();
+    assert.strictEqual(customerResetStartResponse.status, 200);
+    assert.ok(customerResetStartPayload.reply.includes('Reset customer password'));
+
+    const customerResetChoiceResponse = await fetch(`${baseUrl}/whatsapp/customer/messages`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: '+27716660003', message: '3' })
+    });
+    const customerResetChoicePayload = await customerResetChoiceResponse.json();
+    assert.strictEqual(customerResetChoiceResponse.status, 200);
+    assert.ok(customerResetChoicePayload.reply.includes('Enter the email address on your customer account'));
+
+    const customerResetRequestResponse = await fetch(`${baseUrl}/whatsapp/customer/messages`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: '+27716660003', message: 'client@example.com' })
+    });
+    const customerResetRequestPayload = await customerResetRequestResponse.json();
+    assert.strictEqual(customerResetRequestResponse.status, 200);
+    assert.ok(customerResetRequestPayload.reply.includes('Password reset requested for client@example.com'));
+    const customerResetTokenMatch = customerResetRequestPayload.reply.match(/Token: (reset-[^\n]+)/);
+    assert.ok(customerResetTokenMatch);
+
+    const customerResetTokenResponse = await fetch(`${baseUrl}/whatsapp/customer/messages`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: '+27716660003', message: customerResetTokenMatch[1] })
+    });
+    const customerResetTokenPayload = await customerResetTokenResponse.json();
+    assert.strictEqual(customerResetTokenResponse.status, 200);
+    assert.ok(customerResetTokenPayload.reply.includes('Enter your new password'));
+
+    const customerResetPasswordResponse = await fetch(`${baseUrl}/whatsapp/customer/messages`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: '+27716660003', message: 'client-new-password-123' })
+    });
+    const customerResetPasswordPayload = await customerResetPasswordResponse.json();
+    assert.strictEqual(customerResetPasswordResponse.status, 200);
+    assert.ok(customerResetPasswordPayload.reply.includes('Password reset complete'));
+
+    const customerResetLoginResponse = await fetch(`${baseUrl}/auth/login`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-association-id': 'assoc-customer-demo' },
+      body: JSON.stringify({ identifier: 'client@example.com', password: 'client-new-password-123' })
+    });
+    assert.strictEqual(customerResetLoginResponse.status, 200);
+
     const associationResponse = await fetch(`${baseUrl}/whatsapp/association/messages`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },

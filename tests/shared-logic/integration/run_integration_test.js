@@ -104,6 +104,13 @@ setTimeout(async () => {
     await client.whatsappContractor.sendMessage('+27719999999', 'Soweto');
     await client.whatsappContractor.sendMessage('+27719999999', '5 years');
     const whatsappRegisterCompleteResponse = await client.whatsappContractor.sendMessage('+27719999999', 'jane@example.com');
+    const whatsappCustomerResetStart = await client.whatsappCustomer.sendMessage('+27716660003', 'Hi');
+    const whatsappCustomerResetChoice = await client.whatsappCustomer.sendMessage('+27716660003', '3');
+    const whatsappCustomerResetRequest = await client.whatsappCustomer.sendMessage('+27716660003', 'client@example.com');
+    const whatsappCustomerResetTokenMatch = whatsappCustomerResetRequest.reply.match(/Token: (reset-[^\n]+)/);
+    assert.ok(whatsappCustomerResetTokenMatch);
+    const whatsappCustomerResetToken = await client.whatsappCustomer.sendMessage('+27716660003', whatsappCustomerResetTokenMatch[1]);
+    const whatsappCustomerResetPassword = await client.whatsappCustomer.sendMessage('+27716660003', 'client-new-password-123');
     const whatsappCustomerSession = await client.whatsappCustomer.getSession('+27710000003');
     const whatsappCustomerMenu = await client.whatsappCustomer.sendMessage('+27710000003', 'Hi');
     const whatsappCustomerProfessionals = await client.whatsappCustomer.sendMessage('+27710000003', '2');
@@ -189,6 +196,11 @@ setTimeout(async () => {
     assert.ok(whatsappRegisterStartResponse.reply.includes('Welcome to TFX Hub contractor WhatsApp'));
     assert.ok(whatsappRegisterChoiceResponse.reply.includes('What is your full name'));
     assert.ok(whatsappRegisterCompleteResponse.reply.includes('Your contractor account is ready on WhatsApp'));
+    assert.ok(whatsappCustomerResetStart.reply.includes('Reset customer password'));
+    assert.ok(whatsappCustomerResetChoice.reply.includes('Enter the email address on your customer account'));
+    assert.ok(whatsappCustomerResetRequest.reply.includes('Password reset requested for client@example.com'));
+    assert.ok(whatsappCustomerResetToken.reply.includes('Enter your new password'));
+    assert.ok(whatsappCustomerResetPassword.reply.includes('Password reset complete'));
     assert.strictEqual(whatsappCustomerSession.item.linked, true);
     assert.ok(whatsappCustomerMenu.reply.includes('Welcome back, Ayanda'));
     assert.ok(whatsappCustomerProfessionals.reply.includes('Top professionals'));
@@ -232,6 +244,7 @@ setTimeout(async () => {
     console.log('whatsapp menu:', whatsappMenuResponse.session.screen);
     console.log('whatsapp quote:', whatsappQuoteConfirmResponse.session.screen);
     console.log('whatsapp register:', whatsappRegisterCompleteResponse.session.userId);
+    console.log('whatsapp customer reset:', whatsappCustomerResetPassword.session.screen);
     console.log('whatsapp customer:', whatsappCustomerMenu.session.screen);
     console.log('whatsapp association:', whatsappAssociationMenu.session.screen);
     console.log('whatsapp admin:', whatsappAdminSession.item.screen);
