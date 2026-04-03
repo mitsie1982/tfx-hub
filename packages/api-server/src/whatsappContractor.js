@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 
 const ONBOARDING_STAGES = ['welcome', 'name', 'trade', 'experience', 'location', 'credentials'];
+const LEAD_PAGE_SIZE = 3;
 
 function normalizePhoneNumber(value) {
   const digits = String(value || '').replace(/[^\d+]/g, '');
@@ -23,6 +24,41 @@ function normalizeTradeFilter(value) {
   return String(value || '').trim().toLowerCase();
 }
 
+function normalizeLeadSearchQuery(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function clampLeadPageOffset(total, offset) {
+  const normalizedOffset = Number.isFinite(offset) ? Math.max(0, offset) : 0;
+  if (total <= 0) {
+    return 0;
+  }
+
+  if (normalizedOffset >= total) {
+    return Math.max(0, Math.floor((total - 1) / LEAD_PAGE_SIZE) * LEAD_PAGE_SIZE);
+  }
+
+  return normalizedOffset;
+}
+
+function matchesLeadSearch(lead, query) {
+  if (!query) {
+    return true;
+  }
+
+  const haystack = [
+    lead.title,
+    lead.description,
+    lead.location,
+    lead.trade,
+    lead.budget,
+    lead.urgency,
+    lead.leadType
+  ].join(' ').toLowerCase();
+
+  return haystack.includes(query);
+}
+
 function splitName(fullName) {
   const parts = String(fullName || '').trim().split(/\s+/).filter(Boolean);
   return {
@@ -39,7 +75,9 @@ function toSessionSummary(session, linkedUser) {
     userId: session.userId || linkedUser?.id || null,
     activeJobId: session.activeJobId || null,
     lastLeadIds: Array.isArray(session.lastLeadIds) ? session.lastLeadIds : [],
-    activeTradeFilter: session.leadFilters?.trade || null
+    activeLeadPageOffset: Number.isFinite(session.leadPageOffset) ? session.leadPageOffset : 0,
+    activeTradeFilter: session.leadFilters?.trade || null,
+    activeLeadSearchQuery: session.leadFilters?.search || null
   };
 }
 
@@ -47,7 +85,11 @@ function formatMenu(user, openLeadCount = 0) {
   return [
     `Welcome back, ${user.firstName}.`,
     '',
-    `You have ${openLeadCount} open leads and ${user.activeQuotes || 0} active quotes.`,
+    'Contractor snapshot',
+    `Open leads: ${openLeadCount}`,
+    `Active quotes: ${user.activeQuotes || 0}`,
+    `Completed jobs: ${user.completedJobs || 0}`,
+    `Response time: ${user.responseTime || 'N/A'}`,
     '',
     'Reply with a number:',
     '1. My Profile',
@@ -55,7 +97,8 @@ function formatMenu(user, openLeadCount = 0) {
     '3. My Activity',
     '4. Quote a Lead',
     '5. Message a Homeowner',
-    '6. Help'
+    '6. Help',
+    '7. Account Help'
   ].join('\n');
 }
 
@@ -74,24 +117,73 @@ function formatProfile(user) {
     'Reply:',
     '1. My Leads',
     '2. My Activity',
+    '3. Menu',
+    '4. Account Help'
+  ].join('\n');
+}
+
+function formatAccountHelp(user) {
+  return [
+    'Account help',
+    '',
+    `Email: ${user.email || 'Not set'}`,
+    `Phone: ${user.phoneNumber || 'Not set'}`,
+    '',
+    'Reply:',
+    '1. Reset password in chat',
+    '2. Sign-in help',
     '3. Menu'
   ].join('\n');
 }
 
-function formatLeadList(leads, tradeFilter) {
+function formatSignInHelp(user) {
+  return [
+    'Sign-in help',
+    '',
+    'You can sign in with any of these:',
+    `- Email: ${user.email || 'Not set'}`,
+    `- Phone: ${user.phoneNumber || 'Not set'}`,
+    '- Username: if one is configured on your contractor account',
+    '',
+    'Reply 1 to reset your password in chat or 3 for menu.'
+  ].join('\n');
+}
+
+function formatLeadList(leads, tradeFilter, searchQuery, leadWindow = {}) {
+  const pageOffset = Number.isFinite(leadWindow.pageOffset) ? leadWindow.pageOffset : 0;
+  const totalLeads = Number.isFinite(leadWindow.totalLeads) ? leadWindow.totalLeads : leads.length;
+  const hasMore = Boolean(leadWindow.hasMore);
+
   if (!leads.length) {
+    const activeFilters = [];
+    if (tradeFilter) {
+      activeFilters.push(`${tradeFilter} trade`);
+    }
+    if (searchQuery) {
+      activeFilters.push(`search "${searchQuery}"`);
+    }
+
     return [
-      tradeFilter ? `No open ${tradeFilter} leads are available right now.` : 'No open leads are available right now.',
+      activeFilters.length
+        ? `No open leads match ${activeFilters.join(' and ')} right now.`
+        : 'No open leads are available right now.',
       '',
-      'Reply F to set a trade filter, A for all trades, or M for menu.'
+      'Reply F to set a trade filter, A for all trades, S to search by text, C to clear search, or M for menu.'
     ].join('\n');
   }
 
   const rows = ['Top leads for you', ''];
   if (tradeFilter) {
     rows.push(`Current trade filter: ${tradeFilter}`);
+  }
+  if (searchQuery) {
+    rows.push(`Current text search: ${searchQuery}`);
+  }
+  if (tradeFilter || searchQuery) {
     rows.push('');
   }
+  rows.push(`Showing ${pageOffset + 1}-${pageOffset + leads.length} of ${totalLeads} matched leads`);
+  rows.push('');
   leads.forEach((lead, index) => {
     rows.push(`${index + 1}. ${lead.title}`);
     rows.push(`${lead.location || 'TBC'} | ${lead.budget || 'Budget TBC'} | ${lead.urgency || 'Flexible'}`);
@@ -99,7 +191,10 @@ function formatLeadList(leads, tradeFilter) {
     rows.push('');
   });
   rows.push('Reply with a lead number to open it.');
-  rows.push('Reply F to change trade filter, A for all trades, or M for menu.');
+  if (hasMore) {
+    rows.push('Reply MORE for the next leads.');
+  }
+  rows.push('Reply F to change trade filter, A for all trades, S to search by text, C to clear search, or M for menu.');
   return rows.join('\n');
 }
 
@@ -152,13 +247,19 @@ function formatHelp() {
     '3. My Activity shows recent interest, quote, and message actions.',
     '4. Quote a Lead starts a guided quote flow.',
     '5. Message a Homeowner starts a guided message flow.',
+    'If you cannot sign in, start again and choose password reset or reply 7 for Account Help.',
     '',
     'Reply M for menu.'
   ].join('\n');
 }
 
-function createWhatsappContractorService({ repository, logger, createId }) {
+function createWhatsappContractorService({ repository, logger, createId, createResetToken, passwordResetNotifier, now }) {
   const log = logger || { info() {}, warn() {}, error() {} };
+  const createPasswordResetTokenValue = typeof createResetToken === 'function'
+    ? createResetToken
+    : () => `reset-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  const resetNotifier = passwordResetNotifier || { async sendPasswordReset(payload) { return { channel: 'log', resetToken: payload.token }; } };
+  const resolveNow = typeof now === 'function' ? now : () => new Date();
 
   async function loadSession(phoneNumber) {
     const normalized = normalizePhoneNumber(phoneNumber);
@@ -173,10 +274,12 @@ function createWhatsappContractorService({ repository, logger, createId }) {
       userId: null,
       activeJobId: null,
       lastLeadIds: [],
-      leadFilters: { trade: null },
+      leadPageOffset: 0,
+      leadFilters: { trade: null, search: null },
       quoteDraft: null,
       messageDraft: null,
-      registrationDraft: null
+      registrationDraft: null,
+      resetPasswordDraft: null
     };
   }
 
@@ -197,7 +300,7 @@ function createWhatsappContractorService({ repository, logger, createId }) {
     await saveSession(session);
     return {
       reply: formatMenu(user, leads.length),
-      options: ['1', '2', '3', '4', '5', '6'],
+      options: ['1', '2', '3', '4', '5', '6', '7'],
       session: toSessionSummary(session, user)
     };
   }
@@ -207,22 +310,46 @@ function createWhatsappContractorService({ repository, logger, createId }) {
     await saveSession(session);
     return {
       reply: formatProfile(user),
+      options: ['1', '2', '3', '4'],
+      session: toSessionSummary(session, user)
+    };
+  }
+
+  async function buildAccountHelpResponse(session, user) {
+    session.screen = 'account_help';
+    await saveSession(session);
+    return {
+      reply: formatAccountHelp(user),
       options: ['1', '2', '3'],
       session: toSessionSummary(session, user)
     };
   }
 
-  async function buildLeadsResponse(session, user) {
+  async function buildLeadsResponse(session, user, options = {}) {
+    const { resetPage = true, pageOffset = null } = options;
     const tradeFilter = normalizeTradeFilter(session.leadFilters?.trade);
-    const leads = (await repository.listJobs({ status: 'OPEN', trade: tradeFilter || undefined })).slice(0, 3);
+    const searchQuery = normalizeLeadSearchQuery(session.leadFilters?.search);
+    const allLeads = (await repository.listJobs({ status: 'OPEN', trade: tradeFilter || undefined }))
+      .filter((lead) => matchesLeadSearch(lead, searchQuery));
+    const nextLeadPageOffset = clampLeadPageOffset(
+      allLeads.length,
+      pageOffset == null ? (resetPage ? 0 : session.leadPageOffset || 0) : pageOffset
+    );
+    const leads = allLeads.slice(nextLeadPageOffset, nextLeadPageOffset + LEAD_PAGE_SIZE);
+    const hasMore = nextLeadPageOffset + LEAD_PAGE_SIZE < allLeads.length;
     session.screen = 'leads_list';
     session.userId = user.id;
+    session.leadPageOffset = nextLeadPageOffset;
     session.lastLeadIds = leads.map((lead) => lead.id);
     session.activeJobId = null;
     await saveSession(session);
     return {
-      reply: formatLeadList(leads, tradeFilter || null),
-      options: leads.map((_, index) => String(index + 1)).concat(['F', 'A', 'M']),
+      reply: formatLeadList(leads, tradeFilter || null, searchQuery || null, {
+        pageOffset: nextLeadPageOffset,
+        totalLeads: allLeads.length,
+        hasMore
+      }),
+      options: leads.map((_, index) => String(index + 1)).concat(hasMore ? ['MORE'] : [], ['F', 'A', 'S', 'C', 'M']),
       session: toSessionSummary(session, user)
     };
   }
@@ -245,6 +372,27 @@ function createWhatsappContractorService({ repository, logger, createId }) {
     }
 
     session.leadFilters = { ...(session.leadFilters || {}), trade: rawMessage.trim() };
+    return buildLeadsResponse(session, user);
+  }
+
+  async function beginLeadSearchFlow(session, user) {
+    session.screen = 'lead_search';
+    await saveSession(session);
+    return {
+      reply: 'Enter text to search your leads. You can search by project title, suburb, trade, or scope.\n\nReply C to clear search or M for menu.',
+      options: ['C', 'M'],
+      session: toSessionSummary(session, user)
+    };
+  }
+
+  async function handleLeadSearchFlow(session, user, rawMessage) {
+    const command = normalizeCommand(rawMessage);
+    if (command === 'c' || command === 'clear') {
+      session.leadFilters = { ...(session.leadFilters || {}), search: null };
+      return buildLeadsResponse(session, user);
+    }
+
+    session.leadFilters = { ...(session.leadFilters || {}), search: rawMessage.trim() };
     return buildLeadsResponse(session, user);
   }
 
@@ -431,6 +579,157 @@ function createWhatsappContractorService({ repository, logger, createId }) {
     };
   }
 
+  async function beginPasswordResetFlow(session, options = {}) {
+    const linkedUser = options.linkedUser || null;
+    session.screen = 'reset_email';
+    session.resetPasswordDraft = linkedUser
+      ? {
+        userId: linkedUser.id,
+        email: linkedUser.email,
+        returnTo: 'linked_menu'
+      }
+      : null;
+    await saveSession(session);
+    return {
+      reply: linkedUser
+        ? `Reset password for ${linkedUser.email}. Reply YES to continue or M for menu.`
+        : 'Enter the email address on your contractor account to reset your password.',
+      options: ['M'],
+      session: toSessionSummary(session, null)
+    };
+  }
+
+  async function issuePasswordReset(session, rawMessage, options = {}) {
+    const linkedUser = options.linkedUser || null;
+    const email = linkedUser ? linkedUser.email : rawMessage.trim().toLowerCase();
+    const user = linkedUser || await repository.getUserByEmail(email);
+    if (!user || user.role !== 'contractor') {
+      return {
+        reply: 'No contractor account was found for that email. Reply 1 to link an account, 2 to register, or 3 to reset another email.',
+        options: ['1', '2', '3'],
+        session: toSessionSummary(session, null)
+      };
+    }
+
+    const token = createPasswordResetTokenValue();
+    const expiresAt = new Date(resolveNow().getTime() + (60 * 60 * 1000)).toISOString();
+    await repository.createPasswordResetToken({ token, userId: user.id, expiresAt });
+    const delivery = await resetNotifier.sendPasswordReset({ email: user.email, token, expiresAt });
+
+    session.screen = 'reset_token';
+    session.resetPasswordDraft = {
+      userId: user.id,
+      email: user.email,
+      issuedToken: delivery.resetToken || null,
+      channel: delivery.channel || 'log',
+      returnTo: session.resetPasswordDraft?.returnTo || (linkedUser ? 'linked_menu' : 'unlinked_entry')
+    };
+    await saveSession(session);
+
+    const deliveryLine = delivery.resetToken
+      ? `Token: ${delivery.resetToken}`
+      : 'Check your email for the reset token.';
+
+    return {
+      reply: [
+        `Password reset requested for ${user.email}.`,
+        `Delivery: ${delivery.channel || 'log'}`,
+        deliveryLine,
+        '',
+        'Reply with the reset token to continue, or M for menu.'
+      ].join('\n'),
+      options: ['M'],
+      session: toSessionSummary(session, null)
+    };
+  }
+
+  async function handlePasswordResetToken(session, rawMessage) {
+    const token = rawMessage.trim();
+    const entry = await repository.getPasswordResetToken(token);
+    const expectedUserId = session.resetPasswordDraft?.userId;
+    if (!entry || (expectedUserId && entry.userId !== expectedUserId)) {
+      return {
+        reply: 'That reset token is not valid for this contractor account. Reply with a valid token or M for menu.',
+        options: ['M'],
+        session: toSessionSummary(session, null)
+      };
+    }
+
+    if (entry.consumedAt) {
+      return {
+        reply: 'That reset token has already been used. Reply 3 to request a new password reset.',
+        options: ['3', 'M'],
+        session: toSessionSummary(session, null)
+      };
+    }
+
+    if (new Date(entry.expiresAt).getTime() < resolveNow().getTime()) {
+      return {
+        reply: 'That reset token has expired. Reply 3 to request a new password reset.',
+        options: ['3', 'M'],
+        session: toSessionSummary(session, null)
+      };
+    }
+
+    session.screen = 'reset_password';
+    session.resetPasswordDraft = {
+      ...(session.resetPasswordDraft || {}),
+      token
+    };
+    await saveSession(session);
+    return {
+      reply: 'Enter your new password.',
+      options: ['M'],
+      session: toSessionSummary(session, null)
+    };
+  }
+
+  async function confirmPasswordReset(session, rawMessage) {
+    const token = session.resetPasswordDraft?.token;
+    if (!token) {
+      return beginPasswordResetFlow(session);
+    }
+
+    const entry = await repository.getPasswordResetToken(token);
+    if (!entry || entry.consumedAt || new Date(entry.expiresAt).getTime() < resolveNow().getTime()) {
+      return {
+        reply: 'That reset token is no longer valid. Reply 3 to request a new password reset.',
+        options: ['3', 'M'],
+        session: toSessionSummary(session, null)
+      };
+    }
+
+    const passwordHash = await bcrypt.hash(rawMessage.trim(), 10);
+    const user = await repository.updateUserPassword(entry.userId, passwordHash);
+    await repository.consumePasswordResetToken(token);
+    const returnTo = session.resetPasswordDraft?.returnTo || 'unlinked_entry';
+    session.resetPasswordDraft = null;
+    session.screen = returnTo === 'linked_menu' ? 'menu' : 'unlinked_entry';
+    await saveSession(session);
+
+    if (!user) {
+      return {
+        reply: 'The contractor account could not be updated. Reply 3 to request a new password reset.',
+        options: ['3', 'M'],
+        session: toSessionSummary(session, null)
+      };
+    }
+
+    if (returnTo === 'linked_menu') {
+      return {
+        reply: 'Password reset complete. Reply M for menu, 2 for My Leads, or 7 for Account Help.',
+        options: ['M', '2', '7'],
+        session: toSessionSummary(session, user)
+      };
+    }
+
+    return {
+      reply: 'Password reset complete. Reply 1 to link your contractor account, 2 to register, or HI to start again.',
+      options: ['1', '2', 'HI'],
+      session: toSessionSummary(session, null)
+    };
+  }
+
   async function handleUnlinkedMessage(session, rawMessage) {
     const command = normalizeCommand(rawMessage);
     if (command === 'hi' || command === 'hello' || command === 'menu' || command === 'start' || !command) {
@@ -442,9 +741,10 @@ function createWhatsappContractorService({ repository, logger, createId }) {
           '',
           'Reply with a number:',
           '1. Link existing contractor account',
-          '2. Register as a new contractor'
+          '2. Register as a new contractor',
+          '3. Reset contractor password'
         ].join('\n'),
-        options: ['1', '2'],
+        options: ['1', '2', '3'],
         session: toSessionSummary(session, null)
       };
     }
@@ -468,6 +768,32 @@ function createWhatsappContractorService({ repository, logger, createId }) {
         options: ['M'],
         session: toSessionSummary(session, null)
       };
+    }
+
+    if ((session.screen === 'unlinked_entry' && command === '3') || command === 'reset') {
+      return beginPasswordResetFlow(session);
+    }
+
+    if (session.screen === 'reset_email' && session.resetPasswordDraft?.email && command === 'yes') {
+      return issuePasswordReset(session, rawMessage, {
+        linkedUser: {
+          id: session.resetPasswordDraft.userId,
+          email: session.resetPasswordDraft.email,
+          role: 'contractor'
+        }
+      });
+    }
+
+    if (session.screen === 'reset_email') {
+      return issuePasswordReset(session, rawMessage);
+    }
+
+    if (session.screen === 'reset_token') {
+      return handlePasswordResetToken(session, rawMessage);
+    }
+
+    if (session.screen === 'reset_password') {
+      return confirmPasswordReset(session, rawMessage);
     }
 
     if (session.screen === 'link_email') {
@@ -582,7 +908,7 @@ function createWhatsappContractorService({ repository, logger, createId }) {
           '',
           formatMenu(user, (await repository.listJobs({ status: 'OPEN' })).length)
         ].join('\n'),
-        options: ['1', '2', '3', '4', '5', '6'],
+        options: ['1', '2', '3', '4', '5', '6', '7'],
         session: toSessionSummary(session, user)
       };
     }
@@ -613,6 +939,22 @@ function createWhatsappContractorService({ repository, logger, createId }) {
       return handleLeadFilterFlow(session, user, rawMessage);
     }
 
+    if (session.screen === 'lead_search') {
+      return handleLeadSearchFlow(session, user, rawMessage);
+    }
+
+    if (session.screen === 'reset_email' && session.resetPasswordDraft?.email && command === 'yes') {
+      return issuePasswordReset(session, rawMessage, { linkedUser: user });
+    }
+
+    if (session.screen === 'reset_token') {
+      return handlePasswordResetToken(session, rawMessage);
+    }
+
+    if (session.screen === 'reset_password') {
+      return confirmPasswordReset(session, rawMessage);
+    }
+
     if (session.screen === 'interest_sent') {
       if (command === '1') {
         return handleQuoteFlow({ ...session, screen: 'quote_start', quoteDraft: null }, user, rawMessage);
@@ -623,7 +965,7 @@ function createWhatsappContractorService({ repository, logger, createId }) {
       }
 
       if (command === '3') {
-        return buildLeadsResponse(session, user);
+        return buildLeadsResponse(session, user, { resetPage: false });
       }
     }
 
@@ -639,8 +981,24 @@ function createWhatsappContractorService({ repository, logger, createId }) {
       return beginLeadFilterFlow(session, user);
     }
 
+    if (session.screen === 'leads_list' && (command === 'more' || command === 'next')) {
+      return buildLeadsResponse(session, user, {
+        resetPage: false,
+        pageOffset: (session.leadPageOffset || 0) + LEAD_PAGE_SIZE
+      });
+    }
+
     if (session.screen === 'leads_list' && (command === 'a' || command === 'all')) {
       session.leadFilters = { ...(session.leadFilters || {}), trade: null };
+      return buildLeadsResponse(session, user);
+    }
+
+    if (session.screen === 'leads_list' && (command === 's' || command === 'search')) {
+      return beginLeadSearchFlow(session, user);
+    }
+
+    if (session.screen === 'leads_list' && (command === 'c' || command === 'clear')) {
+      session.leadFilters = { ...(session.leadFilters || {}), search: null };
       return buildLeadsResponse(session, user);
     }
 
@@ -682,7 +1040,37 @@ function createWhatsappContractorService({ repository, logger, createId }) {
       }
 
       if (command === '4') {
-        return buildLeadsResponse(session, user);
+        return buildLeadsResponse(session, user, { resetPage: false });
+      }
+    }
+
+    if (session.screen === 'account_help') {
+      if (command === '1') {
+        return beginPasswordResetFlow(session, { linkedUser: user });
+      }
+
+      if (command === '2') {
+        session.screen = 'sign_in_help';
+        await saveSession(session);
+        return {
+          reply: formatSignInHelp(user),
+          options: ['1', '3'],
+          session: toSessionSummary(session, user)
+        };
+      }
+
+      if (command === '3') {
+        return buildMenuResponse(session, user);
+      }
+    }
+
+    if (session.screen === 'sign_in_help') {
+      if (command === '1') {
+        return beginPasswordResetFlow(session, { linkedUser: user });
+      }
+
+      if (command === '3') {
+        return buildMenuResponse(session, user);
       }
     }
 
@@ -703,9 +1091,13 @@ function createWhatsappContractorService({ repository, logger, createId }) {
       await saveSession(session);
       return {
         reply: formatHelp(),
-        options: ['M'],
+        options: ['M', '7'],
         session: toSessionSummary(session, user)
       };
+    }
+
+    if (session.screen === 'profile' && command === '4') {
+      return buildAccountHelpResponse(session, user);
     }
 
     if (command === '4' || command === 'quote') {
@@ -714,6 +1106,10 @@ function createWhatsappContractorService({ repository, logger, createId }) {
 
     if (command === '5' || command === 'message') {
       return handleMessageFlow({ ...session, screen: 'message_start', messageDraft: null }, user, rawMessage);
+    }
+
+    if (command === '7' || command === 'account help') {
+      return buildAccountHelpResponse(session, user);
     }
 
     return buildMenuResponse(session, user);

@@ -65,10 +65,14 @@ Use WhatsApp for the contractor high-intent flow: identify yourself, review lead
 1. Start from Hi, Menu, Start, or any inbound message from a registered number
 1. Link an existing contractor account by email
 1. Register a new contractor account directly in chat
+1. Request a password reset and confirm it with a reset token in chat
 1. Open the main contractor menu
 1. View the contractor profile summary
+1. Open account help from the linked contractor menu
 1. View matched leads
+1. Page through more matched leads in chat
 1. Filter matched leads by trade in chat
+1. Search matched leads by text in chat
 1. Open a lead from the lead list
 1. Express interest in a lead
 1. Complete a guided quote flow
@@ -78,9 +82,10 @@ Use WhatsApp for the contractor high-intent flow: identify yourself, review lead
 
 ### WhatsApp Visibility
 
-1. Main menu with open-lead and active-quote counts
+1. Main menu with a contractor snapshot for open leads, active quotes, completed jobs, and response time
+1. Account-help prompts with linked sign-in identifiers and password-reset actions
 1. Profile details including name, trade, tier, rating, completed jobs, active quotes, and response time
-1. Lead list with top matched leads, location, budget, urgency, match score, and the active trade filter when one is set
+1. Lead list with top matched leads, location, budget, urgency, match score, the active trade filter or text search when one is set, and the current lead page window
 1. Lead detail with title, location, budget, urgency, scope, and homeowner requirements
 1. Interest confirmation and next-step options
 1. Quote flow prompts for amount, timeline, note, and confirmation summary

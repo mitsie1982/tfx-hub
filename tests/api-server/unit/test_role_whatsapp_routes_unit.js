@@ -9,6 +9,34 @@ const BUSINESS_HOURS_DATE = () => new Date('2026-04-02T07:00:00.000Z');
 async function run() {
   const repository = await createMemoryRepository();
   await repository.initialize();
+  await repository.createJob({
+    id: 'job-003',
+    title: 'Electrical compliance inspection',
+    description: 'Homeowner needs a same-day electrical compliance inspection and certificate review.',
+    trade: 'electrician',
+    status: 'OPEN',
+    budget: 'R2,000 - R3,500',
+    location: 'Sandton',
+    urgency: 'Today',
+    posted: '5 min ago',
+    leadType: 'Verified homeowner',
+    matchScore: 88,
+    clientId: 'client-001'
+  });
+  await repository.createJob({
+    id: 'job-004',
+    title: 'Bathroom repaint and tile sealing',
+    description: 'Client needs bathroom prep, repainting, and tile resealing before move-in.',
+    trade: 'painter',
+    status: 'OPEN',
+    budget: 'R6,500 - R9,000',
+    location: 'Fourways',
+    urgency: 'This week',
+    posted: '9 min ago',
+    leadType: 'Repeat customer',
+    matchScore: 79,
+    clientId: 'client-001'
+  });
 
   const app = createApp({ repository, logger: { info() {}, warn() {}, error() {} }, getCurrentDate: BUSINESS_HOURS_DATE });
   const server = await new Promise((resolve) => {
@@ -88,6 +116,57 @@ async function run() {
     const contractorPayload = await contractorResponse.json();
     assert.strictEqual(contractorResponse.status, 200);
     assert.ok(contractorPayload.reply.includes('Welcome back, Naledi'));
+    assert.ok(contractorPayload.reply.includes('Contractor snapshot'));
+    assert.ok(contractorPayload.reply.includes('Completed jobs: 67'));
+    assert.ok(contractorPayload.reply.includes('Response time: 12 min'));
+    assert.ok(contractorPayload.reply.includes('7. Account Help'));
+
+    const contractorAccountHelpResponse = await fetch(`${baseUrl}/whatsapp/contractor/messages`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: contractorPhoneNumber, message: '7' })
+    });
+    const contractorAccountHelpPayload = await contractorAccountHelpResponse.json();
+    assert.strictEqual(contractorAccountHelpResponse.status, 200);
+    assert.ok(contractorAccountHelpPayload.reply.includes('Account help'));
+    assert.ok(contractorAccountHelpPayload.reply.includes('contractor@example.com'));
+
+    const contractorLinkedResetPromptResponse = await fetch(`${baseUrl}/whatsapp/contractor/messages`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: contractorPhoneNumber, message: '1' })
+    });
+    const contractorLinkedResetPromptPayload = await contractorLinkedResetPromptResponse.json();
+    assert.strictEqual(contractorLinkedResetPromptResponse.status, 200);
+    assert.ok(contractorLinkedResetPromptPayload.reply.includes('Reset password for contractor@example.com'));
+
+    const contractorLinkedResetRequestResponse = await fetch(`${baseUrl}/whatsapp/contractor/messages`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: contractorPhoneNumber, message: 'YES' })
+    });
+    const contractorLinkedResetRequestPayload = await contractorLinkedResetRequestResponse.json();
+    assert.strictEqual(contractorLinkedResetRequestResponse.status, 200);
+    const contractorLinkedResetTokenMatch = contractorLinkedResetRequestPayload.reply.match(/Token: (reset-[^\n]+)/);
+    assert.ok(contractorLinkedResetTokenMatch);
+
+    const contractorLinkedResetTokenResponse = await fetch(`${baseUrl}/whatsapp/contractor/messages`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: contractorPhoneNumber, message: contractorLinkedResetTokenMatch[1] })
+    });
+    const contractorLinkedResetTokenPayload = await contractorLinkedResetTokenResponse.json();
+    assert.strictEqual(contractorLinkedResetTokenResponse.status, 200);
+    assert.ok(contractorLinkedResetTokenPayload.reply.includes('Enter your new password'));
+
+    const contractorLinkedResetPasswordResponse = await fetch(`${baseUrl}/whatsapp/contractor/messages`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: contractorPhoneNumber, message: 'password123' })
+    });
+    const contractorLinkedResetPasswordPayload = await contractorLinkedResetPasswordResponse.json();
+    assert.strictEqual(contractorLinkedResetPasswordResponse.status, 200);
+    assert.ok(contractorLinkedResetPasswordPayload.reply.includes('Password reset complete'));
 
     const contractorLeadsResponse = await fetch(`${baseUrl}/whatsapp/contractor/messages`, {
       method: 'POST',
@@ -97,7 +176,22 @@ async function run() {
     const contractorLeadsPayload = await contractorLeadsResponse.json();
     assert.strictEqual(contractorLeadsResponse.status, 200);
     assert.ok(contractorLeadsPayload.reply.includes('Top leads for you'));
+    assert.ok(contractorLeadsPayload.reply.includes('Showing 1-3 of 4 matched leads'));
     assert.ok(contractorLeadsPayload.reply.includes('Build garden wall'));
+    assert.ok(contractorLeadsPayload.reply.includes('Electrical compliance inspection'));
+    assert.ok(!contractorLeadsPayload.reply.includes('Bathroom repaint and tile sealing'));
+    assert.ok(contractorLeadsPayload.reply.includes('Reply MORE for the next leads'));
+
+    const contractorMoreLeadsResponse = await fetch(`${baseUrl}/whatsapp/contractor/messages`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: contractorPhoneNumber, message: 'MORE' })
+    });
+    const contractorMoreLeadsPayload = await contractorMoreLeadsResponse.json();
+    assert.strictEqual(contractorMoreLeadsResponse.status, 200);
+    assert.ok(contractorMoreLeadsPayload.reply.includes('Showing 4-4 of 4 matched leads'));
+    assert.ok(contractorMoreLeadsPayload.reply.includes('Bathroom repaint and tile sealing'));
+    assert.ok(!contractorMoreLeadsPayload.reply.includes('Kitchen plumbing and leak repair'));
 
     const contractorFilterPromptResponse = await fetch(`${baseUrl}/whatsapp/contractor/messages`, {
       method: 'POST',
@@ -119,6 +213,37 @@ async function run() {
     assert.ok(contractorFilteredLeadsPayload.reply.includes('Kitchen plumbing and leak repair'));
     assert.ok(!contractorFilteredLeadsPayload.reply.includes('Build garden wall'));
 
+    const contractorSearchPromptResponse = await fetch(`${baseUrl}/whatsapp/contractor/messages`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: contractorPhoneNumber, message: 'S' })
+    });
+    const contractorSearchPromptPayload = await contractorSearchPromptResponse.json();
+    assert.strictEqual(contractorSearchPromptResponse.status, 200);
+    assert.ok(contractorSearchPromptPayload.reply.includes('Enter text to search your leads'));
+
+    const contractorSearchResultsResponse = await fetch(`${baseUrl}/whatsapp/contractor/messages`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: contractorPhoneNumber, message: 'kitchen' })
+    });
+    const contractorSearchResultsPayload = await contractorSearchResultsResponse.json();
+    assert.strictEqual(contractorSearchResultsResponse.status, 200);
+    assert.ok(contractorSearchResultsPayload.reply.includes('Current trade filter: plumber'));
+    assert.ok(contractorSearchResultsPayload.reply.includes('Current text search: kitchen'));
+    assert.ok(contractorSearchResultsPayload.reply.includes('Kitchen plumbing and leak repair'));
+    assert.ok(!contractorSearchResultsPayload.reply.includes('Build garden wall'));
+
+    const contractorClearSearchResponse = await fetch(`${baseUrl}/whatsapp/contractor/messages`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: contractorPhoneNumber, message: 'C' })
+    });
+    const contractorClearSearchPayload = await contractorClearSearchResponse.json();
+    assert.strictEqual(contractorClearSearchResponse.status, 200);
+    assert.ok(!contractorClearSearchPayload.reply.includes('Current text search:'));
+    assert.ok(contractorClearSearchPayload.reply.includes('Kitchen plumbing and leak repair'));
+
     const contractorAllTradesResponse = await fetch(`${baseUrl}/whatsapp/contractor/messages`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -127,6 +252,61 @@ async function run() {
     const contractorAllTradesPayload = await contractorAllTradesResponse.json();
     assert.strictEqual(contractorAllTradesResponse.status, 200);
     assert.ok(contractorAllTradesPayload.reply.includes('Build garden wall'));
+    assert.ok(contractorAllTradesPayload.reply.includes('Reply MORE for the next leads'));
+
+    const contractorResetStartResponse = await fetch(`${baseUrl}/whatsapp/contractor/messages`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: '+27716660007', message: 'Hi' })
+    });
+    const contractorResetStartPayload = await contractorResetStartResponse.json();
+    assert.strictEqual(contractorResetStartResponse.status, 200);
+    assert.ok(contractorResetStartPayload.reply.includes('Reset contractor password'));
+
+    const contractorResetChoiceResponse = await fetch(`${baseUrl}/whatsapp/contractor/messages`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: '+27716660007', message: '3' })
+    });
+    const contractorResetChoicePayload = await contractorResetChoiceResponse.json();
+    assert.strictEqual(contractorResetChoiceResponse.status, 200);
+    assert.ok(contractorResetChoicePayload.reply.includes('Enter the email address on your contractor account'));
+
+    const contractorResetRequestResponse = await fetch(`${baseUrl}/whatsapp/contractor/messages`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: '+27716660007', message: 'contractor@example.com' })
+    });
+    const contractorResetRequestPayload = await contractorResetRequestResponse.json();
+    assert.strictEqual(contractorResetRequestResponse.status, 200);
+    assert.ok(contractorResetRequestPayload.reply.includes('Password reset requested for contractor@example.com'));
+    const contractorResetTokenMatch = contractorResetRequestPayload.reply.match(/Token: (reset-[^\n]+)/);
+    assert.ok(contractorResetTokenMatch);
+
+    const contractorResetTokenResponse = await fetch(`${baseUrl}/whatsapp/contractor/messages`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: '+27716660007', message: contractorResetTokenMatch[1] })
+    });
+    const contractorResetTokenPayload = await contractorResetTokenResponse.json();
+    assert.strictEqual(contractorResetTokenResponse.status, 200);
+    assert.ok(contractorResetTokenPayload.reply.includes('Enter your new password'));
+
+    const contractorResetPasswordResponse = await fetch(`${baseUrl}/whatsapp/contractor/messages`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: '+27716660007', message: 'new-password-123' })
+    });
+    const contractorResetPasswordPayload = await contractorResetPasswordResponse.json();
+    assert.strictEqual(contractorResetPasswordResponse.status, 200);
+    assert.ok(contractorResetPasswordPayload.reply.includes('Password reset complete'));
+
+    const contractorResetLoginResponse = await fetch(`${baseUrl}/auth/login`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-association-id': 'assoc-contractor-demo' },
+      body: JSON.stringify({ identifier: 'contractor@example.com', password: 'new-password-123' })
+    });
+    assert.strictEqual(contractorResetLoginResponse.status, 200);
 
     const customerResponse = await fetch(`${baseUrl}/whatsapp/customer/messages`, {
       method: 'POST',

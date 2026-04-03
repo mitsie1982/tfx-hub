@@ -33,10 +33,14 @@
       "Start from Hi, Menu, Start, or any inbound message from a registered number",
       "Link an existing contractor account by email",
       "Register a new contractor account directly in chat",
+      "Request a password reset and confirm it with a reset token in chat",
       "Open the main contractor menu",
       "View the contractor profile summary",
+      "Open account help from the linked contractor menu",
       "View matched leads",
+      "Page through more matched leads in chat",
       "Filter matched leads by trade in chat",
+      "Search matched leads by text in chat",
       "Open a lead from the lead list",
       "Express interest in a lead",
       "Complete a guided quote flow",
@@ -45,9 +49,10 @@
       "Request help and return to menu navigation"
     ],
     "canView": [
-      "Main menu with open-lead and active-quote counts",
+      "Main menu with a contractor snapshot for open leads, active quotes, completed jobs, and response time",
+      "Account-help prompts with linked sign-in identifiers and password-reset actions",
       "Profile details including name, trade, tier, rating, completed jobs, active quotes, and response time",
-      "Lead list with top matched leads, location, budget, urgency, match score, and the active trade filter when one is set",
+      "Lead list with top matched leads, location, budget, urgency, match score, the active trade filter or text search when one is set, and the current lead page window",
       "Lead detail with title, location, budget, urgency, scope, and homeowner requirements",
       "Interest confirmation and next-step options",
       "Quote flow prompts for amount, timeline, note, and confirmation summary",
@@ -110,8 +115,8 @@
       "implementation": "Implemented",
       "surface": "Browser and WhatsApp",
       "appOrService": "apps/contractor-app browser host and API WhatsApp contractor flow",
-      "whatTheyCanDo": "Sign in with email, username, or RSA mobile number plus password, register, browse leads, view lead detail, express interest, submit quotes, send homeowner messages, review activity, inspect the browser dashboard and lead history, enter a contractor mobile number from the browser or mobile shell to subscribe it to TFX Hub WhatsApp, and use in-chat onboarding or account linking on WhatsApp.",
-      "whatTheyCanView": "Profile stats, browser dashboard metrics, lead lists, lead details, homeowner requirements, quote and message flows, activity history, browser and mobile sign-in fields that accept email, username, or RSA mobile number, subscription guidance for WhatsApp, and menu-driven WhatsApp actions."
+      "whatTheyCanDo": "Sign in with email, username, or RSA mobile number plus password, register, request and confirm a password reset token, open linked account help in WhatsApp, browse leads, page through lead results, search and filter leads in browser and WhatsApp, view lead detail, express interest, submit quotes, send homeowner messages, review activity, inspect the browser dashboard and lead history, enter a contractor mobile number from the browser or mobile shell to subscribe it to TFX Hub WhatsApp, and use in-chat onboarding, password reset, or account linking on WhatsApp.",
+      "whatTheyCanView": "Profile stats, browser dashboard metrics, lead lists, lead details, homeowner requirements, quote and message flows, activity history, browser and mobile sign-in fields that accept email, username, or RSA mobile number, subscription guidance for WhatsApp, password-reset prompts, linked account-help prompts, and menu-driven WhatsApp actions including active lead search, trade filters, lead-page progress, and the contractor stats snapshot."
     },
     {
       "role": "Client",
@@ -168,8 +173,8 @@
     {
       "capability": "Password reset request and confirm",
       "browser": "Yes",
-      "whatsapp": "No",
-      "status": "Implemented only on Browser"
+      "whatsapp": "Yes",
+      "status": "Implemented"
     },
     {
       "capability": "Restore session automatically",
@@ -198,8 +203,8 @@
     {
       "capability": "View dashboard summary cards",
       "browser": "Yes",
-      "whatsapp": "Partial",
-      "status": "Implemented, richer on Browser"
+      "whatsapp": "Yes",
+      "status": "Implemented"
     },
     {
       "capability": "Browse matched leads",
@@ -208,10 +213,16 @@
       "status": "Implemented"
     },
     {
+      "capability": "Browse more than the first lead page",
+      "browser": "Yes",
+      "whatsapp": "Yes",
+      "status": "Implemented"
+    },
+    {
       "capability": "Search leads by text",
       "browser": "Yes",
-      "whatsapp": "No",
-      "status": "Implemented only on Browser"
+      "whatsapp": "Yes",
+      "status": "Implemented"
     },
     {
       "capability": "Filter leads by trade",
