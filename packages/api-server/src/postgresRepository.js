@@ -4,11 +4,15 @@ const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
 const { getAdminBootstrapConfig, normalizeUsername } = require('./adminAccess');
 
+function getDefaultPostgresPort() {
+  return process.platform === 'win32' ? 5433 : 5432;
+}
+
 function createPostgresRepository(options = {}) {
   const connectionString = options.connectionString || process.env.DATABASE_URL;
   const pool = new Pool(connectionString ? { connectionString } : {
     host: options.host || process.env.DB_HOST || '127.0.0.1',
-    port: Number(options.port || process.env.DB_PORT || 5432),
+    port: Number(options.port || process.env.DB_PORT || getDefaultPostgresPort()),
     user: options.user || process.env.DB_USER || 'postgres',
     password: options.password || process.env.DB_PASSWORD || 'postgres',
     database: options.database || process.env.DB_NAME || 'tfx_hub'

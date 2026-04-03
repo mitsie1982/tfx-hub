@@ -43,6 +43,11 @@ The sender now renders:
 - Optional SMTP delivery: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`
 - `PORT` defaults to `3000`
 
+Local default note:
+
+- On Windows, the repo-local PostgreSQL workflow uses `127.0.0.1:5433` so it does not conflict with a system PostgreSQL service on `5432`.
+- On non-Windows environments, the default fallback port remains `5432` unless `DB_PORT` is set.
+
 ## Start
 
 ```bash
@@ -62,6 +67,8 @@ With `DATABASE_URL` or `DB_HOST`/`DB_USER`/`DB_NAME` configured:
 ```bash
 pnpm run smoke:api:postgres
 ```
+
+On Windows, when those database variables are not set, the smoke script now falls back to the repo-local PostgreSQL cluster under `artifacts/pg-local18`, starts it on `127.0.0.1:5433` when needed, and uses the local bootstrap admin defaults for the seeded smoke flow.
 
 For local SMTP delivery verification without external credentials, start Mailpit and run:
 
