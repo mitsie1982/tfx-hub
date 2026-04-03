@@ -10,9 +10,11 @@ Staging:      https://staging-api.tfxhub.com
 Production:   https://api.tfxhub.com
 ```
 
+The workspace implementation now includes a real Express API server package at `packages/api-server` that exposes the documented auth and contractor flows.
+
 ## Authentication
 
-All API endpoints (except `/auth/login` and `/auth/register`) require a JWT token:
+All API endpoints (except `/auth/login`, `/auth/register`, `/auth/password-reset/request`, and `/auth/password-reset/confirm`) require a JWT token:
 
 ```bash
 curl -H "Authorization: Bearer YOUR_JWT_TOKEN" https://api.tfxhub.com/user
@@ -104,6 +106,49 @@ Authenticate user and receive JWT token.
 }
 ```
 
+#### POST /auth/password-reset/request
+Create a password reset token for an account email.
+
+**Request:**
+```json
+{
+  "email": "contractor@example.com"
+}
+```
+
+**Response:**
+```json
+{
+  "ok": true,
+  "expiresAt": "2026-04-02T15:30:00.000Z",
+  "delivery": {
+    "channel": "email"
+  }
+}
+```
+
+When SMTP is not configured, local development falls back to a logger-based delivery mode and includes `resetToken` in the response for testing.
+
+For a local end-to-end SMTP check without third-party credentials, run Mailpit on `1025/8025` and execute `pnpm run smoke:api:smtp:local`. In that mode the API should report `delivery.channel: "email"`, omit `resetToken` from the response, and deliver the message into Mailpit. On Windows, `pnpm run smoke:api:smtp:local:auto` wraps the whole flow by starting Mailpit, waiting for readiness, running the smoke script, and cleaning up automatically.
+
+#### POST /auth/password-reset/confirm
+Confirm a password reset with the issued token.
+
+**Request:**
+```json
+{
+  "token": "reset-123",
+  "password": "newSecurePassword123"
+}
+```
+
+**Response:**
+```json
+{
+  "ok": true
+}
+```
+
 **Response:**
 ```json
 {
@@ -137,6 +182,142 @@ Authorization: Bearer {token}
   "createdAt": "2026-01-15T10:30:00Z"
 }
 ```
+
+### Contractor
+
+#### GET /contractor/profile
+Get the current contractor profile resolved from the authenticated session.
+
+**Response:**
+```json
+{
+  "item": {
+    "professionalId": "pro-003",
+    "name": "Naledi Khumalo",
+    "trade": "general contractor",
+    "tier": "TRUSTED",
+    "rating": 4.7,
+    "completedJobs": 67,
+    "activeQuotes": 5,
+    "responseTime": "12 min"
+  }
+}
+```
+
+#### GET /contractor/history
+List persisted contractor lead activity.
+
+**Response:**
+```json
+{
+  "items": [
+    {
+      "id": "quote-123",
+      "jobId": "job-001",
+      "type": "quote",
+      "summary": "Quote R12,500 · 3 days",
+      "status": "sent",
+      "createdAt": "2026-04-02T10:00:00Z",
+      "source": "live"
+    }
+  ]
+}
+```
+
+#### POST /contractor/quotes
+Persist a contractor quote event for a job.
+
+**Request:**
+```json
+{
+  "jobId": "job-001",
+  "amount": "R12,500",
+  "timeline": "3 days",
+  "note": "Includes material and labour"
+}
+```
+
+#### POST /contractor/messages
+Persist a contractor-to-homeowner message for a job.
+
+**Request:**
+```json
+{
+  "jobId": "job-001",
+  "body": "I can inspect this tomorrow morning."
+}
+```
+
+### Contractor WhatsApp
+
+#### POST /whatsapp/contractor/messages
+Send an inbound WhatsApp-style contractor message into the backend chat flow. This route is unauthenticated and uses `phoneNumber` as the contractor identity handle for the chat session.
+
+**Request:**
+```json
+{
+  "phoneNumber": "+27710000001",
+  "message": "Hi"
+}
+```
+
+**Response:**
+```json
+{
+  "reply": "Welcome back, Naledi.\n\nYou have 2 open leads and 5 active quotes.",
+  "options": ["1", "2", "3", "4", "5", "6"],
+  "session": {
+    "phoneNumber": "+27710000001",
+    "linked": true,
+    "screen": "menu",
+    "userId": "user-contractor-001",
+    "activeJobId": null,
+    "lastLeadIds": []
+  }
+}
+```
+
+Implemented WhatsApp contractor flows now include:
+- phone-linked contractor recognition
+- linking an existing contractor account by email
+- registering a new contractor account in chat
+- profile summary
+- lead inbox and lead detail
+- express interest
+- guided quote submission
+- guided homeowner messaging
+- recent activity history
+
+#### GET /whatsapp/contractor/session/:phoneNumber
+Get the current contractor WhatsApp chat session summary for a phone number.
+
+**Response:**
+```json
+{
+  "item": {
+    "phoneNumber": "+27710000001",
+    "linked": true,
+    "screen": "menu",
+    "userId": "user-contractor-001",
+    "activeJobId": null,
+    "lastLeadIds": []
+  }
+}
+```
+
+#### GET /webhooks/meta/whatsapp
+Meta webhook verification endpoint. Returns the `hub.challenge` value when `hub.verify_token` matches `WHATSAPP_WEBHOOK_TOKEN`.
+
+#### POST /webhooks/meta/whatsapp
+Meta inbound WhatsApp webhook endpoint. Parses incoming WhatsApp messages, routes them through the contractor chat engine, and sends the generated reply through the Meta send API when outbound credentials are configured.
+
+If outbound credentials are not configured, replies are logged locally instead of sent.
+
+Reply rendering rules:
+
+- 1 to 3 options are rendered as interactive reply buttons
+- 4 to 10 options are rendered as an interactive list
+- no options are rendered as plain text
 
 #### PUT /user
 Update current user profile.

@@ -17,6 +17,18 @@ pnpm --filter @tfx/shared-auth test:integration
 curl http://localhost:3000/health  # or configured port
 ```
 
+## Required Admin Environment
+
+Set the admin bootstrap variables before verifying admin login flows:
+
+```bash
+export TFX_ADMIN_USERNAME="local-admin-secret"
+export TFX_ADMIN_EMAIL="admin@example.com"
+export TFX_ADMIN_PASSWORD="change-this-admin-password"
+```
+
+The admin username comes from `TFX_ADMIN_USERNAME`. The admin password comes from `TFX_ADMIN_PASSWORD`. The API server now fails fast on startup when any required admin bootstrap variable is missing.
+
 ## Stack
 
 - **Runtime** — Node.js 18+
@@ -30,7 +42,7 @@ curl http://localhost:3000/health  # or configured port
 
 ## File Structure
 
-```
+```text
 packages/shared-auth/
 ├── src/
 │   ├── index.js            # Main auth middleware
@@ -48,6 +60,7 @@ packages/shared-auth/
 ## Common Tasks
 
 ### Run Tests
+
 ```bash
 # Unit tests
 pnpm --filter @tfx/shared-auth test
@@ -63,6 +76,7 @@ pnpm --filter @tfx/shared-auth test -- --coverage
 ```
 
 ### Start Development Server
+
 ```bash
 # Watch mode with auto-reload
 pnpm --filter @tfx/shared-auth run dev
@@ -159,6 +173,7 @@ const reqLogger = logger.startRequest();
 ## Performance & Security
 
 ### Query Optimization
+
 ```javascript
 // Bad: N+1 queries
 const users = db.query('SELECT * FROM users');
@@ -174,6 +189,7 @@ const users = db.query(`
 ```
 
 ### Security Best Practices
+
 - ✅ Use parameterized queries (prevent SQL injection)
 - ✅ Validate/sanitize input
 - ✅ Enforce HTTPS in production
@@ -184,6 +200,7 @@ const users = db.query(`
 - ❌ Never trust client data
 
 ### Rate Limiting
+
 ```javascript
 const rateLimit = require('express-rate-limit');
 
@@ -198,13 +215,16 @@ app.use('/api/', limiter);
 ## Deployment
 
 ### Local
+
 ```bash
 # Start with env config
 NODE_ENV=development npm start
 ```
 
 ### Staging/Production
+
 See [Release Process](../guides/release_process.md) for:
+
 - Docker containerization
 - Environment configuration
 - Database migrations
@@ -233,6 +253,7 @@ pnpm run docs:generate
 ## Troubleshooting
 
 ### Port already in use
+
 ```bash
 # Find process using port
 lsof -i :3000
@@ -242,6 +263,7 @@ kill -9 <PID>
 ```
 
 ### Database connection timeout
+
 ```bash
 # Check connection string
 echo $DATABASE_URL
@@ -254,6 +276,7 @@ NODE_ENV=development DEBUG=tfx:* npm start
 ```
 
 ### Tests fail intermittently
+
 ```bash
 # Increase timeout
 jest --testTimeout=10000

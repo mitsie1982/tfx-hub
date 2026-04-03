@@ -26,6 +26,18 @@ pnpm run security:install-hooks
 pnpm test
 ```
 
+## Required Admin Environment
+
+Before admin browser or mobile access will work, define these entries in your local environment or `.env` file:
+
+```text
+TFX_ADMIN_USERNAME=local-admin-secret
+TFX_ADMIN_EMAIL=admin@example.com
+TFX_ADMIN_PASSWORD=change-this-admin-password
+```
+
+These values drive the seeded admin login used by the API, browser host, and mobile admin workspace.
+
 If all tests pass, you're ready to develop! 🎉
 
 ## Your Role
@@ -40,6 +52,7 @@ Choose your path:
 ## Common Tasks
 
 ### Run Tests
+
 ```bash
 # All tests
 pnpm test
@@ -52,6 +65,7 @@ pnpm --filter @tfx/shared-auth test --watch
 ```
 
 ### Start Development
+
 ```bash
 # Mobile dev (React Native)
 cd apps/contractor-app
@@ -62,6 +76,7 @@ npm run dev
 ```
 
 ### Make Commits
+
 ```bash
 # Changes are scanned for secrets and linted automatically
 git add .
@@ -71,6 +86,7 @@ git commit -m "feat: add new feature"
 ```
 
 ### Open Pull Request
+
 ```bash
 git push origin feat/my-feature
 # → Open PR on GitHub
@@ -82,7 +98,7 @@ git push origin feat/my-feature
 
 ## Project Structure
 
-```
+```text
 tfx-hub/
 ├── apps/                    # End-user applications
 │   ├── contractor-app/      # Mobile app (React Native)
@@ -115,6 +131,7 @@ See [Glossary](./glossary.md) for detailed definitions.
 ## Troubleshooting
 
 ### Node version mismatch
+
 ```bash
 # Check Node version
 node --version
@@ -125,6 +142,7 @@ nvm use 18
 ```
 
 ### pnpm install fails
+
 ```bash
 # Clear cache
 pnpm store prune
@@ -135,6 +153,7 @@ pnpm install
 ```
 
 ### Pre-commit hook blocks commit
+
 ```bash
 # Check what's blocked
 pnpm run security:scan
@@ -145,6 +164,7 @@ git commit -m "feat: your message"
 ```
 
 ### Tests fail locally but pass in CI
+
 ```bash
 # Clear node_modules and reinstall
 pnpm install
