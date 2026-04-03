@@ -12,6 +12,7 @@ async function createMemoryRepository(options = {}) {
   const events = [...(options.events || [])];
   const adminActions = [...(options.adminActions || [])];
   const adminAuditEvents = [...(options.adminAuditEvents || [])];
+  const customerShortlist = new Map(Object.entries(options.customerShortlist || {}));
   const onboarding = { ...(options.onboarding || {}) };
   const resetTokens = { ...(options.resetTokens || {}) };
   const whatsappSessions = { ...(options.whatsappSessions || {}) };
@@ -308,6 +309,24 @@ async function createMemoryRepository(options = {}) {
 
     async getProfessionalById(professionalId) {
       return users.map(toProfessional).find((professional) => professional && professional.id === professionalId) || null;
+    },
+
+    async listCustomerShortlist(customerUserId) {
+      return [...(customerShortlist.get(customerUserId) || [])];
+    },
+
+    async addCustomerShortlistItem(customerUserId, professionalId) {
+      const items = new Set(customerShortlist.get(customerUserId) || []);
+      items.add(professionalId);
+      customerShortlist.set(customerUserId, items);
+      return true;
+    },
+
+    async removeCustomerShortlistItem(customerUserId, professionalId) {
+      const items = new Set(customerShortlist.get(customerUserId) || []);
+      const existed = items.delete(professionalId);
+      customerShortlist.set(customerUserId, items);
+      return existed;
     },
 
     async listJobs(filters = {}) {

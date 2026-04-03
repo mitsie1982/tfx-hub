@@ -101,9 +101,17 @@ CREATE TABLE IF NOT EXISTS whatsapp_contractor_sessions (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS customer_professional_shortlist (
+  customer_user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  professional_id TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  PRIMARY KEY (customer_user_id, professional_id)
+);
+
 CREATE INDEX IF NOT EXISTS idx_jobs_status_trade ON jobs(status, trade);
 CREATE INDEX IF NOT EXISTS idx_contractor_events_professional ON contractor_events(professional_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_admin_actions_professional ON admin_actions(professional_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_admin_access_audit_created_at ON admin_access_audit(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_users_phone_number ON users(phone_number);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username_unique ON users(lower(username)) WHERE username IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_customer_professional_shortlist_customer ON customer_professional_shortlist(customer_user_id, created_at DESC);

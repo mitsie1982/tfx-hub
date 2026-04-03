@@ -31,6 +31,29 @@ function createProfessionalsApi(client, context = {}) {
       return response.data;
     },
 
+    async listShortlist() {
+      const response = await client.get('/user/shortlist', withContext());
+      return response.data;
+    },
+
+    async addToShortlist(professionalId) {
+      if (!professionalId) {
+        throw new Error('professionalId is required');
+      }
+
+      const response = await client.post(`/user/shortlist/${encodeURIComponent(professionalId)}`, {}, withContext());
+      return response.data;
+    },
+
+    async removeFromShortlist(professionalId) {
+      if (!professionalId) {
+        throw new Error('professionalId is required');
+      }
+
+      const response = await client.delete(`/user/shortlist/${encodeURIComponent(professionalId)}`, withContext());
+      return response.data;
+    },
+
     async listAdminActions(professionalId) {
       if (!professionalId) {
         throw new Error('professionalId is required');

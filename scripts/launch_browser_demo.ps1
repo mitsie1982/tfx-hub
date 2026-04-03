@@ -14,11 +14,25 @@ $targets = @{
     Name = 'Contractor Browser Demo'
     Url = 'http://localhost:3002'
     Port = 3002
+    LoginPath = '/actions/login'
+    LoginBody = {
+      return @{
+        identifier = if ($Env:TFX_DEMO_CONTRACTOR_IDENTIFIER) { $Env:TFX_DEMO_CONTRACTOR_IDENTIFIER } else { 'contractor@example.com' }
+        password = if ($Env:TFX_DEMO_CONTRACTOR_PASSWORD) { $Env:TFX_DEMO_CONTRACTOR_PASSWORD } else { 'password123' }
+      }
+    }
   }
   customer = @{
     Name = 'Customer Browser Demo'
     Url = 'http://localhost:3001'
     Port = 3001
+    LoginPath = '/actions/login'
+    LoginBody = {
+      return @{
+        email = if ($Env:TFX_DEMO_CUSTOMER_EMAIL) { $Env:TFX_DEMO_CUSTOMER_EMAIL } else { 'client@example.com' }
+        password = if ($Env:TFX_DEMO_CUSTOMER_PASSWORD) { $Env:TFX_DEMO_CUSTOMER_PASSWORD } else { 'password123' }
+      }
+    }
   }
 }
 
@@ -70,6 +84,29 @@ function Wait-ForDemoTarget {
   throw "$Name did not become ready within $TimeoutSeconds seconds."
 }
 
+function Get-ResponseUri {
+  param($Response)
+
+  if ($Response -and $Response.BaseResponse -and $Response.BaseResponse.ResponseUri) {
+    return [string]$Response.BaseResponse.ResponseUri
+  }
+
+  return $null
+}
+
+function Invoke-DemoLogin {
+  $loginUrl = "$($target.Url)$($target.LoginPath)"
+  $loginBody = & $target.LoginBody
+
+  Write-Host "Signing into live $($target.Name)..."
+  $response = Invoke-WebRequest -Uri $loginUrl -Method Post -Body $loginBody -ContentType 'application/x-www-form-urlencoded' -UseBasicParsing -TimeoutSec 10
+  $responseUri = Get-ResponseUri -Response $response
+
+  if ($responseUri -and $responseUri -match 'warning=') {
+    throw "$($target.Name) login completed with a warning. Check the browser host session and demo credentials."
+  }
+}
+
 function Ensure-DemoStack {
   $apiReady = Test-PortReady -Port $apiTarget.Port
   $appReady = (Test-PortReady -Port $target.Port) -and (Test-HttpReady -Url $target.Url)
@@ -99,6 +136,7 @@ function Ensure-DemoStack {
 
 Set-Location $repoRoot
 Ensure-DemoStack
+Invoke-DemoLogin
 
 Write-Host "Opening $($target.Name) at $($target.Url)"
 Start-Process $target.Url

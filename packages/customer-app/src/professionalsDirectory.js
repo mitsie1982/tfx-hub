@@ -17,6 +17,21 @@ function createProfessionalsDirectory(professionalsApi) {
     async getProfile(professionalId) {
       const result = await professionalsApi.getProfessional(professionalId);
       return result.item || null;
+    },
+
+    async listShortlist() {
+      const result = await professionalsApi.listShortlist();
+      return result.items || [];
+    },
+
+    async addToShortlist(professionalId) {
+      const result = await professionalsApi.addToShortlist(professionalId);
+      return Boolean(result.shortlisted);
+    },
+
+    async removeFromShortlist(professionalId) {
+      const result = await professionalsApi.removeFromShortlist(professionalId);
+      return Boolean(result.shortlisted);
     }
   };
 }

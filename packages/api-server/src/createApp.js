@@ -912,6 +912,45 @@ function createApp({ repository, logger, metaWebhookOptions, adminAccessPolicy, 
     return res.json({ item: summarizeWhatsappSubscription(user), meta: { associationId: req.association.id, requester: req.auth.sub } });
   });
 
+  app.get('/user/shortlist', ...requireTenantAccess(), async (req, res) => {
+    const items = typeof repository.listCustomerShortlist === 'function'
+      ? await repository.listCustomerShortlist(req.auth.userId || req.auth.sub)
+      : [];
+    return res.json({ items, meta: { associationId: req.association.id, requester: req.auth.sub } });
+  });
+
+  app.post('/user/shortlist/:professionalId', ...requireTenantAccess(), async (req, res) => {
+    const professional = await repository.getProfessionalById(req.params.professionalId);
+    if (!professional) {
+      return res.status(404).json({ error: 'professional_not_found' });
+    }
+
+    if (typeof repository.addCustomerShortlistItem === 'function') {
+      await repository.addCustomerShortlistItem(req.auth.userId || req.auth.sub, professional.id);
+    }
+
+    const items = typeof repository.listCustomerShortlist === 'function'
+      ? await repository.listCustomerShortlist(req.auth.userId || req.auth.sub)
+      : [professional.id];
+    return res.status(201).json({ shortlisted: true, items, meta: { associationId: req.association.id, requester: req.auth.sub } });
+  });
+
+  app.delete('/user/shortlist/:professionalId', ...requireTenantAccess(), async (req, res) => {
+    const professional = await repository.getProfessionalById(req.params.professionalId);
+    if (!professional) {
+      return res.status(404).json({ error: 'professional_not_found' });
+    }
+
+    if (typeof repository.removeCustomerShortlistItem === 'function') {
+      await repository.removeCustomerShortlistItem(req.auth.userId || req.auth.sub, professional.id);
+    }
+
+    const items = typeof repository.listCustomerShortlist === 'function'
+      ? await repository.listCustomerShortlist(req.auth.userId || req.auth.sub)
+      : [];
+    return res.json({ shortlisted: false, items, meta: { associationId: req.association.id, requester: req.auth.sub } });
+  });
+
   app.get(['/jobs', '/orders'], ...requireTenantAccess(), async (req, res) => {
     const items = await repository.listJobs({
       status: req.query.status || undefined,

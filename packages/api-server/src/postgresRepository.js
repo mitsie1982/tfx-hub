@@ -33,11 +33,6 @@ function createPostgresRepository(options = {}) {
 
   async function seedDemoData() {
     const adminBootstrap = getAdminBootstrapConfig();
-    const existingUsers = await pool.query('SELECT COUNT(*)::int AS count FROM users');
-    if (existingUsers.rows[0].count > 0) {
-      return;
-    }
-
     const passwordHash = await bcrypt.hash('password123', 10);
     const plumberPasswordHash = await bcrypt.hash('password123', 10);
     const clientPasswordHash = await bcrypt.hash('password123', 10);
@@ -50,7 +45,8 @@ function createPostgresRepository(options = {}) {
       ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16),
       ($17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32),
       ($33,$34,$35,$36,$37,$38,$39,$40,$41,$42,$43,$44,$45,$46,$47,$48),
-      ($49,$50,$51,$52,$53,$54,$55,$56,$57,$58,$59,$60,$61,$62,$63,$64)`,
+      ($49,$50,$51,$52,$53,$54,$55,$56,$57,$58,$59,$60,$61,$62,$63,$64)
+      ON CONFLICT (id) DO NOTHING`,
       [
         'user-contractor-001',
         'assoc-contractor-demo',
@@ -140,7 +136,8 @@ function createPostgresRepository(options = {}) {
         id, association_id, email, username, password_hash, first_name, last_name, role,
         professional_id, trade, tier, rating, completed_jobs, active_quotes, response_time, phone_number
       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16),
-               ($17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32)`,
+           ($17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32)
+      ON CONFLICT (id) DO NOTHING`,
       [
         'association-001',
         'assoc-members-demo',
@@ -346,6 +343,36 @@ function createPostgresRepository(options = {}) {
     async getProfessionalById(professionalId) {
       const result = await pool.query('SELECT * FROM users WHERE professional_id = $1 OR id = $1 LIMIT 1', [professionalId]);
       return mapProfessional(result.rows[0]);
+    },
+
+    async listCustomerShortlist(customerUserId) {
+      const result = await pool.query(
+        `SELECT professional_id AS "professionalId"
+         FROM customer_professional_shortlist
+         WHERE customer_user_id = $1
+         ORDER BY created_at DESC`,
+        [customerUserId]
+      );
+      return result.rows.map((row) => row.professionalId);
+    },
+
+    async addCustomerShortlistItem(customerUserId, professionalId) {
+      await pool.query(
+        `INSERT INTO customer_professional_shortlist (customer_user_id, professional_id)
+         VALUES ($1, $2)
+         ON CONFLICT (customer_user_id, professional_id) DO NOTHING`,
+        [customerUserId, professionalId]
+      );
+      return true;
+    },
+
+    async removeCustomerShortlistItem(customerUserId, professionalId) {
+      const result = await pool.query(
+        `DELETE FROM customer_professional_shortlist
+         WHERE customer_user_id = $1 AND professional_id = $2`,
+        [customerUserId, professionalId]
+      );
+      return result.rowCount > 0;
     },
 
     async listJobs(filters = {}) {

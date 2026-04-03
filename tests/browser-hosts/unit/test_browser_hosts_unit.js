@@ -53,10 +53,14 @@ async function run() {
 
     assert.ok(contractorHtml.includes('Contractor Browser'));
     assert.ok(contractorHtml.includes('Matched Leads'));
+    assert.ok(contractorHtml.includes('Sample Session Only'));
+    assert.ok(contractorHtml.includes('TFSSA Live Demo Scope'));
     assert.ok(!contractorHtml.includes('Placeholder contractor-app'));
 
     assert.ok(customerHtml.includes('Customer Browser'));
     assert.ok(customerHtml.includes('Professional Directory'));
+    assert.ok(customerHtml.includes('Sample Session Only'));
+    assert.ok(customerHtml.includes('TFSSA Live Demo Scope'));
     assert.ok(!customerHtml.includes('Placeholder customer-app'));
 
     assert.ok(adminHtml.includes('Admin Browser Workspace'));
@@ -110,6 +114,18 @@ async function run() {
 
     const customerShortlistHtml = await postForm(customer, '/actions/shortlist', { professionalId: 'pro-001' });
     assert.ok(customerShortlistHtml.includes('Professional added to shortlist') || customerShortlistHtml.includes('Professional removed from shortlist'));
+
+    const contractorLoginHtml = await postForm(contractor, '/actions/login', {
+      identifier: 'contractor@example.com',
+      password: 'password123'
+    });
+    assert.ok(contractorLoginHtml.includes('Live Session Active') || contractorLoginHtml.includes('Contractor sign-in completed'));
+
+    const customerLoginHtml = await postForm(customer, '/actions/login', {
+      email: 'client@example.com',
+      password: 'password123'
+    });
+    assert.ok(customerLoginHtml.includes('Live Session Active') || customerLoginHtml.includes('Customer sign-in completed'));
 
     const customerRequestHtml = await postForm(customer, '/actions/request-job', {
       title: 'WhatsApp-inspired plumbing request',

@@ -118,6 +118,38 @@ function renderPendingAction(model) {
 	return '';
 }
 
+function renderDemoOperatorSection() {
+	return renderSection('TFSSA Live Demo Scope', `
+		<div class="form-grid">
+			<div class="form-card">
+				<h3>Live System Fields</h3>
+				<p class="muted">These sections load from the live API whenever the demo session is authenticated.</p>
+				${renderPills([
+					'Dashboard Snapshot',
+					'Contractor Profile',
+					'Matched Leads',
+					'Selected Lead Detail',
+					'Lead History'
+				])}
+			</div>
+			<div class="form-card">
+				<h3>Presenter Editable During Demo</h3>
+				<p class="muted">These controls actively change the browser-host session while TFSSA is watching the live flow.</p>
+				${renderPills([
+					'Contractor sign-in identifier',
+					'Contractor password',
+					'WhatsApp subscription number',
+					'Express interest action',
+					'Quote amount',
+					'Quote timeline',
+					'Quote note',
+					'Homeowner message body'
+				])}
+			</div>
+		</div>
+	`, 'Use the Desktop shortcut to open this page in authenticated live-demo mode.');
+}
+
 function renderModel(model) {
 	const profile = model.profile;
 	const selectedProject = model.selectedProject;
@@ -127,6 +159,9 @@ function renderModel(model) {
 		eyebrow: 'Contractor Browser',
 		subtitle: 'Live HTML browser host for the contractor dashboard, matched leads, project detail, and lead activity.',
 		status: model.profileSource === 'live' ? 'Live contractor data connected' : 'Sample contractor data mode',
+		sessionBadge: model.profileSource === 'live'
+			? { label: 'Live Session Active', tone: 'live' }
+			: { label: 'Sample Session Only', tone: 'sample' },
 		notice: model.notice,
 		warning: model.projectsWarning,
 		nav: [
@@ -135,6 +170,7 @@ function renderModel(model) {
 			{ href: '/?section=history', label: 'Lead History' }
 		],
 		sections: [
+			renderDemoOperatorSection(),
 			renderSection('Dashboard Snapshot', renderStats([
 				{ label: 'Completed Jobs', value: profile.completedJobs },
 				{ label: 'Active Quotes', value: profile.activeQuotes },

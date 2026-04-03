@@ -107,6 +107,7 @@ Set-Location "C:\Users\1hans\tfx-hub\packages\api-server"
 $env:TFX_ADMIN_USERNAME='local-admin-secret'
 $env:TFX_ADMIN_EMAIL='admin@example.com'
 $env:TFX_ADMIN_PASSWORD='change-this-admin-password'
+$env:TFX_API_ENABLE_DEMO_SEED='true'
 $env:DB_HOST='127.0.0.1'
 $env:DB_PORT='5433'
 $env:DB_USER='postgres'
@@ -173,7 +174,13 @@ $body = @{ identifier = 'local-admin-secret'; password = 'change-this-admin-pass
 Invoke-RestMethod -Uri 'http://localhost:5005/auth/login' -Method POST -ContentType 'application/json' -Body $body
 ```
 
-The browser hosts default to a sample-mode page until a session is established. The smoke script verifies the live path by signing into AMS, Customer, and Contractor, and by checking the Members host against the live API.
+The browser hosts default to a sample-mode page until a session is established. The local live stack enables demo seeding so the standard browser-host sign-ins are always available on the repo-local PostgreSQL instance:
+
+- Contractor: `contractor@example.com` / `password123`
+- Customer: `client@example.com` / `password123`
+- Admin: `local-admin-secret` / `change-this-admin-password`
+
+The smoke script verifies the live path by signing into AMS, Customer, and Contractor, and by checking the Members host against the live API.
 
 ## Known Auth Constraint
 

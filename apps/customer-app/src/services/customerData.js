@@ -79,6 +79,11 @@ const SAMPLE_PROFESSIONAL_DETAILS = {
 
 const shortlistedProfessionalIds = new Set();
 
+async function hasActiveSession() {
+  await runtime.auth.tokenStore.hydrate();
+  return Boolean(runtime.auth.tokenStore.get());
+}
+
 function normalizeProfessionalDetail(professionalId, item) {
   const fallback = SAMPLE_PROFESSIONAL_DETAILS[professionalId] || {
     id: professionalId,
@@ -180,8 +185,7 @@ async function logoutCustomer() {
 }
 
 async function fetchCustomerOverview() {
-  await runtime.auth.tokenStore.hydrate();
-  if (!runtime.auth.tokenStore.get()) {
+  if (!(await hasActiveSession())) {
     return {
       user: SAMPLE_USER,
       jobs: SAMPLE_JOBS,
@@ -212,9 +216,7 @@ async function fetchCustomerOverview() {
 }
 
 async function createCustomerJobRequest(payload) {
-  await runtime.auth.tokenStore.hydrate();
-
-  if (!runtime.auth.tokenStore.get()) {
+  if (!(await hasActiveSession())) {
     return {
       item: {
         id: `job-${Date.now()}`,
@@ -250,8 +252,7 @@ async function fetchCustomerProfessionalDetail(professionalId) {
     throw new Error('professionalId is required');
   }
 
-  await runtime.auth.tokenStore.hydrate();
-  if (!runtime.auth.tokenStore.get()) {
+  if (!(await hasActiveSession())) {
     return {
       item: normalizeProfessionalDetail(professionalId, SAMPLE_PROFESSIONAL_DETAILS[professionalId] || null),
       source: 'sample',
@@ -272,9 +273,32 @@ async function fetchCustomerProfessionalDetail(professionalId) {
   }
 }
 
-function toggleCustomerProfessionalShortlist(professionalId) {
+async function toggleCustomerProfessionalShortlist(professionalId) {
   if (!professionalId) {
     throw new Error('professionalId is required');
+  }
+
+  if (await hasActiveSession()) {
+    try {
+      const app = createApp();
+      const existing = await app.professionals.listShortlist();
+      const shortlisted = existing.includes(professionalId)
+        ? await app.professionals.removeFromShortlist(professionalId)
+        : await app.professionals.addToShortlist(professionalId);
+      return {
+        shortlisted,
+        items: await app.professionals.listShortlist(),
+        source: 'live',
+        warning: null
+      };
+    } catch (error) {
+      return {
+        shortlisted: false,
+        items: Array.from(shortlistedProfessionalIds),
+        source: 'sample',
+        warning: 'Unable to update shortlist live. Showing local browser-host state.'
+      };
+    }
   }
 
   if (shortlistedProfessionalIds.has(professionalId)) {
@@ -283,10 +307,24 @@ function toggleCustomerProfessionalShortlist(professionalId) {
     shortlistedProfessionalIds.add(professionalId);
   }
 
-  return { shortlisted: shortlistedProfessionalIds.has(professionalId), items: Array.from(shortlistedProfessionalIds) };
+  return {
+    shortlisted: shortlistedProfessionalIds.has(professionalId),
+    items: Array.from(shortlistedProfessionalIds),
+    source: 'sample',
+    warning: null
+  };
 }
 
-function getCustomerProfessionalShortlist() {
+async function getCustomerProfessionalShortlist() {
+  if (await hasActiveSession()) {
+    try {
+      const app = createApp();
+      return await app.professionals.listShortlist();
+    } catch (error) {
+      return Array.from(shortlistedProfessionalIds);
+    }
+  }
+
   return Array.from(shortlistedProfessionalIds);
 }
 

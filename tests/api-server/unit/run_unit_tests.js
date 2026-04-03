@@ -4,6 +4,7 @@ async function main() {
   const tests = [
     'test_admin_bootstrap_unit.js',
     'test_admin_actions_unit.js',
+    'test_customer_shortlist_unit.js',
     'test_admin_management_unit.js',
     'test_admin_runtime_smoke_unit.js',
     'test_password_reset_notifier_unit.js',

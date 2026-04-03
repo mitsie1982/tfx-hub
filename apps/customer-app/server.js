@@ -24,6 +24,7 @@ async function loadModel(requestUrl) {
 	const professionalDetail = selectedProfessionalId
 		? await customerData.fetchCustomerProfessionalDetail(selectedProfessionalId)
 		: { item: null, warning: null };
+	const shortlistIds = await customerData.getCustomerProfessionalShortlist();
 	const contactRequest = professionalDetail.item
 		? customerData.buildCustomerContactRequest(professionalDetail.item)
 		: null;
@@ -31,6 +32,7 @@ async function loadModel(requestUrl) {
 	return {
 		notice,
 		overview,
+		shortlistIds,
 		professionalDetail: professionalDetail.item,
 		professionalWarning: warning || professionalDetail.warning,
 		contactRequest,
@@ -81,11 +83,47 @@ function renderPendingRequest(model) {
 		</div>`, 'Review the prepared request before submitting it to the customer workflow.');
 }
 
+function renderDemoOperatorSection() {
+	return renderSection('TFSSA Live Demo Scope', `
+		<div class="form-grid">
+			<div class="form-card">
+				<h3>Live System Fields</h3>
+				<p class="muted">These sections refresh from the live API when the customer demo session is authenticated.</p>
+				${renderPills([
+					'Customer Snapshot',
+					'Open Jobs',
+					'Professional Directory',
+					'Selected Professional',
+					'Prepared Contact Request'
+				])}
+			</div>
+			<div class="form-card">
+				<h3>Presenter Editable During Demo</h3>
+				<p class="muted">These are the fields the presenter can change live from this browser host.</p>
+				${renderPills([
+					'Customer sign-in email',
+					'Customer password',
+					'Shortlist toggle',
+					'Job request title',
+					'Job request trade',
+					'Job request location',
+					'Job request budget',
+					'Job request urgency',
+					'Job request description'
+				])}
+				<p class="muted">Shortlist changes now persist through the live API when authenticated. Job request submission also uses the live API.</p>
+			</div>
+		</div>
+	`, 'Use the Desktop shortcut to open this page in authenticated live-demo mode.');
+}
+
 function renderModel(model) {
 	const overview = model.overview;
 	const jobs = overview.jobs || [];
 	const professionals = overview.professionals || [];
 	const selectedProfessional = model.professionalDetail;
+	const shortlistedIds = new Set(model.shortlistIds || []);
+	const selectedProfessionalShortlisted = selectedProfessional ? shortlistedIds.has(selectedProfessional.id) : false;
 	const user = overview.user || { firstName: 'Customer', lastName: '', email: 'client@example.com' };
 
 	return renderShell({
@@ -93,6 +131,9 @@ function renderModel(model) {
 		eyebrow: 'Customer Browser',
 		subtitle: 'Live HTML browser host for job requests, professional discovery, and customer-to-professional contact preparation.',
 		status: overview.source === 'live' ? 'Live customer data connected' : 'Sample customer data mode',
+		sessionBadge: overview.source === 'live'
+			? { label: 'Live Session Active', tone: 'live' }
+			: { label: 'Sample Session Only', tone: 'sample' },
 		notice: model.notice,
 		warning: overview.warning || model.professionalWarning || null,
 		nav: [
@@ -101,6 +142,7 @@ function renderModel(model) {
 			{ href: '/?section=request', label: 'Request Flow' }
 		],
 		sections: [
+			renderDemoOperatorSection(),
 			renderSection('Customer Snapshot', renderStats([
 				{ label: 'Open Jobs', value: jobs.length },
 				{ label: 'Visible Professionals', value: professionals.length },
@@ -129,7 +171,7 @@ function renderModel(model) {
 			renderSection('Professional Directory', renderCards(professionals.map((professional) => ({
 				title: professional.name,
 				meta: `${professional.trade} · ${professional.tier} · ${professional.rating || 'N/A'} rating`,
-				footer: 'Browser detail view enabled',
+				footer: shortlistedIds.has(professional.id) ? 'Shortlisted in live customer session' : 'Browser detail view enabled',
 				actionHref: `/?professionalId=${encodeURIComponent(professional.id)}`,
 				actionLabel: 'Open profile'
 			}))), 'Select a professional to view credentials and prefill the contact flow.'),
@@ -148,9 +190,10 @@ function renderModel(model) {
 				`<div class="form-grid">
 					<div class="form-card">
 						<h3>Shortlist Professional</h3>
+						<p class="muted">Current state: ${selectedProfessionalShortlisted ? 'Shortlisted in live session' : 'Not shortlisted'}</p>
 						<form method="post" action="/actions/shortlist">
 							<input type="hidden" name="professionalId" value="${selectedProfessional.id}">
-							<button type="submit">Toggle Shortlist</button>
+							<button type="submit">${selectedProfessionalShortlisted ? 'Remove From Shortlist' : 'Add To Shortlist'}</button>
 						</form>
 					</div>
 				</div>`
@@ -192,8 +235,9 @@ async function handlePost(requestUrl, form) {
 		return '/?notice=' + encodeURIComponent('Customer session cleared.');
 	}
 	if (url.pathname === '/actions/shortlist') {
-		const result = customerData.toggleCustomerProfessionalShortlist(form.professionalId);
-		return '/?professionalId=' + encodeURIComponent(form.professionalId) + '&notice=' + encodeURIComponent(result.shortlisted ? 'Professional added to shortlist.' : 'Professional removed from shortlist.');
+		const result = await customerData.toggleCustomerProfessionalShortlist(form.professionalId);
+		const message = result.warning || (result.shortlisted ? 'Professional added to shortlist.' : 'Professional removed from shortlist.');
+		return '/?professionalId=' + encodeURIComponent(form.professionalId) + '&notice=' + encodeURIComponent(message);
 	}
 	if (url.pathname === '/actions/request-job') {
 		if (String(form.confirm || '').toLowerCase() !== 'yes') {
