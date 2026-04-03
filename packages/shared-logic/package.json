@@ -6,13 +6,21 @@
   "types": "src/index.d.ts",
   "exports": {
     ".": "./src/index.js",
+    "./admin": "./src/admin.js",
     "./apiClient": "./src/apiClient.js",
     "./auth": "./src/auth.js",
+    "./contractor": "./src/contractor.js",
     "./jobs": "./src/jobs.js",
     "./onboarding": "./src/onboarding.js",
     "./professionals": "./src/professionals.js",
     "./requestContext": "./src/requestContext.js",
-    "./sharedLogicClient": "./src/sharedLogicClient.js"
+    "./session": "./src/session.js",
+    "./sharedLogicClient": "./src/sharedLogicClient.js",
+    "./whatsappAssociation": "./src/whatsappAssociation.js",
+    "./whatsappAdmin": "./src/whatsappAdmin.js",
+    "./whatsappContractor": "./src/whatsappContractor.js",
+    "./whatsappCustomer": "./src/whatsappCustomer.js",
+    "./whatsappProfessional": "./src/whatsappProfessional.js"
   },
   "scripts": {
     "build": "echo 'build @tfx/shared-logic (no-op)'",

@@ -29,6 +29,48 @@ function createProfessionalsApi(client, context = {}) {
 
       const response = await client.get(`/professionals/${encodeURIComponent(professionalId)}`, withContext());
       return response.data;
+    },
+
+    async listAdminActions(professionalId) {
+      if (!professionalId) {
+        throw new Error('professionalId is required');
+      }
+
+      const response = await client.get(`/professionals/${encodeURIComponent(professionalId)}/admin-actions`, withContext());
+      return response.data;
+    },
+
+    async runAdminAction(professionalId, actionType, payload = {}) {
+      if (!professionalId) {
+        throw new Error('professionalId is required');
+      }
+      if (!actionType) {
+        throw new Error('actionType is required');
+      }
+
+      const response = await client.post(`/professionals/${encodeURIComponent(professionalId)}/admin-actions/${encodeURIComponent(actionType)}`, payload, withContext());
+      return response.data;
+    },
+
+    async listOperationalActions(professionalId) {
+      if (!professionalId) {
+        throw new Error('professionalId is required');
+      }
+
+      const response = await client.get(`/professionals/${encodeURIComponent(professionalId)}/operational-actions`, withContext());
+      return response.data;
+    },
+
+    async runOperationalAction(professionalId, actionType, payload = {}) {
+      if (!professionalId) {
+        throw new Error('professionalId is required');
+      }
+      if (!actionType) {
+        throw new Error('actionType is required');
+      }
+
+      const response = await client.post(`/professionals/${encodeURIComponent(professionalId)}/operational-actions/${encodeURIComponent(actionType)}`, payload, withContext());
+      return response.data;
     }
   };
 }
