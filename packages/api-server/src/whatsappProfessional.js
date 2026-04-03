@@ -2,6 +2,7 @@
 
 const bcrypt = require('bcryptjs');
 const { normalizePhoneNumber } = require('./whatsappContractor');
+const REQUEST_PAGE_SIZE = 5;
 
 function normalizeCommand(value) {
   return String(value || '').trim().toLowerCase();
@@ -22,8 +23,20 @@ function summarizeSession(session, user) {
     screen: session.screen,
     userId: session.userId || user?.id || null,
     activeProfessionalId: session.activeProfessionalId || null,
+    activeRequestPageOffset: Number.isFinite(session.requestPageOffset) ? session.requestPageOffset : 0,
     lastProfessionalIds: session.lastProfessionalIds || []
   };
+}
+
+function clampRequestPageOffset(total, offset) {
+  const normalizedOffset = Number.isFinite(offset) ? Math.max(0, offset) : 0;
+  if (total <= 0) {
+    return 0;
+  }
+  if (normalizedOffset >= total) {
+    return Math.max(0, Math.floor((total - 1) / REQUEST_PAGE_SIZE) * REQUEST_PAGE_SIZE);
+  }
+  return normalizedOffset;
 }
 
 function formatMenu(user, directoryCount) {
@@ -100,16 +113,24 @@ function formatHelp() {
   ].join('\n');
 }
 
-function formatRecentRequests(items) {
+function formatRecentRequests(items, requestWindow = {}) {
+  const pageOffset = Number.isFinite(requestWindow.pageOffset) ? requestWindow.pageOffset : 0;
+  const totalItems = Number.isFinite(requestWindow.totalItems) ? requestWindow.totalItems : items.length;
+  const hasMore = Boolean(requestWindow.hasMore);
   if (!items.length) {
     return 'No professional requests recorded yet. Reply M for menu.';
   }
   const rows = ['Recent professional requests', ''];
-  items.slice(0, 5).forEach((item, index) => {
+  rows.push(`Showing ${pageOffset + 1}-${pageOffset + items.length} of ${totalItems} requests`);
+  rows.push('');
+  items.forEach((item, index) => {
     rows.push(`${index + 1}. ${item.summary}`);
     rows.push(`${item.actionType} | ${item.createdAt || 'Recently'}`);
     rows.push('');
   });
+  if (hasMore) {
+    rows.push('Reply MORE for older requests.');
+  }
   rows.push('Reply M for menu.');
   return rows.join('\n');
 }
@@ -125,6 +146,7 @@ function createWhatsappProfessionalService({ repository, logger, createId }) {
       screen: 'unlinked_entry',
       userId: null,
       activeProfessionalId: null,
+      requestPageOffset: 0,
       lastProfessionalIds: [],
       registrationDraft: null
     };
@@ -155,11 +177,24 @@ function createWhatsappProfessionalService({ repository, logger, createId }) {
     return { reply: formatMenu(user, professionals.length), options: ['1', '2', '3', '4', '5', '6'], session: summarizeSession(session, user) };
   }
 
-  async function buildRecentRequests(session, user) {
+  async function buildRecentRequests(session, user, options = {}) {
     const items = await repository.listOperationalActions(user.professionalId || user.id);
+    const pageOffset = options.resetPage === false
+      ? clampRequestPageOffset(items.length, options.pageOffset ?? session.requestPageOffset)
+      : 0;
+    const pageItems = items.slice(pageOffset, pageOffset + REQUEST_PAGE_SIZE);
+    session.requestPageOffset = pageOffset;
     session.screen = 'recent_requests';
     await saveSession(session);
-    return { reply: formatRecentRequests(items), options: ['M'], session: summarizeSession(session, user) };
+    return {
+      reply: formatRecentRequests(pageItems, {
+        pageOffset,
+        totalItems: items.length,
+        hasMore: pageOffset + pageItems.length < items.length
+      }),
+      options: pageOffset + pageItems.length < items.length ? ['MORE', 'M'] : ['M'],
+      session: summarizeSession(session, user)
+    };
   }
 
   async function handleUnlinked(session, rawMessage) {
@@ -271,6 +306,12 @@ function createWhatsappProfessionalService({ repository, logger, createId }) {
       if (command === '2') {
         return buildMenu(session, user);
       }
+    }
+    if (session.screen === 'recent_requests' && (command === 'more' || command === 'next')) {
+      return buildRecentRequests(session, user, {
+        resetPage: false,
+        pageOffset: (session.requestPageOffset || 0) + REQUEST_PAGE_SIZE
+      });
     }
     if (command === '1') {
       session.screen = 'profile';

@@ -135,16 +135,16 @@
       "implementation": "Implemented",
       "surface": "Browser, mobile app, package workspace, and WhatsApp",
       "appOrService": "apps/members-app browser host and mobile shell, packages/members-app association workspace, and API WhatsApp association flow",
-      "whatTheyCanDo": "Open an association overview, inspect job-volume totals, review open-job and professional distribution by trade, navigate the professional directory from the browser host, members package workspace, and members mobile screens, queue member-review and trade-outreach actions from browser, mobile, and WhatsApp surfaces, inspect recent association actions, and register or link an association account from first-contact WhatsApp onboarding.",
-      "whatTheyCanView": "Association totals for open, in-progress, and completed jobs, professional counts, trade distribution, linked professional directory entries, dedicated members mobile overview and professional detail screens, a WhatsApp menu with overview, directory, trade-breakdown, and recent-action prompts, and recent queued association actions across browser, mobile, and WhatsApp surfaces."
+      "whatTheyCanDo": "Open an association overview, inspect job-volume totals, review open-job and professional distribution by trade, navigate the professional directory from the browser host, members package workspace, and members mobile screens, queue member-review and trade-outreach actions from browser, mobile, and WhatsApp surfaces, inspect and page through recent association actions, and register or link an association account from first-contact WhatsApp onboarding.",
+      "whatTheyCanView": "Association totals for open, in-progress, and completed jobs, professional counts, trade distribution, linked professional directory entries, dedicated members mobile overview and professional detail screens, a WhatsApp menu with overview, directory, trade-breakdown, and recent-action prompts, and paged recent queued association actions across browser, mobile, and WhatsApp surfaces."
     },
     {
       "role": "Professional",
       "implementation": "Implemented",
       "surface": "Browser, mobile app, package workspace, and WhatsApp",
       "appOrService": "apps/members-app browser host and mobile shell, packages/members-app professional workspace, and API WhatsApp professional flow",
-      "whatTheyCanDo": "Browse the professional directory, open a professional detail record, verify a standalone professional-facing surface separate from contractor, customer, and admin roles, and use browser, mobile, and WhatsApp surfaces to review a linked profile, browse professional directory entries, check in availability, request a tier review, inspect recent operational requests, and register or link a professional account from first-contact WhatsApp onboarding.",
-      "whatTheyCanView": "Professional directory cards, a dedicated professional detail panel with ID, trade, tier, and rating fields, members mobile directory and detail screens, a mobile request history surface, a WhatsApp menu with profile and directory navigation, and recent professional request history."
+      "whatTheyCanDo": "Browse the professional directory, open a professional detail record, verify a standalone professional-facing surface separate from contractor, customer, and admin roles, and use browser, mobile, and WhatsApp surfaces to review a linked profile, browse professional directory entries, check in availability, request a tier review, inspect and page through recent operational requests, and register or link a professional account from first-contact WhatsApp onboarding.",
+      "whatTheyCanView": "Professional directory cards, a dedicated professional detail panel with ID, trade, tier, and rating fields, members mobile directory and detail screens, a mobile request history surface, a WhatsApp menu with profile and directory navigation, and paged recent professional request history."
     },
     {
       "role": "Admin",

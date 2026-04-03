@@ -85,6 +85,86 @@ async function run() {
     summary: 'Quote R18,500 sent for boundary wall work',
     status: 'sent'
   });
+  await repository.createOperationalAction({
+    id: 'pro-action-001',
+    professionalId: 'pro-101',
+    actionType: 'availability-check-in',
+    summary: 'Availability check-in recorded',
+    note: 'Seeded professional availability.',
+    createdBy: 'professional-001'
+  });
+  await repository.createOperationalAction({
+    id: 'pro-action-002',
+    professionalId: 'pro-101',
+    actionType: 'tier-review-request',
+    summary: 'Tier review requested',
+    note: 'Seeded professional tier review.',
+    createdBy: 'professional-001'
+  });
+  await repository.createOperationalAction({
+    id: 'pro-action-003',
+    professionalId: 'pro-101',
+    actionType: 'availability-check-in',
+    summary: 'Availability check-in recorded',
+    note: 'Seeded professional availability 2.',
+    createdBy: 'professional-001'
+  });
+  await repository.createOperationalAction({
+    id: 'pro-action-004',
+    professionalId: 'pro-101',
+    actionType: 'tier-review-request',
+    summary: 'Tier review requested',
+    note: 'Seeded professional tier review 2.',
+    createdBy: 'professional-001'
+  });
+  await repository.createOperationalAction({
+    id: 'pro-action-005',
+    professionalId: 'pro-101',
+    actionType: 'availability-check-in',
+    summary: 'Availability check-in recorded',
+    note: 'Seeded professional availability 3.',
+    createdBy: 'professional-001'
+  });
+  await repository.createOperationalAction({
+    id: 'assoc-action-001',
+    professionalId: 'pro-001',
+    actionType: 'member-review',
+    summary: 'Member review queued',
+    note: 'Seeded association review.',
+    createdBy: 'association-001'
+  });
+  await repository.createOperationalAction({
+    id: 'assoc-action-002',
+    professionalId: 'pro-001',
+    actionType: 'trade-outreach',
+    summary: 'Trade outreach queued',
+    note: 'Seeded association outreach.',
+    createdBy: 'association-001'
+  });
+  await repository.createOperationalAction({
+    id: 'assoc-action-003',
+    professionalId: 'pro-001',
+    actionType: 'member-review',
+    summary: 'Member review queued',
+    note: 'Seeded association review 2.',
+    createdBy: 'association-001'
+  });
+  await repository.createOperationalAction({
+    id: 'assoc-action-004',
+    professionalId: 'pro-003',
+    actionType: 'trade-outreach',
+    summary: 'Trade outreach queued',
+    note: 'Seeded association outreach for visible contractor.',
+    createdBy: 'association-001'
+  });
+  await repository.createOperationalAction({
+    id: 'assoc-action-005',
+    professionalId: 'pro-003',
+    actionType: 'member-review',
+    summary: 'Member review queued',
+    note: 'Seeded association review for visible contractor.',
+    createdBy: 'association-001'
+  });
 
   const app = createApp({ repository, logger: { info() {}, warn() {}, error() {} }, getCurrentDate: BUSINESS_HOURS_DATE });
   const server = await new Promise((resolve) => {
@@ -524,6 +604,34 @@ async function run() {
     assert.strictEqual(associationActionResponse.status, 200);
     assert.ok(associationActionPayload.reply.includes('Member review queued'));
 
+    const associationMenuBeforeRecentResponse = await fetch(`${baseUrl}/whatsapp/association/messages`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: '+27710000005', message: '4' })
+    });
+    assert.strictEqual(associationMenuBeforeRecentResponse.status, 200);
+
+    const associationRecentActionsResponse = await fetch(`${baseUrl}/whatsapp/association/messages`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: '+27710000005', message: '4' })
+    });
+    const associationRecentActionsPayload = await associationRecentActionsResponse.json();
+    assert.strictEqual(associationRecentActionsResponse.status, 200);
+    assert.ok(associationRecentActionsPayload.reply.includes('Recent association actions'));
+    assert.ok(associationRecentActionsPayload.reply.includes('Showing 1-5 of'));
+    assert.ok(associationRecentActionsPayload.reply.includes('Reply MORE for older actions'));
+
+    const associationMoreActionsResponse = await fetch(`${baseUrl}/whatsapp/association/messages`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: '+27710000005', message: 'MORE' })
+    });
+    const associationMoreActionsPayload = await associationMoreActionsResponse.json();
+    assert.strictEqual(associationMoreActionsResponse.status, 200);
+    assert.ok(associationMoreActionsPayload.reply.includes('Showing 6-'));
+    assert.strictEqual(associationMoreActionsPayload.session.activeActionPageOffset, 5);
+
     const associationRegisterStartResponse = await fetch(`${baseUrl}/whatsapp/association/messages`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -610,6 +718,18 @@ async function run() {
     const professionalRequestsPayload = await professionalRequestsResponse.json();
     assert.strictEqual(professionalRequestsResponse.status, 200);
     assert.ok(professionalRequestsPayload.reply.includes('Recent professional requests'));
+    assert.ok(professionalRequestsPayload.reply.includes('Showing 1-5 of'));
+    assert.ok(professionalRequestsPayload.reply.includes('Reply MORE for older requests'));
+
+    const professionalMoreRequestsResponse = await fetch(`${baseUrl}/whatsapp/professional/messages`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: '+27710000006', message: 'MORE' })
+    });
+    const professionalMoreRequestsPayload = await professionalMoreRequestsResponse.json();
+    assert.strictEqual(professionalMoreRequestsResponse.status, 200);
+    assert.ok(professionalMoreRequestsPayload.reply.includes('Showing 6-'));
+    assert.strictEqual(professionalMoreRequestsPayload.session.activeRequestPageOffset, 5);
 
     const professionalRegisterStartResponse = await fetch(`${baseUrl}/whatsapp/professional/messages`, {
       method: 'POST',

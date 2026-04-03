@@ -124,6 +124,24 @@ setTimeout(async () => {
     const whatsappAssociationDirectory = await client.whatsappAssociation.sendMessage('+27710000005', '2');
     const whatsappAssociationDetail = await client.whatsappAssociation.sendMessage('+27710000005', '1');
     const whatsappAssociationAction = await client.whatsappAssociation.sendMessage('+27710000005', '1');
+    const whatsappAssociationBackToDirectory = await client.whatsappAssociation.sendMessage('+27710000005', '3');
+    await client.whatsappAssociation.sendMessage('+27710000005', '1');
+    const whatsappAssociationOutreach = await client.whatsappAssociation.sendMessage('+27710000005', '2');
+    const whatsappAssociationBackAgain = await client.whatsappAssociation.sendMessage('+27710000005', '3');
+    await client.whatsappAssociation.sendMessage('+27710000005', '1');
+    await client.whatsappAssociation.sendMessage('+27710000005', '1');
+    const whatsappAssociationBackThird = await client.whatsappAssociation.sendMessage('+27710000005', '3');
+    await client.whatsappAssociation.sendMessage('+27710000005', '1');
+    const whatsappAssociationOutreachTwo = await client.whatsappAssociation.sendMessage('+27710000005', '2');
+    const whatsappAssociationBackFourth = await client.whatsappAssociation.sendMessage('+27710000005', '3');
+    await client.whatsappAssociation.sendMessage('+27710000005', '1');
+    await client.whatsappAssociation.sendMessage('+27710000005', '1');
+    const whatsappAssociationBackFifth = await client.whatsappAssociation.sendMessage('+27710000005', '3');
+    await client.whatsappAssociation.sendMessage('+27710000005', '1');
+    const whatsappAssociationOutreachThree = await client.whatsappAssociation.sendMessage('+27710000005', '2');
+    const whatsappAssociationMenuBeforeRecent = await client.whatsappAssociation.sendMessage('+27710000005', '4');
+    const whatsappAssociationRecentActions = await client.whatsappAssociation.sendMessage('+27710000005', '4');
+    const whatsappAssociationMoreActions = await client.whatsappAssociation.sendMessage('+27710000005', 'MORE');
     const whatsappAdminSession = await client.whatsappAdmin.getSession('+27710000004');
     let whatsappAdminBlocked = null;
     try {
@@ -137,7 +155,13 @@ setTimeout(async () => {
     const whatsappProfessionalDirectory = await client.whatsappProfessional.sendMessage('+27710000006', '1');
     const whatsappProfessionalDetail = await client.whatsappProfessional.sendMessage('+27710000006', '1');
     const whatsappProfessionalAvailability = await client.whatsappProfessional.sendMessage('+27710000006', '3');
+    const whatsappProfessionalTierReview = await client.whatsappProfessional.sendMessage('+27710000006', '4');
+    const whatsappProfessionalAvailabilityTwo = await client.whatsappProfessional.sendMessage('+27710000006', '3');
+    const whatsappProfessionalTierReviewTwo = await client.whatsappProfessional.sendMessage('+27710000006', '4');
+    const whatsappProfessionalAvailabilityThree = await client.whatsappProfessional.sendMessage('+27710000006', '3');
+    const whatsappProfessionalTierReviewThree = await client.whatsappProfessional.sendMessage('+27710000006', '4');
     const whatsappProfessionalRequests = await client.whatsappProfessional.sendMessage('+27710000006', '5');
+    const whatsappProfessionalMoreRequests = await client.whatsappProfessional.sendMessage('+27710000006', 'MORE');
     const whatsappSubscriptionResponse = await client.session.subscribeWhatsapp('+27710000009');
 
     assert.strictEqual(registerResponse.user.email, 'newcontractor@example.com');
@@ -217,6 +241,19 @@ setTimeout(async () => {
     assert.ok(/ID: pro-/.test(whatsappAssociationDetail.reply));
     assert.ok(whatsappAssociationDetail.reply.includes('Reply:'));
     assert.ok(whatsappAssociationAction.reply.includes('Member review queued'));
+    assert.ok(whatsappAssociationBackToDirectory.reply.includes('Professional directory'));
+    assert.ok(whatsappAssociationOutreach.reply.includes('Trade outreach queued'));
+    assert.ok(whatsappAssociationBackAgain.reply.includes('Professional directory'));
+    assert.ok(whatsappAssociationBackThird.reply.includes('Professional directory'));
+    assert.ok(whatsappAssociationOutreachTwo.reply.includes('Trade outreach queued'));
+    assert.ok(whatsappAssociationBackFourth.reply.includes('Professional directory'));
+    assert.ok(whatsappAssociationBackFifth.reply.includes('Professional directory'));
+    assert.ok(whatsappAssociationOutreachThree.reply.includes('Trade outreach queued'));
+    assert.ok(whatsappAssociationMenuBeforeRecent.reply.includes('Open jobs:'));
+    assert.ok(whatsappAssociationRecentActions.reply.includes('Recent association actions'));
+    assert.ok(whatsappAssociationRecentActions.reply.includes('Showing 1-5 of'));
+    assert.ok(whatsappAssociationRecentActions.reply.includes('Reply MORE for older actions'));
+    assert.ok(whatsappAssociationMoreActions.reply.includes('Showing 6-'));
     assert.strictEqual(whatsappAdminSession.item.screen, 'blocked');
     assert.ok(whatsappAdminBlocked);
     assert.strictEqual(whatsappProfessionalSession.item.linked, true);
@@ -226,7 +263,15 @@ setTimeout(async () => {
     assert.ok(/ID: pro-/.test(whatsappProfessionalDetail.reply));
     assert.ok(whatsappProfessionalDetail.reply.includes('Reply:'));
     assert.ok(whatsappProfessionalAvailability.reply.includes('Availability check-in recorded'));
+    assert.ok(whatsappProfessionalTierReview.reply.includes('Tier review requested'));
+    assert.ok(whatsappProfessionalAvailabilityTwo.reply.includes('Availability check-in recorded'));
+    assert.ok(whatsappProfessionalTierReviewTwo.reply.includes('Tier review requested'));
+    assert.ok(whatsappProfessionalAvailabilityThree.reply.includes('Availability check-in recorded'));
+    assert.ok(whatsappProfessionalTierReviewThree.reply.includes('Tier review requested'));
     assert.ok(whatsappProfessionalRequests.reply.includes('Recent professional requests'));
+    assert.ok(whatsappProfessionalRequests.reply.includes('Showing 1-5 of'));
+    assert.ok(whatsappProfessionalRequests.reply.includes('Reply MORE for older requests'));
+    assert.ok(whatsappProfessionalMoreRequests.reply.includes('Showing 6-'));
     assert.strictEqual(whatsappSubscriptionResponse.item.phoneNumber, '+27710000009');
 
     console.log('register:', registerResponse.user.email);
