@@ -113,7 +113,9 @@ setTimeout(async () => {
     const whatsappCustomerResetPassword = await client.whatsappCustomer.sendMessage('+27716660003', 'client-new-password-123');
     const whatsappCustomerSession = await client.whatsappCustomer.getSession('+27710000003');
     const whatsappCustomerMenu = await client.whatsappCustomer.sendMessage('+27710000003', 'Hi');
-    const whatsappCustomerProfessionals = await client.whatsappCustomer.sendMessage('+27710000003', '2');
+    const whatsappCustomerJobs = await client.whatsappCustomer.sendMessage('+27710000003', '1');
+    const whatsappCustomerJobDetail = await client.whatsappCustomer.sendMessage('+27710000003', '1');
+    const whatsappCustomerProfessionals = await client.whatsappCustomer.sendMessage('+27710000003', '1');
     const whatsappCustomerProfessional = await client.whatsappCustomer.sendMessage('+27710000003', '1');
     const whatsappCustomerShortlist = await client.whatsappCustomer.sendMessage('+27710000003', '1');
     const whatsappAssociationSession = await client.whatsappAssociation.getSession('+27710000005');
@@ -203,6 +205,8 @@ setTimeout(async () => {
     assert.ok(whatsappCustomerResetPassword.reply.includes('Password reset complete'));
     assert.strictEqual(whatsappCustomerSession.item.linked, true);
     assert.ok(whatsappCustomerMenu.reply.includes('Welcome back, Ayanda'));
+    assert.ok(whatsappCustomerJobs.reply.includes('Your open jobs'));
+    assert.ok(whatsappCustomerJobDetail.reply.includes('Description:'));
     assert.ok(whatsappCustomerProfessionals.reply.includes('Top professionals'));
     assert.ok(whatsappCustomerProfessional.reply.includes('Reply:'));
     assert.ok(whatsappCustomerShortlist.reply.includes('Shortlist updated'));

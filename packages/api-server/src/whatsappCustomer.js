@@ -21,7 +21,9 @@ function summarizeSession(session, user) {
     linked: Boolean(user),
     screen: session.screen,
     userId: session.userId || user?.id || null,
+    activeJobId: session.activeJobId || null,
     activeProfessionalId: session.activeProfessionalId || null,
+    lastJobIds: Array.isArray(session.lastJobIds) ? session.lastJobIds : [],
     shortlistIds: Array.isArray(session.shortlistIds) ? session.shortlistIds : []
   };
 }
@@ -51,8 +53,27 @@ function formatJobs(jobs) {
     rows.push(`${job.trade} | ${job.location || 'TBC'} | ${job.budget || 'Budget TBC'}`);
     rows.push('');
   });
+  rows.push('Reply with a job number to open it.');
   rows.push('Reply M for menu.');
   return rows.join('\n');
+}
+
+function formatJobDetail(job) {
+  return [
+    job.title,
+    `Trade: ${job.trade || 'General request'}`,
+    `Location: ${job.location || 'TBC'}`,
+    `Budget: ${job.budget || 'Budget TBC'}`,
+    `Urgency: ${job.urgency || 'Flexible'}`,
+    '',
+    'Description:',
+    job.description || 'No description provided.',
+    '',
+    'Reply:',
+    '1. Browse Professionals',
+    '2. Request Another Job',
+    '3. Back to Jobs'
+  ].join('\n');
 }
 
 function formatProfessionals(professionals) {
@@ -129,7 +150,9 @@ function createWhatsappCustomerService({ repository, logger, createId, createRes
       phoneNumber: normalized,
       screen: 'unlinked_entry',
       userId: null,
+      activeJobId: null,
       activeProfessionalId: null,
+      lastJobIds: [],
       lastProfessionalIds: [],
       shortlistIds: [],
       resetPasswordDraft: null,
@@ -496,14 +519,51 @@ function createWhatsappCustomerService({ repository, logger, createId, createRes
         return { reply: formatProfessionals(professionals), options: ['1', '2', '3', 'M'], session: summarizeSession(session, user) };
       }
     }
+    if (session.screen === 'jobs' && /^\d+$/.test(command)) {
+      const jobId = session.lastJobIds[Number(command) - 1];
+      const job = jobId ? await repository.getJobById(jobId) : null;
+      if (!job || job.clientId !== user.id) {
+        return buildMenu(session, user);
+      }
+      session.screen = 'job_detail';
+      session.activeJobId = job.id;
+      await saveSession(session);
+      return { reply: formatJobDetail(job), options: ['1', '2', '3'], session: summarizeSession(session, user) };
+    }
+    if (session.screen === 'job_detail') {
+      const activeJob = session.activeJobId ? await repository.getJobById(session.activeJobId) : null;
+      if (!activeJob || activeJob.clientId !== user.id) {
+        return buildMenu(session, user);
+      }
+      if (command === '1') {
+        const professionals = (await repository.listProfessionals({})).slice(0, 3);
+        session.screen = 'professionals';
+        session.lastProfessionalIds = professionals.map((item) => item.id);
+        await saveSession(session);
+        return { reply: formatProfessionals(professionals), options: ['1', '2', '3', 'M'], session: summarizeSession(session, user) };
+      }
+      if (command === '2') {
+        return handleRequestFlow({ ...session, screen: 'request_start' }, user, rawMessage);
+      }
+      if (command === '3') {
+        const jobs = (await repository.listJobs({ status: 'OPEN' })).filter((job) => job.clientId === user.id);
+        session.screen = 'jobs';
+        session.lastJobIds = jobs.slice(0, 4).map((job) => job.id);
+        session.activeJobId = null;
+        await saveSession(session);
+        return { reply: formatJobs(jobs), options: ['1', '2', '3', '4', 'M'], session: summarizeSession(session, user) };
+      }
+    }
     if (session.screen && session.screen.startsWith('request_')) {
       return handleRequestFlow(session, user, rawMessage);
     }
     if (command === '1') {
       const jobs = (await repository.listJobs({ status: 'OPEN' })).filter((job) => job.clientId === user.id);
       session.screen = 'jobs';
+      session.lastJobIds = jobs.slice(0, 4).map((job) => job.id);
+      session.activeJobId = null;
       await saveSession(session);
-      return { reply: formatJobs(jobs), options: ['M'], session: summarizeSession(session, user) };
+      return { reply: formatJobs(jobs), options: ['1', '2', '3', '4', 'M'], session: summarizeSession(session, user) };
     }
     if (command === '2') {
       const professionals = (await repository.listProfessionals({})).slice(0, 3);

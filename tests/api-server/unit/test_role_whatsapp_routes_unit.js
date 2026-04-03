@@ -395,10 +395,30 @@ async function run() {
     assert.strictEqual(customerResponse.status, 200);
     assert.ok(customerPayload.reply.includes('Welcome back, Ayanda'));
 
+    const customerJobsResponse = await fetch(`${baseUrl}/whatsapp/customer/messages`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: '+27710000003', message: '1' })
+    });
+    const customerJobsPayload = await customerJobsResponse.json();
+    assert.strictEqual(customerJobsResponse.status, 200);
+    assert.ok(customerJobsPayload.reply.includes('Your open jobs'));
+    assert.ok(customerJobsPayload.reply.includes('Reply with a job number to open it'));
+
+    const customerJobDetailResponse = await fetch(`${baseUrl}/whatsapp/customer/messages`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: '+27710000003', message: '1' })
+    });
+    const customerJobDetailPayload = await customerJobDetailResponse.json();
+    assert.strictEqual(customerJobDetailResponse.status, 200);
+    assert.ok(customerJobDetailPayload.reply.includes('Description:'));
+    assert.ok(customerJobDetailPayload.reply.includes('Reply:'));
+
     const customerProfessionalsResponse = await fetch(`${baseUrl}/whatsapp/customer/messages`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ phoneNumber: '+27710000003', message: '2' })
+      body: JSON.stringify({ phoneNumber: '+27710000003', message: '1' })
     });
     const customerProfessionalsPayload = await customerProfessionalsResponse.json();
     assert.strictEqual(customerProfessionalsResponse.status, 200);
