@@ -97,6 +97,7 @@ function formatDirectory(items) {
 function formatProfessionalDetail(item) {
   return [
     item.name,
+    `ID: ${item.id || item.professionalId || 'Not set'}`,
     `Trade: ${item.trade}`,
     `Tier: ${item.tier || 'ONBOARDED'}`,
     `Rating: ${item.rating || 'N/A'}`,

@@ -512,6 +512,7 @@ async function run() {
     });
     const associationDetailPayload = await associationDetailResponse.json();
     assert.strictEqual(associationDetailResponse.status, 200);
+    assert.ok(/ID: pro-/.test(associationDetailPayload.reply));
     assert.ok(associationDetailPayload.reply.includes('Reply:'));
 
     const associationActionResponse = await fetch(`${baseUrl}/whatsapp/association/messages`, {
@@ -589,6 +590,7 @@ async function run() {
     });
     const professionalDetailPayload = await professionalDetailResponse.json();
     assert.strictEqual(professionalDetailResponse.status, 200);
+    assert.ok(/ID: pro-/.test(professionalDetailPayload.reply));
     assert.ok(professionalDetailPayload.reply.includes('Reply:'));
 
     const professionalAvailabilityResponse = await fetch(`${baseUrl}/whatsapp/professional/messages`, {

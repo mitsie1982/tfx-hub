@@ -214,6 +214,7 @@ setTimeout(async () => {
     assert.ok(whatsappAssociationMenu.reply.includes('Welcome back, TFX'));
     assert.ok(whatsappAssociationOverview.reply.includes('Association overview'));
     assert.ok(whatsappAssociationDirectory.reply.includes('Professional directory'));
+    assert.ok(/ID: pro-/.test(whatsappAssociationDetail.reply));
     assert.ok(whatsappAssociationDetail.reply.includes('Reply:'));
     assert.ok(whatsappAssociationAction.reply.includes('Member review queued'));
     assert.strictEqual(whatsappAdminSession.item.screen, 'blocked');
@@ -222,6 +223,7 @@ setTimeout(async () => {
     assert.ok(whatsappProfessionalMenu.reply.includes('Welcome back, Lerato'));
     assert.ok(whatsappProfessionalProfile.reply.includes('Your professional profile'));
     assert.ok(whatsappProfessionalDirectory.reply.includes('Professional directory'));
+    assert.ok(/ID: pro-/.test(whatsappProfessionalDetail.reply));
     assert.ok(whatsappProfessionalDetail.reply.includes('Reply:'));
     assert.ok(whatsappProfessionalAvailability.reply.includes('Availability check-in recorded'));
     assert.ok(whatsappProfessionalRequests.reply.includes('Recent professional requests'));
