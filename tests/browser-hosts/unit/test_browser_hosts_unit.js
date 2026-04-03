@@ -55,12 +55,14 @@ async function run() {
     assert.ok(contractorHtml.includes('Matched Leads'));
     assert.ok(contractorHtml.includes('Sample Session Only'));
     assert.ok(contractorHtml.includes('TFSSA Live Demo Scope'));
+    assert.ok(contractorHtml.includes('Fields Verified Live'));
     assert.ok(!contractorHtml.includes('Placeholder contractor-app'));
 
     assert.ok(customerHtml.includes('Customer Browser'));
     assert.ok(customerHtml.includes('Professional Directory'));
     assert.ok(customerHtml.includes('Sample Session Only'));
     assert.ok(customerHtml.includes('TFSSA Live Demo Scope'));
+    assert.ok(customerHtml.includes('Fields Verified Live'));
     assert.ok(!customerHtml.includes('Placeholder customer-app'));
 
     assert.ok(adminHtml.includes('Admin Browser Workspace'));

@@ -150,6 +150,29 @@ function renderDemoOperatorSection() {
 	`, 'Use the Desktop shortcut to open this page in authenticated live-demo mode.');
 }
 
+function renderVerifiedFieldsSection() {
+	return renderSection('Fields Verified Live', `
+		<div class="form-grid">
+			<div class="form-card">
+				<h3>Verified Presenter Changes</h3>
+				${renderPills([
+					'Contractor sign-in',
+					'WhatsApp number change',
+					'Express interest',
+					'Quote amount',
+					'Quote timeline',
+					'Quote note',
+					'Homeowner message body'
+				])}
+			</div>
+			<div class="form-card">
+				<h3>Presenter Sequence</h3>
+				<p class="muted">Recommended TFSSA order: sign in, update WhatsApp number, open a lead, send interest, review a quote, then preview and confirm a homeowner message.</p>
+			</div>
+		</div>
+	`, 'This panel is read-only rehearsal guidance based on the latest live verification run.');
+}
+
 function renderModel(model) {
 	const profile = model.profile;
 	const selectedProject = model.selectedProject;
@@ -171,6 +194,7 @@ function renderModel(model) {
 		],
 		sections: [
 			renderDemoOperatorSection(),
+			renderVerifiedFieldsSection(),
 			renderSection('Dashboard Snapshot', renderStats([
 				{ label: 'Completed Jobs', value: profile.completedJobs },
 				{ label: 'Active Quotes', value: profile.activeQuotes },

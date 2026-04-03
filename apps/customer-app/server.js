@@ -117,6 +117,30 @@ function renderDemoOperatorSection() {
 	`, 'Use the Desktop shortcut to open this page in authenticated live-demo mode.');
 }
 
+function renderVerifiedFieldsSection() {
+	return renderSection('Fields Verified Live', `
+		<div class="form-grid">
+			<div class="form-card">
+				<h3>Verified Presenter Changes</h3>
+				${renderPills([
+					'Customer sign-in',
+					'Shortlist add and remove',
+					'Job request title',
+					'Job request trade',
+					'Job request location',
+					'Job request budget',
+					'Job request urgency',
+					'Job request description'
+				])}
+			</div>
+			<div class="form-card">
+				<h3>Presenter Sequence</h3>
+				<p class="muted">Recommended TFSSA order: sign in, shortlist a professional, remove the shortlist, then create and confirm a job request using edited request details.</p>
+			</div>
+		</div>
+	`, 'This panel is read-only rehearsal guidance based on the latest live verification run.');
+}
+
 function renderModel(model) {
 	const overview = model.overview;
 	const jobs = overview.jobs || [];
@@ -143,6 +167,7 @@ function renderModel(model) {
 		],
 		sections: [
 			renderDemoOperatorSection(),
+			renderVerifiedFieldsSection(),
 			renderSection('Customer Snapshot', renderStats([
 				{ label: 'Open Jobs', value: jobs.length },
 				{ label: 'Visible Professionals', value: professionals.length },
