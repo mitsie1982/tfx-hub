@@ -33,21 +33,21 @@ repos:
 
   # Prettier code formatting
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v3.1.1
+    rev: v3.1.0
     hooks:
       - id: prettier
         files: \.(js|jsx|ts|tsx|json|ya?ml|md)$
 
   # Secret scanning
   - repo: https://github.com/Yelp/detect-secrets
-    rev: v1.4.0
+    rev: v1.5.0
     hooks:
       - id: detect-secrets
         args: [--baseline, .secrets.baseline]
 
   # Commit message validation
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v3.12.1
+    rev: v4.13.9
     hooks:
       - id: commitizen
         stages: [commit-msg]
@@ -80,8 +80,8 @@ ci:
     [pre-commit.ci] Auto fixes from hooks
     for more information, see https://pre-commit.ci
   autofix_prs: true
-  autoupdate_branch: ''
-  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_branch: ""
+  autoupdate_commit_msg: "[pre-commit.ci] pre-commit autoupdate"
   autoupdate_schedule: weekly
-  skip: [bandit]  # Skip bandit in CI (focus on JS/native)
+  skip: [bandit] # Skip bandit in CI (focus on JS/native)
   submodules: false
