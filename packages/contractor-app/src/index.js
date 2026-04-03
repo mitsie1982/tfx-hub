@@ -3,6 +3,7 @@
  Contractor app entry point — composes shared-logic with app-specific views.
 */
 const { createSharedLogicClient, auth } = require('@tfx/shared-logic');
+const { signToken } = require('../../shared-auth/src');
 const { createJobsView } = require('./jobsView');
 const { createOnboardingFlow } = require('./onboardingFlow');
 const { createProfileView } = require('./profileView');
@@ -24,7 +25,7 @@ module.exports = { createContractorApp };
 if (require.main === module) {
   const app = createContractorApp({
     baseURL: process.env.API_BASE_URL || 'http://localhost:5005',
-    getToken: async () => auth.signToken({ sub: 'demo', associationId: 'assoc-demo' }),
+    getToken: async () => signToken({ sub: 'demo', associationId: 'assoc-demo' }),
     context: { associationId: 'assoc-demo', platform: 'android', appVersion: '1.0.0' }
   });
   console.log('Contractor app ready. Views available:', Object.keys(app));
