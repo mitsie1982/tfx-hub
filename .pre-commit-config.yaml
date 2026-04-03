@@ -23,7 +23,7 @@ repos:
     rev: v8.56.0
     hooks:
       - id: eslint
-        types: [javascript, jsx, typescript, tsx]
+        files: \.(js|jsx|ts|tsx)$
         additional_dependencies:
           - eslint
           - eslint-config-prettier
@@ -36,7 +36,7 @@ repos:
     rev: v3.1.1
     hooks:
       - id: prettier
-        types_or: [javascript, jsx, typescript, tsx, json, yaml, markdown]
+        files: \.(js|jsx|ts|tsx|json|ya?ml|md)$
 
   # Secret scanning
   - repo: https://github.com/Yelp/detect-secrets
@@ -57,15 +57,7 @@ repos:
     rev: v1.35.1
     hooks:
       - id: yamllint
-        types: [yaml]
-
-  # Dockerfile linting
-  - repo: https://github.com/hadialqattan/pydocstyle
-    rev: 6.3.0
-    hooks:
-      - id: pydocstyle
-        types: [dockerfile]
-        entry: dockerlint
+        files: \.(yaml|yml)$
 
   # Security: bandit (Python-focused, skip for JS repo)
   # - repo: https://github.com/PyCQA/bandit
