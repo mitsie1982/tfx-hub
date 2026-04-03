@@ -46,6 +46,7 @@
       "Complete a guided quote flow",
       "Complete a guided homeowner message flow",
       "View recent activity",
+      "Page through older activity in chat",
       "Request help and return to menu navigation"
     ],
     "canView": [
@@ -57,7 +58,7 @@
       "Interest confirmation and next-step options",
       "Quote flow prompts for amount, timeline, note, and confirmation summary",
       "Message flow prompts and preview before sending",
-      "Activity feed with recent interest, quote, and message actions",
+      "Activity feed with recent interest, quote, and message actions plus the current activity page window",
       "Help text describing available contractor actions",
       "Account-linking and registration prompts for unrecognized phone numbers"
     ]
@@ -88,13 +89,16 @@
         "title": "Main menu example",
         "lines": [
           "Welcome back, Naledi.",
-          "You have 2 open leads and 5 active quotes.",
+          "Contractor snapshot",
+          "Open leads: 2",
+          "Active quotes: 5",
           "1. My Profile",
           "2. My Leads",
           "3. My Activity",
           "4. Quote a Lead",
           "5. Message a Homeowner",
-          "6. Help"
+          "6. Help",
+          "7. Account Help"
         ]
       },
       {
@@ -172,6 +176,12 @@
     },
     {
       "capability": "Password reset request and confirm",
+      "browser": "Yes",
+      "whatsapp": "Yes",
+      "status": "Implemented"
+    },
+    {
+      "capability": "Browse older activity pages",
       "browser": "Yes",
       "whatsapp": "Yes",
       "status": "Implemented"

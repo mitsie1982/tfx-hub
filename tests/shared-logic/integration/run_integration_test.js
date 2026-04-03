@@ -62,6 +62,8 @@ setTimeout(async () => {
     const contractorProfileResponse = await client.contractor.getProfile();
     const quoteResponse = await client.contractor.submitQuote('job-001', { amount: 'R12,500', timeline: '3 days' });
     const messageResponse = await client.contractor.sendMessage('job-001', { body: 'I can inspect this tomorrow morning.' });
+    const quoteResponseTwo = await client.contractor.submitQuote('job-002', { amount: 'R18,500', timeline: '4 days' });
+    const messageResponseTwo = await client.contractor.sendMessage('job-002', { body: 'Available this week for the boundary wall extension.' });
     const contractorHistoryResponse = await client.contractor.listLeadHistory();
     const onboardingStatusResponse = await client.onboarding.getStatus();
     const onboardingStepResponse = await client.onboarding.submitStep('welcome', { data: 'hello' });
@@ -86,7 +88,9 @@ setTimeout(async () => {
     const whatsappQuoteTimelineResponse = await client.whatsappContractor.sendMessage('+27710000001', '3 working days');
     const whatsappQuoteNoteResponse = await client.whatsappContractor.sendMessage('+27710000001', 'Includes labour and materials');
     const whatsappQuoteConfirmResponse = await client.whatsappContractor.sendMessage('+27710000001', 'YES');
+    const whatsappMenuBeforeActivityResponse = await client.whatsappContractor.sendMessage('+27710000001', 'M');
     const whatsappActivityResponse = await client.whatsappContractor.sendMessage('+27710000001', '3');
+    const whatsappMoreActivityResponse = await client.whatsappContractor.sendMessage('+27710000001', 'MORE');
     const whatsappResetStartResponse = await client.whatsappContractor.sendMessage('+27718880008', 'Hi');
     const whatsappResetChoiceResponse = await client.whatsappContractor.sendMessage('+27718880008', '3');
     const whatsappResetRequestResponse = await client.whatsappContractor.sendMessage('+27718880008', 'contractor@example.com');
@@ -142,6 +146,8 @@ setTimeout(async () => {
     assert.strictEqual(contractorProfileResponse.item.professionalId, 'pro-003');
     assert.ok(quoteResponse.item.id);
     assert.ok(messageResponse.item.id);
+    assert.ok(quoteResponseTwo.item.id);
+    assert.ok(messageResponseTwo.item.id);
     assert.ok(Array.isArray(contractorHistoryResponse.items));
     assert.ok(Array.isArray(onboardingStatusResponse.completedStages));
     assert.strictEqual(onboardingStepResponse.ok, true);
@@ -169,7 +175,11 @@ setTimeout(async () => {
     assert.ok(whatsappQuoteTimelineResponse.reply.includes('Step 3 of 3'));
     assert.ok(whatsappQuoteNoteResponse.reply.includes('Confirm quote'));
     assert.ok(whatsappQuoteConfirmResponse.reply.includes('Quote sent successfully'));
+    assert.ok(whatsappMenuBeforeActivityResponse.reply.includes('Contractor snapshot'));
     assert.ok(whatsappActivityResponse.reply.includes('Recent activity'));
+    assert.ok(whatsappActivityResponse.reply.includes('Showing 1-5 of'));
+    assert.ok(whatsappActivityResponse.reply.includes('Reply MORE for older activity'));
+    assert.ok(whatsappMoreActivityResponse.reply.includes('Showing 6-'));
     assert.ok(whatsappResetStartResponse.reply.includes('Reset contractor password'));
     assert.ok(whatsappResetChoiceResponse.reply.includes('Enter the email address on your contractor account'));
     assert.ok(whatsappResetRequestResponse.reply.includes('Password reset requested for contractor@example.com'));
@@ -214,6 +224,8 @@ setTimeout(async () => {
     console.log('contractor profile:', contractorProfileResponse.item.professionalId);
     console.log('quote:', quoteResponse.item.id);
     console.log('message:', messageResponse.item.id);
+    console.log('quote 2:', quoteResponseTwo.item.id);
+    console.log('message 2:', messageResponseTwo.item.id);
     console.log('contractor history:', contractorHistoryResponse.items.length, 'items');
     console.log('onboarding status:', onboardingStatusResponse.completedStages);
     console.log('onboarding step:', onboardingStepResponse.stage);

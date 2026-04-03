@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 
 const ONBOARDING_STAGES = ['welcome', 'name', 'trade', 'experience', 'location', 'credentials'];
 const LEAD_PAGE_SIZE = 3;
+const ACTIVITY_PAGE_SIZE = 5;
 
 function normalizePhoneNumber(value) {
   const digits = String(value || '').replace(/[^\d+]/g, '');
@@ -36,6 +37,19 @@ function clampLeadPageOffset(total, offset) {
 
   if (normalizedOffset >= total) {
     return Math.max(0, Math.floor((total - 1) / LEAD_PAGE_SIZE) * LEAD_PAGE_SIZE);
+  }
+
+  return normalizedOffset;
+}
+
+function clampActivityPageOffset(total, offset) {
+  const normalizedOffset = Number.isFinite(offset) ? Math.max(0, offset) : 0;
+  if (total <= 0) {
+    return 0;
+  }
+
+  if (normalizedOffset >= total) {
+    return Math.max(0, Math.floor((total - 1) / ACTIVITY_PAGE_SIZE) * ACTIVITY_PAGE_SIZE);
   }
 
   return normalizedOffset;
@@ -76,6 +90,7 @@ function toSessionSummary(session, linkedUser) {
     activeJobId: session.activeJobId || null,
     lastLeadIds: Array.isArray(session.lastLeadIds) ? session.lastLeadIds : [],
     activeLeadPageOffset: Number.isFinite(session.leadPageOffset) ? session.leadPageOffset : 0,
+    activeActivityPageOffset: Number.isFinite(session.activityPageOffset) ? session.activityPageOffset : 0,
     activeTradeFilter: session.leadFilters?.trade || null,
     activeLeadSearchQuery: session.leadFilters?.search || null
   };
@@ -223,17 +238,26 @@ function formatLeadDetail(job) {
   ].join('\n');
 }
 
-function formatActivity(items) {
+function formatActivity(items, activityWindow = {}) {
+  const pageOffset = Number.isFinite(activityWindow.pageOffset) ? activityWindow.pageOffset : 0;
+  const totalItems = Number.isFinite(activityWindow.totalItems) ? activityWindow.totalItems : items.length;
+  const hasMore = Boolean(activityWindow.hasMore);
+
   if (!items.length) {
     return ['No activity yet.', '', 'Reply 2 for My Leads or M for menu.'].join('\n');
   }
 
   const rows = ['Recent activity', ''];
-  items.slice(0, 5).forEach((item, index) => {
+  rows.push(`Showing ${pageOffset + 1}-${pageOffset + items.length} of ${totalItems} activity items`);
+  rows.push('');
+  items.forEach((item, index) => {
     rows.push(`${index + 1}. ${String(item.type || '').toUpperCase()} | ${item.jobTitle || item.jobId || 'Project activity'}`);
     rows.push(item.summary || 'No summary');
     rows.push('');
   });
+  if (hasMore) {
+    rows.push('Reply MORE for older activity.');
+  }
   rows.push('Reply M for menu.');
   return rows.join('\n');
 }
@@ -275,6 +299,7 @@ function createWhatsappContractorService({ repository, logger, createId, createR
       activeJobId: null,
       lastLeadIds: [],
       leadPageOffset: 0,
+      activityPageOffset: 0,
       leadFilters: { trade: null, search: null },
       quoteDraft: null,
       messageDraft: null,
@@ -416,7 +441,7 @@ function createWhatsappContractorService({ repository, logger, createId, createR
     };
   }
 
-  async function buildActivityResponse(session, user) {
+  async function buildActivityResponse(session, user, options = {}) {
     const items = await repository.getContractorHistory(user.professionalId || user.id);
     const jobs = await repository.listJobs({ status: 'OPEN' });
     const jobTitles = new Map(jobs.map((job) => [job.id, job.title]));
@@ -424,11 +449,20 @@ function createWhatsappContractorService({ repository, logger, createId, createR
       ...item,
       jobTitle: jobTitles.get(item.jobId) || item.jobId
     }));
+    const nextOffset = options.resetPage === false
+      ? clampActivityPageOffset(normalized.length, options.pageOffset ?? session.activityPageOffset)
+      : 0;
+    const pageItems = normalized.slice(nextOffset, nextOffset + ACTIVITY_PAGE_SIZE);
+    session.activityPageOffset = nextOffset;
     session.screen = 'activity';
     await saveSession(session);
     return {
-      reply: formatActivity(normalized),
-      options: ['M'],
+      reply: formatActivity(pageItems, {
+        pageOffset: nextOffset,
+        totalItems: normalized.length,
+        hasMore: nextOffset + pageItems.length < normalized.length
+      }),
+      options: nextOffset + pageItems.length < normalized.length ? ['MORE', 'M'] : ['M'],
       session: toSessionSummary(session, user)
     };
   }
@@ -1000,6 +1034,13 @@ function createWhatsappContractorService({ repository, logger, createId, createR
     if (session.screen === 'leads_list' && (command === 'c' || command === 'clear')) {
       session.leadFilters = { ...(session.leadFilters || {}), search: null };
       return buildLeadsResponse(session, user);
+    }
+
+    if (session.screen === 'activity' && (command === 'more' || command === 'next')) {
+      return buildActivityResponse(session, user, {
+        resetPage: false,
+        pageOffset: (session.activityPageOffset || 0) + ACTIVITY_PAGE_SIZE
+      });
     }
 
     if (session.screen === 'lead_detail') {

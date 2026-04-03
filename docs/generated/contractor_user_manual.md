@@ -78,6 +78,7 @@ Use WhatsApp for the contractor high-intent flow: identify yourself, review lead
 1. Complete a guided quote flow
 1. Complete a guided homeowner message flow
 1. View recent activity
+1. Page through older activity in chat
 1. Request help and return to menu navigation
 
 ### WhatsApp Visibility
@@ -90,7 +91,7 @@ Use WhatsApp for the contractor high-intent flow: identify yourself, review lead
 1. Interest confirmation and next-step options
 1. Quote flow prompts for amount, timeline, note, and confirmation summary
 1. Message flow prompts and preview before sending
-1. Activity feed with recent interest, quote, and message actions
+1. Activity feed with recent interest, quote, and message actions plus the current activity page window
 1. Help text describing available contractor actions
 1. Account-linking and registration prompts for unrecognized phone numbers
 
@@ -100,13 +101,16 @@ Use WhatsApp for the contractor high-intent flow: identify yourself, review lead
 
 ```text
 Welcome back, Naledi.
-You have 2 open leads and 5 active quotes.
+Contractor snapshot
+Open leads: 2
+Active quotes: 5
 1. My Profile
 2. My Leads
 3. My Activity
 4. Quote a Lead
 5. Message a Homeowner
 6. Help
+7. Account Help
 ```
 
 #### Quote confirmation example

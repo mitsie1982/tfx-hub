@@ -37,6 +37,54 @@ async function run() {
     matchScore: 79,
     clientId: 'client-001'
   });
+  await repository.appendContractorEvent({
+    id: 'evt-001',
+    professionalId: 'pro-003',
+    jobId: 'job-001',
+    type: 'quote',
+    summary: 'Quote R8,900 sent for leak repair',
+    status: 'sent'
+  });
+  await repository.appendContractorEvent({
+    id: 'evt-002',
+    professionalId: 'pro-003',
+    jobId: 'job-002',
+    type: 'message',
+    summary: 'Follow-up message sent to homeowner',
+    status: 'sent'
+  });
+  await repository.appendContractorEvent({
+    id: 'evt-003',
+    professionalId: 'pro-003',
+    jobId: 'job-003',
+    type: 'interest',
+    summary: 'Interest sent for compliance inspection',
+    status: 'sent'
+  });
+  await repository.appendContractorEvent({
+    id: 'evt-004',
+    professionalId: 'pro-003',
+    jobId: 'job-004',
+    type: 'message',
+    summary: 'Painter quote follow-up sent',
+    status: 'sent'
+  });
+  await repository.appendContractorEvent({
+    id: 'evt-005',
+    professionalId: 'pro-003',
+    jobId: 'job-001',
+    type: 'interest',
+    summary: 'Second interest confirmation logged',
+    status: 'sent'
+  });
+  await repository.appendContractorEvent({
+    id: 'evt-006',
+    professionalId: 'pro-003',
+    jobId: 'job-002',
+    type: 'quote',
+    summary: 'Quote R18,500 sent for boundary wall work',
+    status: 'sent'
+  });
 
   const app = createApp({ repository, logger: { info() {}, warn() {}, error() {} }, getCurrentDate: BUSINESS_HOURS_DATE });
   const server = await new Promise((resolve) => {
@@ -253,6 +301,36 @@ async function run() {
     assert.strictEqual(contractorAllTradesResponse.status, 200);
     assert.ok(contractorAllTradesPayload.reply.includes('Build garden wall'));
     assert.ok(contractorAllTradesPayload.reply.includes('Reply MORE for the next leads'));
+
+    const contractorMenuBeforeActivityResponse = await fetch(`${baseUrl}/whatsapp/contractor/messages`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: contractorPhoneNumber, message: 'M' })
+    });
+    assert.strictEqual(contractorMenuBeforeActivityResponse.status, 200);
+
+    const contractorActivityResponse = await fetch(`${baseUrl}/whatsapp/contractor/messages`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: contractorPhoneNumber, message: '3' })
+    });
+    const contractorActivityPayload = await contractorActivityResponse.json();
+    assert.strictEqual(contractorActivityResponse.status, 200);
+    assert.ok(contractorActivityPayload.reply.includes('Recent activity'));
+    assert.ok(contractorActivityPayload.reply.includes('Showing 1-5 of'));
+    assert.ok(contractorActivityPayload.reply.includes('Reply MORE for older activity'));
+    assert.strictEqual(contractorActivityPayload.session.activeActivityPageOffset, 0);
+
+    const contractorMoreActivityResponse = await fetch(`${baseUrl}/whatsapp/contractor/messages`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ phoneNumber: contractorPhoneNumber, message: 'MORE' })
+    });
+    const contractorMoreActivityPayload = await contractorMoreActivityResponse.json();
+    assert.strictEqual(contractorMoreActivityResponse.status, 200);
+    assert.ok(contractorMoreActivityPayload.reply.includes('Showing 6-'));
+    assert.ok(!contractorMoreActivityPayload.reply.includes('Showing 1-5 of'));
+    assert.strictEqual(contractorMoreActivityPayload.session.activeActivityPageOffset, 5);
 
     const contractorResetStartResponse = await fetch(`${baseUrl}/whatsapp/contractor/messages`, {
       method: 'POST',

@@ -54,6 +54,7 @@ This sheet is intended for client-facing or stakeholder-facing communication.
 1. Complete a guided quote flow
 1. Complete a guided homeowner message flow
 1. View recent activity
+1. Page through older activity in chat
 1. Request help and return to menu navigation
 
 ### WhatsApp Visibility
@@ -66,7 +67,7 @@ This sheet is intended for client-facing or stakeholder-facing communication.
 1. Interest confirmation and next-step options
 1. Quote flow prompts for amount, timeline, note, and confirmation summary
 1. Message flow prompts and preview before sending
-1. Activity feed with recent interest, quote, and message actions
+1. Activity feed with recent interest, quote, and message actions plus the current activity page window
 1. Help text describing available contractor actions
 1. Account-linking and registration prompts for unrecognized phone numbers
 
@@ -78,6 +79,7 @@ This sheet is intended for client-facing or stakeholder-facing communication.
 | Register new contractor account | Yes | Yes | Implemented |
 | Link existing account to phone number | No | Yes | Implemented |
 | Password reset request and confirm | Yes | Yes | Implemented |
+| Browse older activity pages | Yes | Yes | Implemented |
 | Restore session automatically | Yes | Yes | Implemented |
 | View contractor profile summary | Yes | Yes | Implemented |
 | View name, trade, tier, rating | Yes | Yes | Implemented |
