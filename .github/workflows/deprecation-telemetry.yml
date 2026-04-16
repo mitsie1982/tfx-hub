@@ -1,0 +1,55 @@
+name: Deprecation Telemetry
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # daily at 02:00 UTC
+
+jobs:
+  legacy-usage-report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run legacy token scan
+        run: node scripts/ci/legacy-usage-report.js
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: legacy-usage-report
+          path: reports/legacy-usage.json
+
+      - name: Notify on Slack
+        if: always()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        with:
+          status: custom
+          fields: repo,commit,author
+          message: 'Legacy usage report generated for ${{ github.repository }}. See artifact in Actions.'
+
+      - name: Notify on Microsoft Teams
+        if: always()
+        uses: skitionek/notify-microsoft-teams@v1.2.6
+        with:
+          webhook_url: ${{ secrets.TEAMS_WEBHOOK_URL }}
+          message: 'Legacy usage report generated for ${{ github.repository }}. See artifact in Actions.'
+      - name: Notify on legacy usage
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: 'Legacy Usage Report for ${{ github.repository }}'
+          to: ${{ secrets.NOTIFY_EMAIL }}
+          from: 'noreply@tfx-hub-ci.com'
+          body: |
+            The daily legacy usage report has been generated. See attached artifact.
+      - name: Create GitHub Issue on legacy usage
+        if: always()
+        uses: peter-evans/create-issue-from-file@v4
+        with:
+          title: 'Legacy usage detected in ${{ github.repository }}'
+          content-filepath: reports/legacy-usage.json
+          labels: legacy, automated-report

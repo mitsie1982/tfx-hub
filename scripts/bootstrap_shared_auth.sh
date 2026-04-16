@@ -40,7 +40,7 @@ if [ ! -f "$PKG_DIR/package.json" ]; then
   "types": "src/index.d.ts",
   "scripts": {
     "build": "echo 'build @tfx/shared-auth (no-op)'",
-    "test": "node ../../tests/shared-auth/unit/run_unit_tests.js",
+    "test": "node ../../tests/shared-auth/unit/run_unit_tests.cjs",
     "test:integration": "node ../../tests/shared-auth/integration/run_integration_test.js"
   },
   "dependencies": {
@@ -197,10 +197,10 @@ JS
   echo "Created unit test: $UNIT_DIR/test_role_middleware.js"
 fi
 
-if [ ! -f "$UNIT_DIR/run_unit_tests.js" ]; then
-  cat > "$UNIT_DIR/run_unit_tests.js" <<'JS'
+if [ ! -f "$UNIT_DIR/run_unit_tests.cjs" ]; then
+  cat > "$UNIT_DIR/run_unit_tests.cjs" <<'JS'
 /*
- tests/shared-auth/unit/run_unit_tests.js
+ tests/shared-auth/unit/run_unit_tests.cjs
  Runs all unit tests for shared-auth
 */
 const path = require('path');
@@ -215,7 +215,7 @@ tests.forEach((t) => {
 });
 console.log('All shared-auth unit tests completed');
 JS
-  echo "Created unit test runner: $UNIT_DIR/run_unit_tests.js"
+  echo "Created unit test runner: $UNIT_DIR/run_unit_tests.cjs"
 fi
 
 # -------------------------
@@ -451,7 +451,7 @@ Shared authentication utilities and tenant middleware.
 - roleMiddleware(requiredRoles)
 
 ## Tests
-- Unit: node tests/shared-auth/unit/run_unit_tests.js
+- Unit: node tests/shared-auth/unit/run_unit_tests.cjs
 - Integration: node tests/shared-auth/integration/run_integration_test.js
 MD
   echo "Created README for shared-auth"

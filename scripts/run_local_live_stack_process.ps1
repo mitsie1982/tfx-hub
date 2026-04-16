@@ -28,6 +28,7 @@ try {
     $env:TFX_ADMIN_USERNAME = 'local-admin-secret'
     $env:TFX_ADMIN_EMAIL = 'admin@example.com'
     $env:TFX_ADMIN_PASSWORD = 'change-this-admin-password'
+    $env:TFX_ADMIN_ALLOW_AFTER_HOURS = 'true'
     $env:TFX_API_ENABLE_DEMO_SEED = 'true'
     $env:DB_HOST = '127.0.0.1'
     $env:DB_PORT = '5433'
@@ -39,7 +40,7 @@ try {
     exit $LASTEXITCODE
   }
 
-  Add-Content -Path $LogFile -Value ('starting browser host on port ' + $env:PORT)
+  Add-Content -Path $LogFile -Value ('starting browser host (server.js) on port ' + $env:PORT)
   node server.js *>> $LogFile
   exit $LASTEXITCODE
 } catch {

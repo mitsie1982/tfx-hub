@@ -74,6 +74,10 @@ export LAUNCHDARKLY_API_TOKEN
 # Allow override of window via env WINDOW_MINUTES
 run_and_log "Staged rollout harness" bash -c "PROMETHEUS_URL=\"$PROMETHEUS_URL\" LAUNCHDARKLY_API_TOKEN=\"$LAUNCHDARKLY_API_TOKEN\" \"$ROOT/scripts/run_staged_rollout_test.sh\" \"$ENV\" \"$FLAG\""
 
+# 4.5) Contractor document verification queue
+echo "Running contractor document verification queue automation..." | tee -a "$LOG_DIR/run.log"
+run_and_log "Contractor verification queue" bash -c "\"$ROOT/scripts/verify_contractor_docs.sh\""
+
 # 5) Dry-run release
 echo "Starting dry-run release for app 'ams' to $ENV" | tee -a "$LOG_DIR/run.log"
 run_and_log "Dry-run release" bash -c "LAUNCHDARKLY_API_TOKEN=\"$LAUNCHDARKLY_API_TOKEN\" PROMETHEUS_URL=\"$PROMETHEUS_URL\" \"$ROOT/scripts/dry_run_release.sh\" ams \"$ENV\""

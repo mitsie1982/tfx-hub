@@ -54,15 +54,33 @@ function Wait-ForUrl {
   return $false
 }
 
+function Resolve-PreferredBrowser {
+  $candidates = @(
+    'C:\Program Files\Google\Chrome Dev\Application\chrome.exe',
+    'C:\Program Files (x86)\Google\Chrome Dev\Application\chrome.exe',
+    'C:\Program Files\Google\Chrome\Application\chrome.exe',
+    'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe',
+    'C:\Program Files\Microsoft\Edge\Application\msedge.exe',
+    'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe'
+  )
+
+  foreach ($candidate in $candidates) {
+    if (Test-Path $candidate) {
+      return $candidate
+    }
+  }
+
+  return $null
+}
+
 Ensure-Placeholder -p $AppPath -port $Port
 Start-NodeIfMissing -p $AppPath | Out-Null
 
 $Url = "http://localhost:$Port"
 if (Wait-ForUrl -url $Url -timeout $WaitTimeoutSeconds -interval $PollIntervalSeconds) {
-  if (Test-Path "$env:ProgramFiles\Microsoft\Edge\Application\msedge.exe") {
-    Start-Process -FilePath "$env:ProgramFiles\Microsoft\Edge\Application\msedge.exe" -ArgumentList "--app=`"$Url`""
-  } elseif (Test-Path "$env:ProgramFiles\Google\Chrome\Application\chrome.exe") {
-    Start-Process -FilePath "$env:ProgramFiles\Google\Chrome\Application\chrome.exe" -ArgumentList "--app=`"$Url`""
+  $browser = Resolve-PreferredBrowser
+  if ($browser) {
+    Start-Process -FilePath $browser -ArgumentList "--app=`"$Url`""
   } else {
     Start-Process $Url
   }

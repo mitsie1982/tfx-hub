@@ -189,10 +189,16 @@ if (IsPortInUse -port $TargetPort) {
       Log "Customer server.js not found at $custServer; will rely on launching with PORT env var"
     }
 
-    # Update Desktop shortcut for Demo Customer if exists
+    # Update the current customer build shortcut if it exists; fall back to legacy shortcut names.
     try {
       $desktop = [Environment]::GetFolderPath('Desktop')
-      $link = Join-Path $desktop 'Demo Customer.lnk'
+      $linkCandidates = @(
+        (Join-Path $desktop 'Build Customer Client.lnk'),
+        (Join-Path $desktop 'Build Customer.lnk'),
+        (Join-Path $desktop 'Demo Customer Client.lnk'),
+        (Join-Path $desktop 'Demo Customer.lnk')
+      )
+      $link = $linkCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
       if (Test-Path $link) {
         $shell = New-Object -ComObject WScript.Shell
         $sc = $shell.CreateShortcut($link)
@@ -210,9 +216,9 @@ if (IsPortInUse -port $TargetPort) {
         $sc.TargetPath = (Get-Command powershell.exe).Source
         $sc.Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$wrapper`""
         $sc.Save()
-        Log "Updated Demo Customer shortcut to launch wrapper that sets PORT=$CustomerFallbackPort"
+        Log "Updated customer browser shortcut to launch wrapper that sets PORT=$CustomerFallbackPort"
       } else {
-        Log "Demo Customer shortcut not found on Desktop; skipping shortcut update"
+        Log "Customer browser shortcut not found on Desktop; skipping shortcut update"
       }
     } catch {
       Log "Failed to update Desktop shortcut: $($_.Exception.Message)"
@@ -236,14 +242,20 @@ if ($CreateSnapshot) {
       if (-not $uid) { throw "Cannot extract dashboard UID from $GrafanaDashboardUrl" }
       $dashResp = Invoke-RestMethod -Uri "$GrafanaApiUrl/api/dashboards/uid/$uid" -Headers @{ Authorization = "Bearer $GrafanaApiKey" } -Method Get -ErrorAction Stop
       $dashboardJson = $dashResp.dashboard
-      $payload = @{ dashboard = $dashboardJson; name = "Demo snapshot $(Get-Date -Format yyyyMMddTHHmmss)"; expires = 3600 } | ConvertTo-Json -Depth 20
+      $payload = @{ dashboard = $dashboardJson; name = "Build snapshot $(Get-Date -Format yyyyMMddTHHmmss)"; expires = 3600 } | ConvertTo-Json -Depth 20
       $snapResp = Invoke-RestMethod -Uri "$GrafanaApiUrl/api/snapshots" -Headers @{ Authorization = "Bearer $GrafanaApiKey"; 'Content-Type' = 'application/json' } -Method Post -Body $payload -ErrorAction Stop
       if ($snapResp.url) {
         Log "Snapshot created: $($snapResp.url)"
-        # Optionally update Demo Customer shortcut to open snapshot
+        # Optionally update the customer browser shortcut to open the snapshot.
         try {
           $desktop = [Environment]::GetFolderPath('Desktop')
-          $link = Join-Path $desktop 'Demo Customer.lnk'
+          $linkCandidates = @(
+            (Join-Path $desktop 'Build Customer Client.lnk'),
+            (Join-Path $desktop 'Build Customer.lnk'),
+            (Join-Path $desktop 'Demo Customer Client.lnk'),
+            (Join-Path $desktop 'Demo Customer.lnk')
+          )
+          $link = $linkCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
           if (Test-Path $link) {
             $shell = New-Object -ComObject WScript.Shell
             $sc = $shell.CreateShortcut($link)
@@ -255,9 +267,9 @@ Start-Process `"$($snapResp.url)`"
             $wrapperContent | Out-File -FilePath $wrapper -Encoding UTF8 -Force
             $sc.Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$wrapper`""
             $sc.Save()
-            Log "Updated Demo Customer shortcut to open snapshot URL"
+            Log "Updated customer browser shortcut to open snapshot URL"
           } else {
-            Log "Demo Customer shortcut not found; snapshot URL: $($snapResp.url)"
+            Log "Customer browser shortcut not found; snapshot URL: $($snapResp.url)"
           }
         } catch {
           Log "Failed to update shortcut with snapshot: $($_.Exception.Message)"

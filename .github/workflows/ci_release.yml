@@ -167,4 +167,5 @@ jobs:
         run: |
           echo "Deployment failed! Rolling back..."
           # kubectl rollout undo deployment/tfx-hub
+          make rollback MODEL_VERSION=$(PREV_MODEL_VERSION)
           exit 1

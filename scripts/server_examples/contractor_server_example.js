@@ -37,7 +37,7 @@ const PROFESSIONALS = [
     avatar: '🏗️'
   },
   {
-    id: 'pro-004', name: 'Naledi Khumalo', trade: 'Painter',
+    id: 'pro-004', name: 'Theuns Fraser', trade: 'Painter',
     tier: 'ONBOARDED',  jobs: 4,   rating: 3.8,
     credential: 'None',  phone: '+27 60 222 3344',
     location: 'Pretoria', lastActive: '2026-04-01',
@@ -49,7 +49,7 @@ const JOBS = [
   { id: 'job-101', title: 'Fix burst pipe – Sea Point',       contractor: 'John Smit',     status: 'COMPLETED', fee: 'R 850',  date: '2026-03-29' },
   { id: 'job-102', title: 'Install DB board – Sandton',       contractor: 'Sarah Khubone', status: 'IN_PROGRESS',fee: 'R 2 400',date: '2026-04-01' },
   { id: 'job-103', title: 'Patio extension – Umhlanga',       contractor: 'Thabo Mthembu', status: 'PENDING',   fee: 'R 15 000',date: '2026-04-02' },
-  { id: 'job-104', title: 'Interior repaint – Hatfield',      contractor: 'Naledi Khumalo',status: 'PENDING',   fee: 'R 3 200', date: '2026-04-03' },
+  { id: 'job-104', title: 'Interior repaint – Hatfield',      contractor: 'Theuns Fraser',status: 'PENDING',   fee: 'R 3 200', date: '2026-04-03' },
   { id: 'job-105', title: 'Geyser replacement – Bellville',   contractor: 'John Smit',     status: 'COMPLETED', fee: 'R 4 500', date: '2026-03-27' }
 ];
 

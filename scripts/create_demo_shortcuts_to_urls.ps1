@@ -5,10 +5,8 @@ if (-not (Test-Path $edge)) { $edge = "$env:ProgramFiles (x86)\Microsoft\Edge\Ap
 $browserExe = if (Test-Path $edge) { $edge } else { (Get-Command "start" -ErrorAction SilentlyContinue).Source }
 
 $shortcuts = @(
-  @{ Name='Demo Contractor'; Url='http://localhost:3001' },
-  @{ Name='Demo Customer';   Url='http://localhost:3000' },
-  @{ Name='Demo AMS';        Url='http://localhost:3002' },
-  @{ Name='Demo Members';    Url='http://localhost:3003' }
+  @{ Name='Build Contractor';      Url='http://localhost:3002' },
+  @{ Name='Build Customer Client'; Url='http://localhost:3001' }
 )
 
 $shell = New-Object -ComObject WScript.Shell

@@ -1,0 +1,29 @@
+groups:
+  - name: model-serving
+    rules:
+      - alert: HighLatency95thPercentile
+        expr: histogram_quantile(0.95, sum(rate(request_duration_seconds_bucket[5m])) by (le)) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "95th percentile latency is above 0.5s"
+          description: "The 95th percentile request latency has exceeded 0.5 seconds for 5 minutes."
+
+      - alert: HighErrorRate
+        expr: sum(rate(request_errors_total[5m])) / sum(rate(requests_total[5m])) > 0.01
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Error rate above 1%"
+          description: "The error rate has exceeded 1% for 5 minutes."
+
+      - alert: DataDriftDetected
+        expr: sum(data_drift_events_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Data drift detected"
+          description: "A data drift event has been detected. Investigate the model input distribution."

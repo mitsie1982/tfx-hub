@@ -23,9 +23,21 @@ function Assert-Condition {
 Set-Location $repoRoot
 
 if ($pgBin -and (Test-Path $pgCtl)) {
-  & $pgCtl -D $dataDir status 2>$null | Out-Null
-  if ($LASTEXITCODE -ne 0) {
-    & $pgCtl -D $dataDir -l $pgLog -o ' -p 5433 ' start | Out-Host
+  if (-not (Test-PostgresClusterReady -PgCtlPath $pgCtl -PsqlPath (Join-Path $pgBin 'psql.exe') -DataDir $dataDir -Port 5433)) {
+    $psql = Join-Path $pgBin 'psql.exe'
+    if (-not (Wait-PostgresClusterReady -PgCtlPath $pgCtl -PsqlPath $psql -DataDir $dataDir -Port 5433 -TimeoutSeconds 20)) {
+      $listeningProcess = Get-ListeningProcessInfo -Port 5433
+      if ($listeningProcess -and -not (Test-ProcessMatchesDataDir -ProcessId $listeningProcess.ProcessId -DataDir $dataDir)) {
+        $processName = if ($listeningProcess.Name) { $listeningProcess.Name } else { 'unknown' }
+        throw ('Port 5433 is already in use by pid=' + $listeningProcess.ProcessId + ' (' + $processName + ') and does not belong to the repo-local PostgreSQL cluster.')
+      }
+
+      $pgCtlStart = Invoke-PgCtlStart -PgCtlPath $pgCtl -DataDir $dataDir -LogFile $pgLog -PortArgument ' -p 5433 '
+      $postgresStartExitCode = $pgCtlStart.ExitCode
+      if (($postgresStartExitCode -ne 0) -and (-not (Wait-PostgresClusterReady -PgCtlPath $pgCtl -PsqlPath $psql -DataDir $dataDir -Port 5433 -TimeoutSeconds 30))) {
+        throw 'Unable to start repo-local PostgreSQL cluster on port 5433 for smoke verification.'
+      }
+    }
   }
 }
 

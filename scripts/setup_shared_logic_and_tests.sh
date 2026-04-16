@@ -77,7 +77,7 @@ if [ ! -f "$PKG_DIR/package.json" ]; then
   },
   "scripts": {
     "build": "echo 'build @tfx/shared-logic (no-op)'",
-    "test": "node ../../tests/shared-logic/unit/run_unit_tests.js",
+    "test": "node ../../tests/shared-logic/unit/run_unit_tests.cjs",
     "test:integration": "node ../../tests/shared-logic/integration/run_integration_test.js"
   },
   "dependencies": {
@@ -460,8 +460,8 @@ else
   echo "$UNIT_DIR/test_api_client_unit.js exists (skipped)"
 fi
 
-if [ ! -f "$UNIT_DIR/run_unit_tests.js" ]; then
-  cat > "$UNIT_DIR/run_unit_tests.js" <<'JS'
+if [ ! -f "$UNIT_DIR/run_unit_tests.cjs" ]; then
+  cat > "$UNIT_DIR/run_unit_tests.cjs" <<'JS'
 const path = require('path');
 async function main() {
   const tests = [
@@ -480,9 +480,9 @@ async function main() {
 }
 main().catch((e) => { console.error(e); process.exit(1); });
 JS
-  echo "Created unit test runner: $UNIT_DIR/run_unit_tests.js"
+  echo "Created unit test runner: $UNIT_DIR/run_unit_tests.cjs"
 else
-  echo "$UNIT_DIR/run_unit_tests.js exists (skipped)"
+  echo "$UNIT_DIR/run_unit_tests.cjs exists (skipped)"
 fi
 
 # -------------------------
@@ -814,7 +814,7 @@ if [ ! -f "$CAPP_DIR/package.json" ]; then
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "test": "node ../../tests/contractor-app/unit/run_unit_tests.js"
+    "test": "node ../../tests/contractor-app/unit/run_unit_tests.cjs"
   },
   "dependencies": {
     "@tfx/shared-logic": "workspace:*",
@@ -925,8 +925,8 @@ JS
   echo "Created $CAPP_SRC/index.js"
 fi
 
-if [ ! -f "$CAPP_TESTS/run_unit_tests.js" ]; then
-  cat > "$CAPP_TESTS/run_unit_tests.js" <<'JS'
+if [ ! -f "$CAPP_TESTS/run_unit_tests.cjs" ]; then
+  cat > "$CAPP_TESTS/run_unit_tests.cjs" <<'JS'
 const path = require('path');
 const tests = ['test_jobs_view_unit.js', 'test_onboarding_flow_unit.js', 'test_profile_view_unit.js'];
 let passed = 0; let failed = 0;
@@ -945,7 +945,7 @@ async function main() {
 }
 main();
 JS
-  echo "Created $CAPP_TESTS/run_unit_tests.js"
+  echo "Created $CAPP_TESTS/run_unit_tests.cjs"
 fi
 
 if [ ! -f "$CAPP_TESTS/test_jobs_view_unit.js" ]; then
@@ -1043,7 +1043,7 @@ const { createApiClient, auth } = require('@tfx/shared-logic');
 
 ## Tests
 
-- Unit tests: `node tests/shared-logic/unit/run_unit_tests.js`
+- Unit tests: `node tests/shared-logic/unit/run_unit_tests.cjs`
 - Integration test: `node tests/shared-logic/integration/run_integration_test.js`
 MD
   echo "Created README for shared-logic"
