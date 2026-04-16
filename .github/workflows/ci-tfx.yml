@@ -31,10 +31,10 @@
           TFMA_OUTPUT_DIR: tfma-output
         run: |
           mkdir -p "${TFMA_OUTPUT_DIR}"
-          # Replace the following placeholder with your real TFMA evaluation command.
-          # The command must write a JSON metrics file into ${TFMA_OUTPUT_DIR}, e.g. tfma_metrics.json
-          # Example placeholder (remove and run your TFMA job instead):
-          echo '{"overall": {"accuracy": 0.95, "auc": 0.90}}' > "${TFMA_OUTPUT_DIR}/tfma_metrics.json"
+            # TODO: Replace the following line with your real TFMA evaluation command that writes metrics to ${{ env.TFMA_OUTPUT_DIR }}
+            # Example:
+            # python my_tfma_eval.py --output_dir ${{ env.TFMA_OUTPUT_DIR }}
+            echo '{"overall": {"accuracy": 0.95, "auc": 0.90}}' > "${TFMA_OUTPUT_DIR}/tfma_metrics.json"
         # If your TFMA evaluation runs in a container or on GCP, replace this step accordingly.
 
       - name: Run TFMA gating script
@@ -81,6 +81,12 @@ jobs:
           registry: gcr.io
           username: _json_key
           password: ${{ secrets.GCP_SA_KEY }}
+        - name: Configure Docker auth
+          uses: docker/login-action@v2
+          with:
+            registry: ${{ secrets.REGISTRY_HOST }}
+            username: ${{ secrets.REGISTRY_USERNAME }}
+            password: ${{ secrets.REGISTRY_PASSWORD }}
 
       - name: Install dependencies
         run: |
