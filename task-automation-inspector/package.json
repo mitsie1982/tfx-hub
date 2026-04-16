@@ -1,0 +1,32 @@
+{
+  "name": "task-automation-inspector",
+  "displayName": "Task Automation Inspector",
+  "publisher": "local",
+  "version": "0.0.1",
+  "engines": { "vscode": "^1.80.0" },
+  "activationEvents": ["onCommand:taskAutomation.compute"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "taskAutomation.compute",
+        "title": "Task Automation: Compute Percentage"
+      }
+    ],
+    "extensionPack": [
+      "esbenp.prettier-vscode",
+      "dbaeumer.vscode-eslint",
+      "eamodio.gitlens"
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -w -p ./"
+  },
+  "devDependencies": {
+    "typescript": "^5.1.6",
+    "@types/node": "^18.0.0",
+    "@types/vscode": "^1.80.0",
+    "vscode-test": "^1.6.1"
+  }
+}

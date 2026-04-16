@@ -6,7 +6,7 @@
   "types": "src/index.d.ts",
   "scripts": {
     "build": "echo 'build @tfx/shared-auth (no-op)'",
-    "test": "node ../../tests/shared-auth/unit/run_unit_tests.js",
+    "test": "node ../../tests/shared-auth/unit/run_unit_tests.cjs",
     "test:integration": "node ../../tests/shared-auth/integration/run_integration_test.js"
   },
   "dependencies": {

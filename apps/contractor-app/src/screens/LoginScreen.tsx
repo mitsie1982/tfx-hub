@@ -12,6 +12,7 @@ type Props = {
   firstName: string;
   lastName: string;
   trade: string;
+  phoneNumber: string;
   resetToken: string;
   error: string | null;
   info: string | null;
@@ -24,6 +25,7 @@ type Props = {
   onFirstNameChange: (value: string) => void;
   onLastNameChange: (value: string) => void;
   onTradeChange: (value: string) => void;
+  onPhoneNumberChange: (value: string) => void;
   onResetTokenChange: (value: string) => void;
   onSubmit: () => void;
 };
@@ -36,6 +38,7 @@ export default function LoginScreen({
   firstName,
   lastName,
   trade,
+  phoneNumber,
   resetToken,
   error,
   info,
@@ -48,6 +51,7 @@ export default function LoginScreen({
   onFirstNameChange,
   onLastNameChange,
   onTradeChange,
+  onPhoneNumberChange,
   onResetTokenChange,
   onSubmit
 }: Props) {
@@ -61,7 +65,7 @@ export default function LoginScreen({
         <Text style={styles.title}>Access your TFX Hub workspace</Text>
         <Text style={styles.subtitle}>
           {mode === 'login' ? 'Sign in to load your contractor profile, live jobs feed, and lead history.' : null}
-          {mode === 'register' ? 'Create a contractor account and open your mobile workspace.' : null}
+          {mode === 'register' ? 'Create a contractor account with trade and mobile number so the browser, mobile, and WhatsApp flows stay aligned.' : null}
           {mode === 'reset' ? 'Request a reset token, then submit it with a new password.' : null}
         </Text>
       </View>
@@ -85,13 +89,16 @@ export default function LoginScreen({
         {isRegister ? (
           <>
             <Text style={styles.label}>First name</Text>
-            <TextInput value={firstName} onChangeText={onFirstNameChange} placeholder="Naledi" placeholderTextColor="#6b7280" style={styles.input} />
+            <TextInput value={firstName} onChangeText={onFirstNameChange} placeholder="Theuns" placeholderTextColor="#6b7280" style={styles.input} />
 
             <Text style={styles.label}>Last name</Text>
-            <TextInput value={lastName} onChangeText={onLastNameChange} placeholder="Khumalo" placeholderTextColor="#6b7280" style={styles.input} />
+            <TextInput value={lastName} onChangeText={onLastNameChange} placeholder="Fraser" placeholderTextColor="#6b7280" style={styles.input} />
 
             <Text style={styles.label}>Trade</Text>
             <TextInput value={trade} onChangeText={onTradeChange} placeholder="electrician" placeholderTextColor="#6b7280" style={styles.input} />
+
+            <Text style={styles.label}>RSA mobile number</Text>
+            <TextInput value={phoneNumber} onChangeText={onPhoneNumberChange} placeholder="+27710000001" placeholderTextColor="#6b7280" style={styles.input} />
           </>
         ) : null}
 
@@ -147,7 +154,7 @@ export default function LoginScreen({
 
         <Button title={loading ? 'Working...' : actionLabel} onPress={onSubmit} style={styles.primaryButton} />
 
-        <Text style={styles.helperText}>Demo sign-in for local API: contractor@example.com or +27710000001 / password123</Text>
+        <Text style={styles.helperText}>Demo sign-in for Theuns Fraser: contractor@example.com or +27710000001 / password123</Text>
       </View>
     </View>
   );

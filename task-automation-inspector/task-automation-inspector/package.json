@@ -1,0 +1,15 @@
+{
+  "name": "task-automation-inspector",
+  "displayName": "Task Automation Inspector",
+  "publisher": "local",
+  "version": "0.0.1",
+  "engines": { "vscode": "^1.80.0" },
+  "activationEvents": ["onCommand:taskAutomation.compute"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      { "command": "taskAutomation.compute", "title": "Task Automation: Compute Percentage" }
+    ]
+  },
+  "scripts": { "compile": "echo 'compile step placeholder'" }
+}

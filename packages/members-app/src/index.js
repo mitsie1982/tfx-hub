@@ -1,4 +1,4 @@
-﻿/*
+/*
  packages/members-app/src/index.js
  Members app entry point - composes shared logic with association and professional workspaces.
 */

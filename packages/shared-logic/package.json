@@ -10,6 +10,7 @@
     "./apiClient": "./src/apiClient.js",
     "./auth": "./src/auth.js",
     "./contractor": "./src/contractor.js",
+    "./demoSeed": "./src/demoSeed.js",
     "./jobs": "./src/jobs.js",
     "./onboarding": "./src/onboarding.js",
     "./professionals": "./src/professionals.js",
@@ -24,11 +25,11 @@
   },
   "scripts": {
     "build": "echo 'build @tfx/shared-logic (no-op)'",
-    "test": "node ../../tests/shared-logic/unit/run_unit_tests.js",
+    "test": "node ../../tests/shared-logic/unit/run_unit_tests.cjs",
     "test:integration": "node ../../tests/shared-logic/integration/run_integration_test.js"
   },
   "dependencies": {
-    "axios": "^1.4.0",
+    "axios": "^1.15.0",
     "jsonwebtoken": "^9.0.0"
   }
 }

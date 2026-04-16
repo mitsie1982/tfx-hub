@@ -1,11 +1,11 @@
-﻿{
+{
   "name": "@tfx/ams-app",
   "version": "0.0.1",
   "private": true,
   "main": "src/index.js",
   "scripts": {
     "build": "echo 'build @tfx/ams-app (no-op)'",
-    "test": "node ../../tests/ams-package/unit/run_unit_tests.js",
+    "test": "node ../../tests/ams-package/unit/run_unit_tests.cjs",
     "start": "node src/index.js"
   },
   "dependencies": {

@@ -62,6 +62,30 @@ Set-Location "C:\Users\1hans\tfx-hub"
 pnpm.cmd run stack:local:windows:status
 ```
 
+Install Windows sign-in auto-start for the current user:
+
+```powershell
+Set-Location "C:\Users\1hans\tfx-hub"
+pnpm.cmd run stack:local:windows:autostart:install
+pnpm.cmd run stack:local:windows:autostart:status
+```
+
+Remove Windows sign-in auto-start:
+
+```powershell
+Set-Location "C:\Users\1hans\tfx-hub"
+pnpm.cmd run stack:local:windows:autostart:remove
+```
+
+Manage only the repo-local PostgreSQL cluster:
+
+```powershell
+Set-Location "C:\Users\1hans\tfx-hub"
+pnpm.cmd run pg:local:windows:start
+pnpm.cmd run pg:local:windows:status
+pnpm.cmd run pg:local:windows:stop
+```
+
 The wrapper writes process metadata and logs under `artifacts/local-live-stack/`.
 
 Key files:
@@ -72,7 +96,24 @@ Key files:
 
 If `processes.json` is missing, the status command still reports which known service logs exist and whether the API, browser hosts, and local PostgreSQL cluster are reachable.
 
+## Auto-Start At Sign-In
+
+The install wrapper creates a Scheduled Task for the current Windows user under `\TFXHub\Local Live Stack At Sign-In`.
+
+- Trigger: at user sign-in
+- Delay: 20 seconds by default
+- Action: run `scripts/start_local_live_stack_windows.ps1` hidden through `powershell.exe`
+- Safety: the startup wrapper ignores duplicate launches, so the desktop shortcuts still work if the task and a manual launch overlap
+
 ## Start Isolated PostgreSQL
+
+The direct commands below are equivalent to the dedicated Windows wrappers:
+
+```powershell
+pnpm.cmd run pg:local:windows:start
+pnpm.cmd run pg:local:windows:status
+pnpm.cmd run pg:local:windows:stop
+```
 
 Create the local data directory once:
 

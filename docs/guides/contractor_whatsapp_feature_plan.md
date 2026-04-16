@@ -45,13 +45,13 @@ System response:
 Example:
 
 ```text
-Welcome back, Naledi.
+Welcome back, Theuns.
 
 Contractor snapshot
 Open leads: 12
-Active quotes: 3
-Completed jobs: 67
-Response time: 12 min
+Active quotes: 7
+Completed jobs: 128
+Response time: 8 min
 
 Reply with a number:
 1. My Profile
@@ -111,13 +111,13 @@ Example:
 ```text
 Your contractor profile
 
-Name: Naledi Khumalo
+Name: Theuns Fraser
 Trade: General Contractor
 Tier: TRUSTED
-Rating: 4.7
-Completed jobs: 67
-Active quotes: 5
-Response time: 12 min
+Rating: 4.9
+Completed jobs: 128
+Active quotes: 7
+Response time: 8 min
 
 Reply:
 1. My Leads

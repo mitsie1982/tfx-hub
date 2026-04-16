@@ -1,0 +1,12 @@
+include: common-steps.yml
+name: Includes and Templates Example
+description: Demonstrates YAML include and variable templating
+variables:
+  TARGET: "production"
+steps:
+  - name: Pre
+    run: echo "Pre step"
+  - name: Included Step
+    run: echo "Included step should run"
+  - name: Deploy
+    run: echo "Deploying to ${{ TARGET }}"

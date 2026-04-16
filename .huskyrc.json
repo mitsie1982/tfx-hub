@@ -1,0 +1,6 @@
+{
+  "hooks": {
+    "pre-commit": ["pnpm lint", "pnpm test", "pnpm codemod:rename-entities:check"],
+    "pre-push": ["pnpm test"]
+  }
+}

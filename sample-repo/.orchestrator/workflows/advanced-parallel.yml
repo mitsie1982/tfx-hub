@@ -1,0 +1,10 @@
+name: Advanced Parallel
+description: Parallel group with retries and env
+steps:
+  - parallel:
+      - name: Lint
+        run: npm run lint
+        retries: 1
+        retryDelaySeconds: 2
+      - name: Typecheck
+        run: npm run typecheck

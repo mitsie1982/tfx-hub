@@ -1,0 +1,84 @@
+model Availability {
+  id            String   @id @default(uuid())
+  contractorId  String
+  start         DateTime
+  end           DateTime
+  isBooked      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+}
+
+model Booking {
+  id            String   @id @default(uuid())
+  jobId         String
+  contractorId  String
+  clientId      String
+  slotId        String
+  start         DateTime
+  end           DateTime
+  calendarEventId String?
+  createdAt     DateTime @default(now())
+}
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Professional {
+  id        String   @id @default(uuid())
+  name      String
+  tier      Int
+  jobs      Int
+  rating    Float
+  nhbrc     Boolean
+  mbsa      Boolean
+  createdAt DateTime @default(now())
+}
+
+model Job {
+  id         String   @id @default(uuid())
+  title      String
+  status     String
+  version    Int      @default(1)
+  contractorId String?
+  customerId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Digital contract fields
+  contractStatus String? // 'pending', 'signed', etc.
+  contractClientSigned Boolean? @default(false)
+  contractContractorSigned Boolean? @default(false)
+  contractDocument String? // Optionally store contract text or URL
+}
+
+model Profile {
+  id        String   @id @default(uuid())
+  name      String
+  role      String
+  phone     String?
+  createdAt DateTime @default(now())
+}
+
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String
+  payload   String
+  jobId     String?
+  createdAt DateTime @default(now())
+}
+
+model NotificationFailure {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String
+  payload   String?
+  jobId     String?
+  error     String?
+  traceId   String?
+  createdAt DateTime @default(now())
+}

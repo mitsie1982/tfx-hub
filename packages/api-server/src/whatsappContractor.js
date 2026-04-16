@@ -76,7 +76,7 @@ function matchesLeadSearch(lead, query) {
 function splitName(fullName) {
   const parts = String(fullName || '').trim().split(/\s+/).filter(Boolean);
   return {
-    firstName: parts[0] || 'Contractor',
+    firstName: parts[0] || "Contractor Customer Management System (CCMS)",
     lastName: parts.slice(1).join(' ') || 'User'
   };
 }

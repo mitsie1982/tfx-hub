@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 const http = require('http');
 const { URL } = require('url');
@@ -12,8 +12,11 @@ const {
 	renderSection,
 	renderShell,
 	renderStats
-} = require('../browserHostUtils');
+} = require('../browserHostUtils.cjs');
 const amsData = require('./src/services/amsData');
+
+const { extractJobDetails } = require('../../packages/shared-logic/src/nlpMatcher');
+const SAMPLE_CONTRACTORS = require('./src/services/amsData').fetchAdminOverview().then(d => d.contractors).catch(() => []);
 
 async function loadModel(requestUrl) {
 	const url = new URL(requestUrl, 'http://127.0.0.1');
@@ -46,13 +49,13 @@ function renderAdminManagementSection(model) {
 	const adminManagement = model.adminManagementResult || { accounts: [], auditEvents: [], csvPreview: '' };
 	const accountCards = (adminManagement.accounts || []).map((item) => ({
 		title: `${item.firstName || ''} ${item.lastName || ''}`.trim() || item.username,
-		meta: `${item.username} · ${item.email}`,
+		meta: `${item.username} � ${item.email}`,
 		body: item.isBootstrapAdmin ? 'Bootstrap admin: reset and credential rotation are blocked in the API.' : 'Managed admin: browser actions can issue resets and rotate credentials.',
 		footer: item.isBootstrapAdmin ? 'Bootstrap admin' : 'Managed admin'
 	}));
 	const auditCards = (adminManagement.auditEvents || []).map((item) => ({
 		title: item.eventType,
-		meta: `${item.outcome} · ${item.requestMethod || 'N/A'} ${item.requestPath || ''}`.trim(),
+		meta: `${item.outcome} � ${item.requestMethod || 'N/A'} ${item.requestPath || ''}`.trim(),
 		body: item.reason || 'No reason supplied.',
 		footer: item.createdAt || 'Recently'
 	}));
@@ -87,7 +90,7 @@ function renderAdminManagementSection(model) {
 		<div class="card-list">${(adminManagement.accounts || []).map((item) => `
 			<article class="list-card">
 				<h3>${escapeHtml(`${item.firstName || ''} ${item.lastName || ''}`.trim() || item.username)}</h3>
-				<p class="meta">${escapeHtml(`${item.username} · ${item.email}`)}</p>
+				<p class="meta">${escapeHtml(`${item.username} � ${item.email}`)}</p>
 				${item.isBootstrapAdmin ? `<p>${escapeHtml('Bootstrap admin resets and credential rotation must be handled out-of-band.')}</p>` : `
 					<form method="post" action="/actions/admin-account-reset">
 						<input type="hidden" name="adminUserId" value="${escapeHtml(item.id)}">
@@ -166,7 +169,7 @@ function renderModel(model) {
 			renderSection('Professional Tiers', renderPills(Object.entries(overview.professionalsByTier || {}).map(([tier, count]) => `${tier}: ${count}`))),
 			renderSection('Contractor Directory', renderCards(model.contractors.map((item) => ({
 				title: item.name,
-				meta: `${item.trade} · ${item.tier} · ${item.rating || 'N/A'} rating`,
+				meta: `${item.trade} � ${item.tier} � ${item.rating || 'N/A'} rating`,
 				footer: 'Open browser detail',
 				actionHref: `/?section=contractors&professionalId=${encodeURIComponent(item.id)}`,
 				actionLabel: 'Inspect contractor'
@@ -184,7 +187,7 @@ function renderModel(model) {
 				`<p>${escapeHtml(contractor.summary || 'No contractor summary available.')}</p>`,
 				renderCards((contractor.adminActions || []).map((action) => ({
 					title: action.summary,
-					meta: `${action.actionType} · ${action.createdAt || 'Recently'}`,
+					meta: `${action.actionType} � ${action.createdAt || 'Recently'}`,
 					body: action.note || 'No note recorded.',
 					footer: `Source: ${action.source || 'live'}`
 				}))),
@@ -257,6 +260,44 @@ function createServer() {
 		}
 
 		const url = new URL(req.url, 'http://127.0.0.1');
+
+		// --- SMART MATCH ENDPOINT (Automated Mode) ---
+		if (req.method === 'POST' && url.pathname === '/api/smart-match') {
+			let body = '';
+			req.on('data', chunk => { body += chunk; });
+			req.on('end', async () => {
+				try {
+					const { requestText } = JSON.parse(body || '{}');
+					if (!requestText) {
+						res.writeHead(400, { 'Content-Type': 'application/json' });
+						res.end(JSON.stringify({ error: 'Missing requestText' }));
+						return;
+					}
+					// 1. NLP extraction
+					const { trade, location, serviceType } = await extractJobDetails(requestText);
+					// 2. Get contractors (sample mode if not authenticated)
+					let contractors = [];
+					try {
+						const overview = await require('./src/services/amsData').fetchAdminOverview();
+						contractors = overview.contractors || [];
+					} catch { contractors = await SAMPLE_CONTRACTORS; }
+					// 3. Filter contractors
+					let matches = contractors.filter(c =>
+						(!trade || c.trade === trade) &&
+						(!location || c.location === location) &&
+						c.available === true
+					);
+					// 4. Rank by rating (extendable)
+					matches = matches.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+					res.writeHead(200, { 'Content-Type': 'application/json' });
+					res.end(JSON.stringify({ matches }));
+				} catch (error) {
+					res.writeHead(500, { 'Content-Type': 'application/json' });
+					res.end(JSON.stringify({ error: error.message }));
+				}
+			});
+			return;
+		}
 
 		if (req.method === 'GET' && url.pathname === '/exports/admin-audit.csv') {
 			try {

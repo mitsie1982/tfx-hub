@@ -1,4 +1,4 @@
-﻿{
+{
     "private":  true,
     "name":  "ams-app",
     "version":  "0.0.1",
@@ -11,6 +11,6 @@
                      },
     "scripts":  {
                     "start":  "node server.js",
-                    "test":  "node ../../tests/ams-mobile-app/unit/run_unit_tests.js"
+                    "test":  "node ../../tests/ams-mobile-app/unit/run_unit_tests.cjs"
                 }
 }

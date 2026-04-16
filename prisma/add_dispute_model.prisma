@@ -1,0 +1,11 @@
+// Prisma model for Dispute Resolution Center
+model Dispute {
+  id          String   @id @default(uuid())
+  jobId       String
+  parties     String[] // Array of user IDs or names
+  chatHistory Json?    // Array of chat messages
+  status      String   // 'OPEN', 'IN_REVIEW', 'RESOLVED'
+  resolution  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

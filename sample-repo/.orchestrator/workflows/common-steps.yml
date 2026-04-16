@@ -1,0 +1,4 @@
+# This file is included by includes-and-templates.yml
+steps:
+  - name: Included Step
+    run: echo "This step came from included YAML"

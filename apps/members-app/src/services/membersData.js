@@ -1,5 +1,5 @@
 const { createMembersApp } = require('../../../../packages/members-app/src');
-const { auth } = require('@tfx/shared-logic');
+const { auth, getHumanFacingDemoSeed } = require('@tfx/shared-logic');
 const secureTokenStorage = require('../secureTokenStorage');
 
 const runtime = {
@@ -8,19 +8,16 @@ const runtime = {
   secureTokenStorage
 };
 
-const SAMPLE_OVERVIEW = {
-  totals: { openJobs: 4, inProgressJobs: 2, completedJobs: 13, professionals: 9 },
-  openJobsByTrade: { plumber: 2, electrician: 1, builder: 1 },
-  professionalsByTrade: { plumber: 3, builder: 2, electrician: 2, roofer: 2 }
-};
-
-const SAMPLE_PROFESSIONAL = {
-  id: 'pro-101',
-  name: 'Lerato Ndlovu',
-  trade: 'electrician',
-  tier: 'VERIFIED',
-  rating: 4.6
-};
+const demoSeed = getHumanFacingDemoSeed();
+const SAMPLE_OVERVIEW = demoSeed.members.overview;
+const SAMPLE_PROFESSIONALS = demoSeed.members.professionals;
+const SAMPLE_PROFESSIONAL_DETAILS = demoSeed.professionals.directory.reduce((accumulator, professional) => {
+  accumulator[professional.id] = professional;
+  return accumulator;
+}, {});
+const SAMPLE_ASSOCIATION_ACTIONS = demoSeed.members.associationActions;
+const SAMPLE_PROFESSIONAL_REQUESTS = demoSeed.members.professionalRequests;
+const SAMPLE_PROFESSIONAL = SAMPLE_PROFESSIONAL_DETAILS['pro-003'];
 
 function applyTokenPersistence() {
   runtime.auth.tokenStore.setPersistence({
@@ -97,15 +94,15 @@ async function performAssociationOperationalAction(professionalId, actionType) {
 async function fetchProfessionalMobileProfile(professionalId = SAMPLE_PROFESSIONAL.id) {
   await runtime.auth.tokenStore.hydrate();
   if (!runtime.auth.tokenStore.get()) {
-    return { item: SAMPLE_PROFESSIONAL, source: 'sample', warning: 'No active members session. Showing sample professional profile.' };
+    return { item: SAMPLE_PROFESSIONAL_DETAILS[professionalId] || SAMPLE_PROFESSIONAL, source: 'sample', warning: 'No active members session. Showing seeded professional profile.' };
   }
 
   try {
     const app = createApp();
     const item = await app.professionals.getProfile(professionalId);
-    return { item: item || SAMPLE_PROFESSIONAL, source: 'live', warning: null };
+    return { item: item || SAMPLE_PROFESSIONAL_DETAILS[professionalId] || SAMPLE_PROFESSIONAL, source: 'live', warning: null };
   } catch (error) {
-    return { item: SAMPLE_PROFESSIONAL, source: 'sample', warning: 'Unable to load live professional profile. Showing sample data.' };
+    return { item: SAMPLE_PROFESSIONAL_DETAILS[professionalId] || SAMPLE_PROFESSIONAL, source: 'sample', warning: 'Unable to load live professional profile. Showing seeded sample data.' };
   }
 }
 
@@ -147,7 +144,7 @@ async function performProfessionalOperationalAction(actionType, professionalId =
 async function fetchProfessionalOperationalRequests(professionalId = SAMPLE_PROFESSIONAL.id) {
   await runtime.auth.tokenStore.hydrate();
   if (!runtime.auth.tokenStore.get()) {
-    return { items: [], source: 'sample', warning: 'No active members session. Showing sample request history.' };
+    return { items: SAMPLE_PROFESSIONAL_REQUESTS[professionalId] || [], source: 'sample', warning: 'No active members session. Showing seeded request history.' };
   }
 
   try {
@@ -155,14 +152,24 @@ async function fetchProfessionalOperationalRequests(professionalId = SAMPLE_PROF
     const items = await app.professionals.listOperationalRequests(professionalId);
     return { items, source: 'live', warning: null };
   } catch (error) {
-    return { items: [], source: 'sample', warning: 'Unable to load live professional request history.' };
+    return { items: SAMPLE_PROFESSIONAL_REQUESTS[professionalId] || [], source: 'sample', warning: 'Unable to load live professional request history. Showing seeded request history.' };
   }
+}
+
+function getSampleMembersProfessionals() {
+  return SAMPLE_PROFESSIONALS;
+}
+
+function getSampleMembersAssociationActions(professionalId = SAMPLE_PROFESSIONAL.id) {
+  return SAMPLE_ASSOCIATION_ACTIONS[professionalId] || [];
 }
 
 module.exports = {
   fetchAssociationMobileOverview,
   fetchProfessionalMobileProfile,
   fetchProfessionalOperationalRequests,
+  getSampleMembersAssociationActions,
+  getSampleMembersProfessionals,
   performAssociationOperationalAction,
   performProfessionalOperationalAction,
   __setTestDependencies(overrides = {}) {

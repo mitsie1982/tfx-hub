@@ -1,7 +1,7 @@
-﻿{
+{
     "tasks":  [
                   {
-                      "label":  "Demo Contractor",
+                      "label":  "Build Contractor",
                       "command":  "powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\Users\\1hans\\tfx-hub\\scripts\\start_contractor_demo_presentation_launcher.ps1\"",
                       "presentation":  {
                                            "reveal":  "always"
@@ -9,7 +9,7 @@
                       "type":  "shell"
                   },
                   {
-                      "label":  "Demo Customer",
+                      "label":  "Build Customer",
                       "command":  "powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\Users\\1hans\\tfx-hub\\scripts\\start_customer_demo_presentation_launcher.ps1\"",
                       "presentation":  {
                                            "reveal":  "always"
@@ -17,7 +17,7 @@
                       "type":  "shell"
                   },
                   {
-                      "label":  "Demo AMS",
+                      "label":  "Build AMS",
                       "command":  "powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\Users\\1hans\\tfx-hub\\scripts\\start_ams_demo_presentation_launcher.ps1\"",
                       "presentation":  {
                                            "reveal":  "always"
@@ -25,7 +25,7 @@
                       "type":  "shell"
                   },
                   {
-                      "label":  "Demo Members",
+                      "label":  "Build Members",
                       "command":  "powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\Users\\1hans\\tfx-hub\\scripts\\start_members_demo_presentation_launcher.ps1\"",
                       "presentation":  {
                                            "reveal":  "always"

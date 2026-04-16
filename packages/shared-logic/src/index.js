@@ -8,6 +8,7 @@ const { createProfessionalsApi } = require('./professionals');
 const { buildAssociationHeaders, mergeHeaders } = require('./requestContext');
 const { createSessionApi } = require('./session');
 const { createSharedLogicClient } = require('./sharedLogicClient');
+const { cloneDemoSeed, getHumanFacingDemoSeed } = require('./demoSeed');
 const { createWhatsappAssociationApi } = require('./whatsappAssociation');
 const { createWhatsappAdminApi } = require('./whatsappAdmin');
 const { createWhatsappContractorApi } = require('./whatsappContractor');
@@ -17,6 +18,7 @@ const { createWhatsappProfessionalApi } = require('./whatsappProfessional');
 module.exports = {
   auth,
   buildAssociationHeaders,
+  cloneDemoSeed,
   createApiClient,
   createAdminApi,
   createContractorApi,
@@ -25,6 +27,7 @@ module.exports = {
   createProfessionalsApi,
   createSessionApi,
   createSharedLogicClient,
+  getHumanFacingDemoSeed,
   createWhatsappAssociationApi,
   createWhatsappAdminApi,
   createWhatsappContractorApi,

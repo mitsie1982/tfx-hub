@@ -42,9 +42,9 @@ Use the browser workspace when you need the fullest view of leads, search, filte
 
 ```text
 Contractor workspace
-Naledi Khumalo
-general contractor · TRUSTED tier · 4.7★ rating
-Completed jobs: 67 | Active quotes: 5 | Open leads: 2 | Response time: 12 min
+Theuns Fraser
+general contractor · TRUSTED tier · 4.9★ rating
+Completed jobs: 128 | Active quotes: 7 | Open leads: 2 | Response time: 8 min
 ```
 
 #### Lead detail example
@@ -100,7 +100,7 @@ Use WhatsApp for the contractor high-intent flow: identify yourself, review lead
 #### Main menu example
 
 ```text
-Welcome back, Naledi.
+Welcome back, Theuns.
 Contractor snapshot
 Open leads: 2
 Active quotes: 5

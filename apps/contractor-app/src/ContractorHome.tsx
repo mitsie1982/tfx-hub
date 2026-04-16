@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, View, Pressable } from 'react-native';
 import DashboardScreen from './screens/DashboardScreen';
 import BrowseProjectsScreen from './screens/BrowseProjectsScreen';
+import AvailabilityScreen from './screens/AvailabilityScreen';
+import BookingScreen from './screens/BookingScreen';
+import CalendarSyncScreen from './screens/CalendarSyncScreen';
 import { ContractorRoute, ContractorTabKey, createContractorRootRoute } from './navigation';
 import { createMessageReview, createQuoteReview } from './actionReview';
 import ProjectDetailScreen from './screens/ProjectDetailScreen';
@@ -12,11 +15,42 @@ import type { ContractorProfile, ContractorProject, LeadHistoryItem, LoginCreden
 
 type AuthMode = 'login' | 'register' | 'reset';
 
-const navItems: Array<{ key: ContractorTabKey; label: string }> = [
+
+// Extend tab keys and nav items for new screens
+type ExtendedTabKey = ContractorTabKey | 'availability' | 'booking' | 'calendarSync';
+const navItems: Array<{ key: ExtendedTabKey; label: string }> = [
   { key: 'dashboard', label: 'Dashboard' },
   { key: 'browse', label: 'Browse' },
-  { key: 'history', label: 'History' }
+  { key: 'history', label: 'History' },
+  { key: 'availability', label: 'Availability' },
+  { key: 'booking', label: 'Book' },
+  { key: 'calendarSync', label: 'Calendar Sync' }
 ];
+
+const defaultContractorRegistration: RegistrationPayload = {
+  email: 'theuns.fraser@example.com',
+  password: 'password123',
+  firstName: 'Theuns',
+  lastName: 'Fraser',
+  trade: 'general contractor',
+  phoneNumber: '+27710000001'
+};
+
+const defaultResetPayload: PasswordResetPayload = {
+  email: 'contractor@example.com',
+  token: '',
+  password: 'password123'
+};
+
+const defaultQuoteDraft: QuoteDraft = {
+  amount: 'R18,500',
+  timeline: '10 working days',
+  note: 'I can start this week, share staged progress updates, and include materials handling in the quote.'
+};
+
+const defaultMessageDraft: MessageDraft = {
+  body: 'Hi Michelle, I reviewed the site notes and can help with the boundary wall extension and gate footing. I can confirm scope and timing today.'
+};
 
 export default function ContractorHome() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -29,30 +63,20 @@ export default function ContractorHome() {
     identifier: (process && process.env && process.env.TFX_CONTRACTOR_LOGIN) || 'contractor@example.com',
     password: (process && process.env && process.env.TFX_CONTRACTOR_PASSWORD) || 'password123'
   });
-  const [registration, setRegistration] = useState<RegistrationPayload>({
-    email: '',
-    password: '',
-    firstName: '',
-    lastName: '',
-    trade: ''
-  });
-  const [resetPayload, setResetPayload] = useState<PasswordResetPayload>({
-    email: '',
-    token: '',
-    password: ''
-  });
-  const [activeTab, setActiveTab] = useState<ContractorTabKey>('dashboard');
+  const [registration, setRegistration] = useState<RegistrationPayload>(defaultContractorRegistration);
+  const [resetPayload, setResetPayload] = useState<PasswordResetPayload>(defaultResetPayload);
+  const [activeTab, setActiveTab] = useState<ExtendedTabKey>('dashboard');
   const [routeStack, setRouteStack] = useState<ContractorRoute[]>([{ key: 'dashboard' }]);
   const [projects, setProjects] = useState<ContractorProject[]>([]);
   const [profile, setProfile] = useState<ContractorProfile>({
     professionalId: 'pro-003',
-    name: 'Naledi Khumalo',
+    name: 'Theuns Fraser',
     trade: 'general contractor',
     tier: 'TRUSTED',
-    rating: 4.7,
-    completedJobs: 67,
-    activeQuotes: 5,
-    responseTime: '12 min'
+    rating: 4.9,
+    completedJobs: 128,
+    activeQuotes: 7,
+    responseTime: '8 min'
   });
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [searchText, setSearchText] = useState('');
@@ -62,8 +86,8 @@ export default function ContractorHome() {
   const [dataSource, setDataSource] = useState<'live' | 'sample'>('sample');
   const [warning, setWarning] = useState<string | null>(null);
   const [profileWarning, setProfileWarning] = useState<string | null>(null);
-  const [quoteDraft, setQuoteDraft] = useState<QuoteDraft>({ amount: '', timeline: '', note: '' });
-  const [messageDraft, setMessageDraft] = useState<MessageDraft>({ body: '' });
+  const [quoteDraft, setQuoteDraft] = useState<QuoteDraft>(defaultQuoteDraft);
+  const [messageDraft, setMessageDraft] = useState<MessageDraft>(defaultMessageDraft);
   const [pendingAction, setPendingAction] = useState<PendingProjectAction | null>(null);
 
   useEffect(() => {
@@ -194,8 +218,10 @@ export default function ContractorHome() {
     setProjects([]);
     setInterestedProjectIds([]);
     setSelectedProjectId(null);
-    setQuoteDraft({ amount: '', timeline: '', note: '' });
-    setMessageDraft({ body: '' });
+    setRegistration(defaultContractorRegistration);
+    setResetPayload(defaultResetPayload);
+    setQuoteDraft(defaultQuoteDraft);
+    setMessageDraft(defaultMessageDraft);
     setPendingAction(null);
     setAuthInfo('Signed out. Sign in again to reconnect to the contractor API server.');
     setActiveTab('dashboard');
@@ -205,7 +231,7 @@ export default function ContractorHome() {
   const actionLabel = authMode === 'login'
     ? 'Sign In'
     : authMode === 'register'
-      ? 'Create Account'
+      ? 'Create Profile'
       : resetPayload.token.trim()
         ? 'Reset Password'
         : 'Request Reset Token';
@@ -260,7 +286,7 @@ export default function ContractorHome() {
       status: 'sent',
       source: response.source
     });
-    setQuoteDraft({ amount: '', timeline: '', note: '' });
+    setQuoteDraft(defaultQuoteDraft);
     setPendingAction(null);
     setActiveTab('history');
     setRouteStack([createContractorRootRoute('history')]);
@@ -291,16 +317,22 @@ export default function ContractorHome() {
       status: 'sent',
       source: response.source
     });
-    setMessageDraft({ body: '' });
+    setMessageDraft(defaultMessageDraft);
     setPendingAction(null);
     setActiveTab('history');
     setRouteStack([createContractorRootRoute('history')]);
   };
 
-  const handleSelectTab = (tab: ContractorTabKey) => {
+
+  // Handle navigation for extended tabs
+  const handleSelectTab = (tab: ExtendedTabKey) => {
     setActiveTab(tab);
     setPendingAction(null);
-    setRouteStack([createContractorRootRoute(tab)]);
+    if (tab === 'dashboard' || tab === 'browse' || tab === 'history') {
+      setRouteStack([createContractorRootRoute(tab as ContractorTabKey)]);
+    } else {
+      setRouteStack([{ key: tab } as any]);
+    }
   };
 
   const handleGoBack = () => {
@@ -308,8 +340,10 @@ export default function ContractorHome() {
     setRouteStack((current) => current.length > 1 ? current.slice(0, -1) : current);
   };
 
-  const currentRoute = routeStack[routeStack.length - 1] || createContractorRootRoute(activeTab);
-  const routeLabel = currentRoute.key === 'detail' ? `Browse / ${selectedProject?.title || currentRoute.projectId}` : navItems.find((item) => item.key === activeTab)?.label || 'Dashboard';
+  const currentRoute = routeStack[routeStack.length - 1] || createContractorRootRoute((activeTab as ContractorTabKey));
+  const routeLabel = currentRoute.key === 'detail'
+    ? `Browse / ${selectedProject?.title || (currentRoute as any).projectId}`
+    : navItems.find((item) => item.key === activeTab)?.label || 'Dashboard';
 
   return (
     <SafeAreaView style={styles.container}>
@@ -330,6 +364,7 @@ export default function ContractorHome() {
             firstName={registration.firstName}
             lastName={registration.lastName}
             trade={registration.trade}
+            phoneNumber={registration.phoneNumber || ''}
             resetToken={resetPayload.token}
             error={authError}
             info={authInfo}
@@ -359,6 +394,7 @@ export default function ContractorHome() {
             onFirstNameChange={(firstName) => setRegistration((current) => ({ ...current, firstName }))}
             onLastNameChange={(lastName) => setRegistration((current) => ({ ...current, lastName }))}
             onTradeChange={(trade) => setRegistration((current) => ({ ...current, trade }))}
+            onPhoneNumberChange={(phoneNumber) => setRegistration((current) => ({ ...current, phoneNumber }))}
             onResetTokenChange={(token) => setResetPayload((current) => ({ ...current, token }))}
             onSubmit={handleLogin}
           />
@@ -371,6 +407,7 @@ export default function ContractorHome() {
           </View>
         ) : null}
 
+        {/* Dashboard */}
         {!isRestoringSession && isAuthenticated && currentRoute.key === 'dashboard' ? (
           <DashboardScreen
             profile={profile}
@@ -387,6 +424,7 @@ export default function ContractorHome() {
           <Text style={styles.warningText}>{profileWarning}</Text>
         ) : null}
 
+        {/* Browse Projects */}
         {!isRestoringSession && isAuthenticated && currentRoute.key === 'browse' ? (
           <BrowseProjectsScreen
             projects={projects}
@@ -405,6 +443,7 @@ export default function ContractorHome() {
           />
         ) : null}
 
+        {/* Project Detail */}
         {!isRestoringSession && isAuthenticated && currentRoute.key === 'detail' ? (
           <ProjectDetailScreen
             project={selectedProject}
@@ -423,7 +462,18 @@ export default function ContractorHome() {
           />
         ) : null}
 
+
+        {/* Lead History */}
         {!isRestoringSession && isAuthenticated && currentRoute.key === 'history' ? <LeadHistoryScreen history={history} /> : null}
+
+        {/* Availability Management */}
+        {!isRestoringSession && isAuthenticated && currentRoute.key === 'availability' ? <AvailabilityScreen /> : null}
+
+        {/* Booking Screen */}
+        {!isRestoringSession && isAuthenticated && currentRoute.key === 'booking' ? <BookingScreen /> : null}
+
+        {/* Calendar Sync Screen */}
+        {!isRestoringSession && isAuthenticated && currentRoute.key === 'calendarSync' ? <CalendarSyncScreen /> : null}
 
         {!isRestoringSession && isAuthenticated ? (
           <Pressable onPress={handleLogout} style={styles.logoutButton}>

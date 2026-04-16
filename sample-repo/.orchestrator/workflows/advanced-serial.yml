@@ -1,0 +1,13 @@
+name: Advanced Serial
+description: Serial workflow demonstrating variables, when, timeout, retries
+variables:
+  BUILD_CMD: "npm run build"
+steps:
+  - name: Install
+    run: npm ci
+  - name: Build
+    run: ${{ BUILD_CMD }}
+    timeoutSeconds: 60
+  - name: Conditional Step
+    run: echo "This runs only if SKIP_STEP is not set"
+    when: "SKIP_STEP"

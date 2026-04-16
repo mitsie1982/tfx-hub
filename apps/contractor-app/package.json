@@ -1,4 +1,4 @@
-﻿{
+{
     "private":  true,
     "name":  "@tfx/contractor-mobile-app",
     "version":  "0.0.1",
@@ -9,7 +9,7 @@
                         "react-native-keychain":  "^10.0.0"
                     },
     "scripts":  {
-                    "start":  "node server.js",
-                    "test":  "node ../../tests/contractor-mobile-app/unit/run_unit_tests.js"
+                    "start":  "node server.cjs",
+                    "test":  "node ../../tests/contractor-mobile-app/unit/run_unit_tests.cjs"
                 }
 }

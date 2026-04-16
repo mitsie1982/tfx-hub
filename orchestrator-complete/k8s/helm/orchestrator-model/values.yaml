@@ -1,0 +1,24 @@
+replicaCount: 2
+image:
+  repository: gcr.io/your-gcp-project/your-model-image
+  tag: v1.0.0
+service:
+  type: ClusterIP
+  port: 80
+canary:
+  enabled: true
+  initialWeight: 10
+  stepWeight: 20
+  maxWeight: 100
+  analysisIntervalSeconds: 60
+  rollbackOnError: true
+resources: {}
+
+metrics:
+  - name: request-success-rate
+    threshold: 99
+  - name: request-duration
+    threshold: 0.5
+
+args:
+  - "python -m my_pipeline.run --pipeline-root gs://your-bucket/pipelines/run-{{workflow.creationTimestamp}}"

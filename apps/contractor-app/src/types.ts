@@ -60,6 +60,7 @@ export type RegistrationPayload = {
   firstName: string;
   lastName: string;
   trade: string;
+  phoneNumber?: string;
 };
 
 export type PasswordResetPayload = {

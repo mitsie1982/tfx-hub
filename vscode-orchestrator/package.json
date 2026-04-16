@@ -1,0 +1,23 @@
+{
+  "name": "vscode-orchestrator",
+  "displayName": "Orchestrator",
+  "publisher": "local",
+  "version": "0.0.1",
+  "engines": { "vscode": "^1.80.0" },
+  "activationEvents": ["onCommand:orchestrator.open"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      { "command": "orchestrator.open", "title": "Orchestrator: Open" }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -w -p ./"
+  },
+  "devDependencies": {
+    "typescript": "^5.1.6",
+    "@types/node": "^18.0.0",
+    "@types/vscode": "^1.80.0"
+  }
+}

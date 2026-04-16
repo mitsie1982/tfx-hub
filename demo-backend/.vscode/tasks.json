@@ -1,0 +1,17 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Seed Demo Data (Deterministic)",
+			"type": "shell",
+			"command": "npx",
+			"args": [
+				"ts-node",
+				"scripts/seed-demo.ts"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
+}

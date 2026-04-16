@@ -18,6 +18,23 @@ const navItems: Array<{ key: CustomerTabKey; label: string }> = [
   { key: 'request', label: 'Request Job' }
 ];
 
+const defaultCustomerRegistration = {
+  email: 'michelle.brummer@example.com',
+  password: 'password123',
+  firstName: 'Michelle',
+  lastName: 'Brummer',
+  phoneNumber: '+27719990031'
+};
+
+const defaultCustomerRequestForm = {
+  title: 'Boundary wall extension and gate footing',
+  trade: 'builder',
+  description: 'Please help me coordinate a boundary wall extension, gate footing, and neat plaster finish with progress photo updates.',
+  budget: 'R15,000 - R28,000',
+  location: 'Midrand',
+  urgency: 'This week'
+};
+
 export default function CustomerHome() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isRestoringSession, setIsRestoringSession] = useState(true);
@@ -27,13 +44,13 @@ export default function CustomerHome() {
   const [activeTab, setActiveTab] = useState<CustomerTabKey>('overview');
   const [routeStack, setRouteStack] = useState<CustomerRoute[]>([{ key: 'overview' }]);
   const [credentials, setCredentials] = useState({ email: 'client@example.com', password: 'password123' });
-  const [registration, setRegistration] = useState({ email: '', password: '', firstName: '', lastName: '' });
-  const [resetEmail, setResetEmail] = useState('');
+  const [registration, setRegistration] = useState(defaultCustomerRegistration);
+  const [resetEmail, setResetEmail] = useState('client@example.com');
   const [overview, setOverview] = useState({ user: null as any, jobs: [] as any[], professionals: [] as any[], source: 'sample' as 'live' | 'sample', warning: null as string | null });
   const [selectedProfessional, setSelectedProfessional] = useState<any | null>(null);
   const [detailWarning, setDetailWarning] = useState<string | null>(null);
   const [shortlistedProfessionalIds, setShortlistedProfessionalIds] = useState<string[]>(() => getCustomerProfessionalShortlist());
-  const [requestForm, setRequestForm] = useState({ title: '', trade: '', description: '', budget: '', location: '', urgency: '' });
+  const [requestForm, setRequestForm] = useState(defaultCustomerRequestForm);
   const [pendingRequest, setPendingRequest] = useState<typeof requestForm | null>(null);
 
   useEffect(() => {
@@ -103,7 +120,7 @@ export default function CustomerHome() {
     try {
       await createCustomerJobRequest(pendingRequest);
       setAuthInfo('Job request submitted successfully.');
-      setRequestForm({ title: '', trade: '', description: '', budget: '', location: '', urgency: '' });
+      setRequestForm(defaultCustomerRequestForm);
       setPendingRequest(null);
       setActiveTab('overview');
       setRouteStack([createCustomerRootRoute('overview')]);
@@ -172,6 +189,9 @@ export default function CustomerHome() {
     setIsAuthenticated(false);
     setOverview({ user: null, jobs: [], professionals: [], source: 'sample', warning: null });
     setPendingRequest(null);
+    setRegistration(defaultCustomerRegistration);
+    setResetEmail('client@example.com');
+    setRequestForm(defaultCustomerRequestForm);
     setActiveTab('overview');
     setRouteStack([createCustomerRootRoute('overview')]);
     setAuthInfo('Signed out. Sign in again to manage your jobs.');

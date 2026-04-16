@@ -1,0 +1,8 @@
+[
+  {
+    "key": "ctrl+alt+c",
+    "command": "workbench.action.tasks.runTask",
+    "args": "ci:local",
+    "when": "editorTextFocus"
+  }
+]

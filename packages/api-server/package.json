@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/server.js",
-    "test": "node ../../tests/api-server/unit/run_unit_tests.js"
+    "test": "node ../../tests/api-server/unit/run_unit_tests.cjs"
   },
   "dependencies": {
     "@tfx/shared-auth": "workspace:*",

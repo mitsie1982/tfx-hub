@@ -29,6 +29,8 @@ export default function AMSHome() {
   const [adminDraft, setAdminDraft] = useState({ firstName: 'Ops', lastName: 'Admin', email: 'ops-admin@example.com', username: 'ops.admin', password: 'change-me-now' });
   const [adminActionMessage, setAdminActionMessage] = useState<string | null>(null);
   const [adminFilters, setAdminFilters] = useState<{ outcome: 'all' | 'success' | 'denied' }>({ outcome: 'all' });
+  // New: contractor search filters
+  const [contractorFilters, setContractorFilters] = useState<{ rating?: string; tier?: string; distance?: string }>({});
 
   useEffect(() => {
     let mounted = true;
@@ -54,8 +56,9 @@ export default function AMSHome() {
 
     let mounted = true;
     async function loadData() {
+      // Pass contractorFilters to fetchAdminOverview if supported
       const [nextState, nextAdminManagement] = await Promise.all([
-        fetchAdminOverview(),
+        fetchAdminOverview(contractorFilters),
         fetchAdminManagement(adminFilters)
       ]);
       if (mounted) {
@@ -67,7 +70,7 @@ export default function AMSHome() {
     return () => {
       mounted = false;
     };
-  }, [adminFilters, isAuthenticated]);
+  }, [adminFilters, contractorFilters, isAuthenticated]);
 
   async function handleLogin() {
     setAuthError(null);
@@ -235,7 +238,14 @@ export default function AMSHome() {
         </View>
 
         {currentRoute.key === 'overview' ? <OverviewScreen overview={state.overview} /> : null}
-        {currentRoute.key === 'contractors' ? <ContractorsScreen contractors={state.contractors} onOpenContractor={handleOpenContractor} /> : null}
+        {currentRoute.key === 'contractors' ? (
+          <ContractorsScreen
+            contractors={state.contractors}
+            filters={contractorFilters}
+            onOpenContractor={handleOpenContractor}
+            onFilterChange={(patch) => setContractorFilters((current) => ({ ...current, ...patch }))}
+          />
+        ) : null}
         {currentRoute.key === 'admins' ? (
           <AdminManagementScreen
             accounts={adminManagement.accounts}

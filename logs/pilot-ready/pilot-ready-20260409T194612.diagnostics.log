@@ -1,0 +1,13 @@
+Pilot Ready Automation Starting
+Environment: dev
+Package manager: npm
+Node: node not found
+NPM: npm not found
+Cleaning workspace artifacts
+WSL 1 is not supported. Please upgrade to WSL 2 or above.
+Could not determine Node.js install directory
+Installing dependencies
+WSL 1 is not supported. Please upgrade to WSL 2 or above.
+Could not determine Node.js install directory
+ERROR: npm ci failed
+CI mode enabled. Exiting with failure.

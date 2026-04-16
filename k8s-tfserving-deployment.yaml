@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tf-serving
+spec:
+  replicas: 2
+  template:
+    spec:
+      containers:
+        - name: tf-serving
+          image: tensorflow/serving:latest
+          args:
+            - --model_config_file=/models/models.config
+          volumeMounts:
+            - name: models
+              mountPath: /models
+      volumes:
+        - name: models
+          persistentVolumeClaim:
+            claimName: models-pvc

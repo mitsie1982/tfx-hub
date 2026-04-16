@@ -2,135 +2,34 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Shared-Logic: Install Dependencies",
+      "label": "ci:install",
       "type": "shell",
-      "command": "pnpm install",
-      "presentation": { "reveal": "always" }
-    },
-    {
-      "label": "Shared-Logic: Run Unit Tests",
-      "type": "shell",
-      "command": "pnpm --filter @tfx/shared-logic test",
-      "presentation": { "reveal": "always" }
-    },
-    {
-      "label": "Shared-Logic: Run Integration Tests",
-      "type": "shell",
-      "command": "pnpm --filter @tfx/shared-logic test:integration",
-      "presentation": { "reveal": "always" }
-    },
-    {
-      "label": "Shared-Logic: Run Demo Consumer",
-      "type": "shell",
-      "command": "node examples/shared_logic_demo.js",
-      "presentation": { "reveal": "always" }
-    },
-    {
-      "label": "Contractor-App: Run Unit Tests",
-      "type": "shell",
-      "command": "pnpm --filter @tfx/contractor-app test",
-      "presentation": { "reveal": "always" }
-    },
-    {
-      "label": "Contractor-App: Run Demo",
-      "type": "shell",
-      "command": "node packages/contractor-app/src/index.js",
-      "presentation": { "reveal": "always" }
-    },
-    {
-      "label": "Grafana Port Fix Orchestrator",
-      "type": "shell",
-      "command": "powershell",
-      "args": [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-Command",
-        "& { . '${workspaceFolder}\\scripts\\grafana_port_conflict_orchestrator.ps1' -StartPresentationOrchestrator }"
-      ],
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "panel": "shared"
-      },
+      "command": "npm ci",
       "problemMatcher": []
     },
     {
-      "label": "Recreate Demo Desktop Shortcuts (clean)",
+      "label": "ci:lint",
       "type": "shell",
-      "command": "powershell",
-      "args": [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-Command",
-        "& { . '${workspaceFolder}\\scripts\\recreate_desktop_shortcuts_clean.ps1' }"
-      ],
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "panel": "shared"
-      },
+      "command": "npm run lint",
       "problemMatcher": []
     },
     {
-      "label": "Local Live Stack: Start",
+      "label": "ci:test",
       "type": "shell",
-      "command": "pnpm.cmd",
-      "args": [
-        "run",
-        "stack:local:windows:start"
-      ],
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "panel": "shared"
-      },
+      "command": "npm test",
       "problemMatcher": []
     },
     {
-      "label": "Local Live Stack: Status",
+      "label": "ci:build",
       "type": "shell",
-      "command": "pnpm.cmd",
-      "args": [
-        "run",
-        "stack:local:windows:status"
-      ],
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "panel": "shared"
-      },
+      "command": "npm run build",
       "problemMatcher": []
     },
     {
-      "label": "Local Live Stack: Smoke",
+      "label": "ci:local",
+      "dependsOn": ["ci:install","ci:lint","ci:test","ci:build"],
+      "dependsOrder": "sequence",
       "type": "shell",
-      "command": "pnpm.cmd",
-      "args": [
-        "run",
-        "stack:local:windows:smoke"
-      ],
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "Local Live Stack: Stop",
-      "type": "shell",
-      "command": "pnpm.cmd",
-      "args": [
-        "run",
-        "stack:local:windows:stop"
-      ],
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "panel": "shared"
-      },
       "problemMatcher": []
     }
   ]

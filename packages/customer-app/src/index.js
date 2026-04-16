@@ -1,6 +1,6 @@
-﻿/*
+/*
  packages/customer-app/src/index.js
- Customer app entry point — composes shared-logic with customer workspaces.
+ Customer app entry point � composes shared-logic with customer workspaces.
 */
 'use strict';
 

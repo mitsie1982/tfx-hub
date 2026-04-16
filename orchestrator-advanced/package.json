@@ -1,0 +1,36 @@
+{
+  "name": "orchestrator-advanced",
+  "displayName": "Orchestrator Advanced",
+  "publisher": "local",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "activationEvents": [
+    "onCommand:orchestrator.open"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "orchestrator.open",
+        "title": "Orchestrator: Open"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -w -p ./"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^18.0.0",
+    "@types/uuid": "^10.0.0",
+    "@types/vscode": "^1.80.0",
+    "typescript": "^5.1.6"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0",
+    "uuid": "^9.0.0"
+  }
+}

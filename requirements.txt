@@ -1,0 +1,6 @@
+# Pin Python and ML dependencies for reproducibility
+python==3.10.13
+tensorflow==2.15.0
+tfx==1.16.0
+apache-beam==2.54.0
+mlflow==2.11.3

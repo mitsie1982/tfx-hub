@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "build": "echo 'build @tfx/contractor-app (no-op)'",
-    "test": "node ../../tests/contractor-package/unit/run_unit_tests.js",
+    "test": "node ../../tests/contractor-package/unit/run_unit_tests.cjs",
     "start": "node src/index.js"
   },
   "dependencies": {

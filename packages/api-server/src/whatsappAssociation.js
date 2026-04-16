@@ -11,7 +11,7 @@ function normalizeCommand(value) {
 function splitName(fullName) {
   const parts = String(fullName || '').trim().split(/\s+/).filter(Boolean);
   return {
-    firstName: parts[0] || 'Association',
+    firstName: parts[0] || "Association Member Management System (AMMS)",
     lastName: parts.slice(1).join(' ') || 'User'
   };
 }

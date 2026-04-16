@@ -1,4 +1,4 @@
-const { createSharedLogicClient, auth, JOB_STATUS } = require('@tfx/shared-logic');
+const { createSharedLogicClient, auth, getHumanFacingDemoSeed, JOB_STATUS } = require('@tfx/shared-logic');
 const secureTokenStorage = require('./secureTokenStorage');
 
 const runtime = {
@@ -35,68 +35,8 @@ async function restoreContractorSession() {
   }
 }
 
-const SAMPLE_PROJECTS = [
-  {
-    id: 'job-101',
-    title: 'Kitchen plumbing and leak repair',
-    trade: 'Plumbing',
-    location: 'Midrand',
-    budget: 'R4,000 - R8,500',
-    urgency: 'Urgent',
-    posted: '15 min ago',
-    description: 'Homeowner needs a contractor to repair a sink leak, replace two shutoff valves, and test water pressure before the weekend.',
-    requirements: ['Own transport', 'Can start today', 'Photo updates required'],
-    leadType: 'Verified homeowner',
-    matchScore: 93,
-    status: JOB_STATUS.OPEN,
-    source: 'sample'
-  },
-  {
-    id: 'job-102',
-    title: 'Solar inverter and backup setup',
-    trade: 'Solar',
-    location: 'Centurion',
-    budget: 'R18,000 - R30,000',
-    urgency: 'This week',
-    posted: '42 min ago',
-    description: 'Client wants an installer to supply and fit a hybrid inverter with battery backup and issue a compliance handover pack.',
-    requirements: ['Accreditation preferred', 'Site inspection first', 'Warranty documentation'],
-    leadType: 'Repeat customer',
-    matchScore: 88,
-    status: JOB_STATUS.OPEN,
-    source: 'sample'
-  },
-  {
-    id: 'job-103',
-    title: 'Warehouse lighting replacement',
-    trade: 'Electrical',
-    location: 'Kempton Park',
-    budget: 'R35,000 - R55,000',
-    urgency: 'Flexible',
-    posted: '1 hour ago',
-    description: 'Commercial client requires phased replacement of interior lighting with LED fittings and updated distribution labels.',
-    requirements: ['Team of 2+', 'After-hours availability', 'Commercial references'],
-    leadType: 'Commercial lead',
-    matchScore: 81,
-    status: JOB_STATUS.OPEN,
-    source: 'sample'
-  },
-  {
-    id: 'job-104',
-    title: 'Roof waterproofing before winter',
-    trade: 'Roofing',
-    location: 'Randburg',
-    budget: 'R12,000 - R19,000',
-    urgency: 'This week',
-    posted: '2 hours ago',
-    description: 'Townhouse owner wants sealing of visible cracks, valley inspection, and a 12-month workmanship guarantee.',
-    requirements: ['Ladder equipment', 'Weekend slot preferred', 'Written quote required'],
-    leadType: 'Verified homeowner',
-    matchScore: 79,
-    status: JOB_STATUS.OPEN,
-    source: 'sample'
-  }
-];
+const demoSeed = getHumanFacingDemoSeed();
+const SAMPLE_PROJECTS = demoSeed.contractor.leads.map((item) => ({ ...item, status: item.status || JOB_STATUS.OPEN, source: 'sample' }));
 
 function createClient() {
   const baseURL = (process && process.env && process.env.TFX_API_BASE_URL) || 'http://localhost:5005';
@@ -112,16 +52,8 @@ function createClient() {
   });
 }
 
-const SAMPLE_PROFILE = {
-  professionalId: 'pro-003',
-  name: 'Naledi Khumalo',
-  trade: 'general contractor',
-  tier: 'TRUSTED',
-  rating: 4.7,
-  completedJobs: 67,
-  activeQuotes: 5,
-  responseTime: '12 min'
-};
+const SAMPLE_PROFILE = demoSeed.contractor.profile;
+const SAMPLE_HISTORY = demoSeed.contractor.history;
 
 function normalizeProfile(item) {
   return {
@@ -170,13 +102,27 @@ async function registerContractor(payload) {
       firstName: payload.firstName,
       lastName: payload.lastName,
       role: 'contractor',
-      trade: payload.trade
+      trade: payload.trade,
+      phoneNumber: payload.phoneNumber
     });
     return { user: response.user, source: 'live' };
   } catch (error) {
     const status = error && error.response && error.response.status;
     if (status === 409) {
+      const code = error && error.response && error.response.data && error.response.data.error;
+      if (code === 'username_in_use') {
+        throw new Error('That username is already in use.');
+      }
+      if (code === 'phone_number_in_use') {
+        throw new Error('That phone number is already linked to another account.');
+      }
       throw new Error('An account already exists for this email.');
+    }
+    if (status === 400) {
+      const code = error && error.response && error.response.data && error.response.data.error;
+      if (code === 'invalid_phone_number') {
+        throw new Error('Enter a valid RSA mobile number, for example +27710000001.');
+      }
     }
     throw new Error('Unable to register contractor account.');
   }
@@ -325,7 +271,7 @@ async function fetchProjects(filters = {}) {
   try {
     const session = await ensureSession();
     if (!runtime.auth.tokenStore.get()) {
-      return { items: [], source: 'sample', warning: session.warning };
+      return { items: filterProjects(SAMPLE_PROJECTS, filters), source: 'sample', warning: session.warning };
     }
     const client = createClient();
     const response = await client.jobs.listJobs({
@@ -337,11 +283,17 @@ async function fetchProjects(filters = {}) {
       ? response.items.map(normalizeLiveJob)
       : [];
 
+    // Always show demo data if live is empty
     const items = liveItems.length > 0 ? liveItems : SAMPLE_PROJECTS;
+    const source = liveItems.length > 0 && session.source === 'live' ? 'live' : 'sample';
+    // If live session but empty, show demo and add a notice
+    const warning = (session.source === 'live' && liveItems.length === 0)
+      ? 'No live projects found. Showing demo data.'
+      : session.warning || null;
     return {
       items: filterProjects(items, filters),
-      source: liveItems.length > 0 && session.source === 'live' ? 'live' : 'sample',
-      warning: session.warning || null
+      source,
+      warning
     };
   } catch (error) {
     return {
@@ -360,10 +312,13 @@ async function fetchContractorProfile() {
     }
     const client = createClient();
     const response = await client.contractor.getProfile();
+    const item = normalizeProfile(response && response.item ? response.item : {});
+    // If live but missing key fields, show demo
+    const isEmpty = !item.professionalId || !item.name;
     return {
-      item: normalizeProfile(response && response.item ? response.item : {}),
-      source: session.source === 'live' ? 'live' : 'sample',
-      warning: session.warning || null
+      item: isEmpty ? SAMPLE_PROFILE : item,
+      source: !isEmpty && session.source === 'live' ? 'live' : 'sample',
+      warning: isEmpty && session.source === 'live' ? 'No live profile found. Showing demo data.' : session.warning || null
     };
   } catch (error) {
     return { item: SAMPLE_PROFILE, source: 'sample', warning: 'Unable to reach contractor profile API. Showing sample profile.' };
@@ -374,7 +329,7 @@ async function fetchLeadHistory() {
   try {
     const session = await ensureSession();
     if (!runtime.auth.tokenStore.get()) {
-      return { items: [], source: 'sample', warning: session.warning };
+      return { items: SAMPLE_HISTORY, source: 'sample', warning: session.warning };
     }
     const client = createClient();
     const [historyResponse, jobsResponse] = await Promise.all([
@@ -385,9 +340,15 @@ async function fetchLeadHistory() {
     const items = Array.isArray(historyResponse && historyResponse.items)
       ? historyResponse.items.map((item) => normalizeHistoryItem(item, jobs))
       : [];
-    return { items, source: session.source === 'live' ? 'live' : 'sample', warning: session.warning || null };
+    // Always show demo if live is empty
+    const useDemo = session.source === 'live' && items.length === 0;
+    return {
+      items: useDemo ? SAMPLE_HISTORY : items,
+      source: !useDemo && session.source === 'live' ? 'live' : 'sample',
+      warning: useDemo ? 'No live history found. Showing demo data.' : session.warning || null
+    };
   } catch (error) {
-    return { items: [], source: 'sample', warning: 'Unable to reach lead history API. History will be local for this session.' };
+    return { items: SAMPLE_HISTORY, source: 'sample', warning: 'Unable to reach lead history API. Showing seeded contractor activity.' };
   }
 }
 
@@ -462,6 +423,78 @@ async function sendMessage(jobId, message) {
   }
 }
 
+// --- Scheduling & Calendar Sync ---
+async function fetchAvailability(contractorId = null) {
+  try {
+    const session = await ensureSession();
+    if (!runtime.auth.tokenStore.get()) {
+      return { items: [], source: 'sample', warning: session.warning };
+    }
+    const client = createClient();
+    const url = contractorId ? `/contractor/availability?contractorId=${contractorId}` : '/contractor/availability';
+    const response = await client.axios.get(url);
+    return { items: response.data.items || [], source: 'live' };
+  } catch (error) {
+    return { items: [], source: 'sample', warning: 'Unable to fetch availability.' };
+  }
+}
+
+async function createAvailability(slot) {
+  try {
+    const session = await ensureSession();
+    if (!runtime.auth.tokenStore.get()) {
+      throw new Error(session.warning || 'Not authenticated');
+    }
+    const client = createClient();
+    const response = await client.axios.post('/contractor/availability', slot);
+    return { item: response.data.item, source: 'live' };
+  } catch (error) {
+    throw new Error('Unable to create availability slot.');
+  }
+}
+
+async function updateAvailability(id, patch) {
+  try {
+    const session = await ensureSession();
+    if (!runtime.auth.tokenStore.get()) {
+      throw new Error(session.warning || 'Not authenticated');
+    }
+    const client = createClient();
+    const response = await client.axios.patch(`/contractor/availability/${id}`, patch);
+    return { item: response.data.item, source: 'live' };
+  } catch (error) {
+    throw new Error('Unable to update availability slot.');
+  }
+}
+
+async function fetchCalendarSync(provider) {
+  try {
+    const session = await ensureSession();
+    if (!runtime.auth.tokenStore.get()) {
+      return null;
+    }
+    const client = createClient();
+    const response = await client.axios.get(`/calendar-sync/${provider}`);
+    return response.data.item || null;
+  } catch (error) {
+    return null;
+  }
+}
+
+async function upsertCalendarSync(provider, data) {
+  try {
+    const session = await ensureSession();
+    if (!runtime.auth.tokenStore.get()) {
+      throw new Error(session.warning || 'Not authenticated');
+    }
+    const client = createClient();
+    const response = await client.axios.post(`/calendar-sync/${provider}`, data);
+    return response.data.item;
+  } catch (error) {
+    throw new Error('Unable to sync calendar.');
+  }
+}
+
 module.exports = {
   restoreContractorSession,
   loginContractor,
@@ -476,6 +509,12 @@ module.exports = {
   expressInterest,
   sendMessage,
   submitQuote,
+  // Scheduling & Calendar Sync
+  fetchAvailability,
+  createAvailability,
+  updateAvailability,
+  fetchCalendarSync,
+  upsertCalendarSync,
   __setTestDependencies(overrides = {}) {
     if (overrides.createSharedLogicClient) {
       runtime.createSharedLogicClient = overrides.createSharedLogicClient;

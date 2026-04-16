@@ -1,16 +1,44 @@
-Ôªø'use strict';
+'use strict';
 
 const { URL } = require('url');
 const {
 	createHtmlServer,
+	escapeHtml,
 	renderCards,
 	renderKeyValueTable,
 	renderPills,
 	renderSection,
 	renderShell,
 	renderStats
-} = require('../browserHostUtils');
+} = require('../browserHostUtils.cjs');
 const customerData = require('./src/services/customerData');
+
+function createDemoEmail(prefix) {
+	return `${prefix}+${Date.now().toString().slice(-6)}@example.com`;
+}
+
+function buildCustomerRegistrationDraft(url) {
+	return {
+		firstName: url.searchParams.get('firstName') || 'Michelle',
+		lastName: url.searchParams.get('lastName') || 'Brummer',
+		email: url.searchParams.get('email') || createDemoEmail('michelle.customer.demo'),
+		phoneNumber: url.searchParams.get('phoneNumber') || '+27719990031'
+	};
+}
+
+function buildCustomerInteractionDrafts(contactRequest) {
+	return {
+		login: { email: 'client@example.com', password: 'password123' },
+		request: {
+			title: (contactRequest && contactRequest.title) || 'Boundary wall extension and gate footing',
+			trade: (contactRequest && contactRequest.trade) || 'builder',
+			location: (contactRequest && contactRequest.location) || 'Midrand',
+			budget: (contactRequest && contactRequest.budget) || 'R15,000 - R28,000',
+			urgency: (contactRequest && contactRequest.urgency) || 'This week',
+			description: (contactRequest && contactRequest.description) || 'Please help me coordinate a boundary wall extension, gate footing, and neat plaster finish with progress photo updates.'
+		}
+	};
+}
 
 async function loadModel(requestUrl) {
 	const url = new URL(requestUrl, 'http://127.0.0.1');
@@ -18,21 +46,57 @@ async function loadModel(requestUrl) {
 	const notice = url.searchParams.get('notice');
 	const warning = url.searchParams.get('warning');
 	const pendingRequest = url.searchParams.get('pendingRequest') === 'yes';
-	const overview = await customerData.fetchCustomerOverview();
-	const professionals = overview.professionals || [];
-	const selectedProfessionalId = professionalId || (professionals[0] && professionals[0].id) || null;
-	const professionalDetail = selectedProfessionalId
-		? await customerData.fetchCustomerProfessionalDetail(selectedProfessionalId)
-		: { item: null, warning: null };
-	const shortlistIds = await customerData.getCustomerProfessionalShortlist();
-	const contactRequest = professionalDetail.item
-		? customerData.buildCustomerContactRequest(professionalDetail.item)
-		: null;
+
+	// Check for forceDemo flag from browser
+	let forceDemo = false;
+	try {
+		if (typeof window !== 'undefined' && window.localStorage) {
+			forceDemo = window.localStorage.getItem('forceDemo') === '1';
+		}
+	} catch (e) {
+		// ignore
+	}
+	// Also allow ?forceDemo=1 param
+	if (url.searchParams.get('forceDemo') === '1') forceDemo = true;
+
+	let overview, professionals, selectedProfessionalId, professionalDetail, shortlistIds, contactRequest;
+	if (forceDemo) {
+		const demoSeed = require('@tfx/shared-logic').getHumanFacingDemoSeed();
+		overview = {
+			user: demoSeed.customer.user,
+			jobs: demoSeed.customer.jobs,
+			professionals: demoSeed.professionals.directory.map(({ id, name, trade, tier, rating }) => ({ id, name, trade, tier, rating })),
+			source: 'sample',
+			warning: 'Forced demo mode.'
+		};
+		professionals = overview.professionals;
+		selectedProfessionalId = professionalId || (professionals[0] && professionals[0].id) || null;
+		professionalDetail = selectedProfessionalId
+			? { item: demoSeed.professionals.directory.find(p => p.id === selectedProfessionalId) || null, warning: null }
+			: { item: null, warning: null };
+		shortlistIds = [];
+		contactRequest = professionalDetail.item
+			? require('./src/services/customerData').buildCustomerContactRequest(professionalDetail.item)
+			: null;
+	} else {
+		overview = await customerData.fetchCustomerOverview();
+		professionals = overview.professionals || [];
+		selectedProfessionalId = professionalId || (professionals[0] && professionals[0].id) || null;
+		professionalDetail = selectedProfessionalId
+			? await customerData.fetchCustomerProfessionalDetail(selectedProfessionalId)
+			: { item: null, warning: null };
+		shortlistIds = await customerData.getCustomerProfessionalShortlist();
+		contactRequest = professionalDetail.item
+			? customerData.buildCustomerContactRequest(professionalDetail.item)
+			: null;
+	}
 
 	return {
 		notice,
 		overview,
 		shortlistIds,
+		registrationDraft: buildCustomerRegistrationDraft(url),
+		interactionDrafts: buildCustomerInteractionDrafts(contactRequest),
 		professionalDetail: professionalDetail.item,
 		professionalWarning: warning || professionalDetail.warning,
 		contactRequest,
@@ -45,6 +109,30 @@ async function loadModel(requestUrl) {
 			description: url.searchParams.get('description') || ''
 		} : null
 	};
+}
+
+function buildRegistrationRedirect(form, warning) {
+	return '/?warning=' + encodeURIComponent(warning)
+		+ '&firstName=' + encodeURIComponent(form.firstName || '')
+		+ '&lastName=' + encodeURIComponent(form.lastName || '')
+		+ '&email=' + encodeURIComponent(form.email || '')
+		+ '&phoneNumber=' + encodeURIComponent(form.phoneNumber || '');
+}
+
+function validateRegistrationForm(form) {
+	if (!String(form.firstName || '').trim() || !String(form.lastName || '').trim()) {
+		return 'First name and last name are required.';
+	}
+	if (!String(form.email || '').trim()) {
+		return 'Email is required.';
+	}
+	if (!String(form.password || '').trim()) {
+		return 'Password is required.';
+	}
+	if (!String(form.phoneNumber || '').trim()) {
+		return 'Phone number is required.';
+	}
+	return null;
 }
 
 function renderPendingRequest(model) {
@@ -176,10 +264,22 @@ function renderModel(model) {
 			]) + `
 				<div class="form-grid">
 					<div class="form-card">
+						<h3>Create Customer Profile</h3>
+						<p class="muted">Register a customer account from the desktop demo and persist it through the API.</p>
+						<form method="post" action="/actions/register">
+							<input type="text" name="firstName" value="${escapeHtml(model.registrationDraft.firstName)}" placeholder="Michelle" required>
+							<input type="text" name="lastName" value="${escapeHtml(model.registrationDraft.lastName)}" placeholder="Brummer" required>
+							<input type="tel" name="phoneNumber" value="${escapeHtml(model.registrationDraft.phoneNumber)}" placeholder="+27710000003" required>
+							<input type="email" name="email" value="${escapeHtml(model.registrationDraft.email)}" placeholder="client@example.com" required>
+							<input type="password" name="password" placeholder="password123" required>
+							<button type="submit">Create Profile</button>
+						</form>
+					</div>
+					<div class="form-card">
 						<h3>Customer Sign In</h3>
 						<form method="post" action="/actions/login">
-							<input type="email" name="email" placeholder="client@example.com" required>
-							<input type="password" name="password" placeholder="password123" required>
+							<input type="email" name="email" value="${escapeHtml(model.interactionDrafts.login.email)}" placeholder="client@example.com" required>
+							<input type="password" name="password" value="${escapeHtml(model.interactionDrafts.login.password)}" placeholder="password123" required>
 							<button type="submit">Sign In</button>
 						</form>
 						<form method="post" action="/actions/logout" class="inline-form">
@@ -189,13 +289,13 @@ function renderModel(model) {
 				</div>`, user.email),
 			renderSection('Open Jobs', renderCards(jobs.map((job) => ({
 				title: job.title,
-				meta: `${job.trade} ¬∑ ${job.location || 'Location TBC'} ¬∑ ${job.budget || 'Budget TBC'}`,
+				meta: `${job.trade} ∑ ${job.location || 'Location TBC'} ∑ ${job.budget || 'Budget TBC'}`,
 				body: job.description,
 				footer: job.urgency || job.status
 			})))),
 			renderSection('Professional Directory', renderCards(professionals.map((professional) => ({
 				title: professional.name,
-				meta: `${professional.trade} ¬∑ ${professional.tier} ¬∑ ${professional.rating || 'N/A'} rating`,
+				meta: `${professional.trade} ∑ ${professional.tier} ∑ ${professional.rating || 'N/A'} rating`,
 				footer: shortlistedIds.has(professional.id) ? 'Shortlisted in live customer session' : 'Browser detail view enabled',
 				actionHref: `/?professionalId=${encodeURIComponent(professional.id)}`,
 				actionLabel: 'Open profile'
@@ -234,16 +334,16 @@ function renderModel(model) {
 					<div class="form-card">
 						<h3>Submit Job Request</h3>
 						<form method="post" action="/actions/request-job">
-							<input type="text" name="title" value="${model.contactRequest ? model.contactRequest.title : ''}" placeholder="Job title" required>
-							<input type="text" name="trade" value="${model.contactRequest ? model.contactRequest.trade : ''}" placeholder="Trade" required>
-							<input type="text" name="location" value="${model.contactRequest ? model.contactRequest.location : ''}" placeholder="Location">
-							<input type="text" name="budget" placeholder="Budget range">
-							<input type="text" name="urgency" value="${model.contactRequest ? model.contactRequest.urgency : ''}" placeholder="Urgency">
-							<textarea name="description" placeholder="Describe the work" required>${model.contactRequest ? model.contactRequest.description : ''}</textarea>
+							<input type="text" name="title" value="${escapeHtml(model.interactionDrafts.request.title)}" placeholder="Job title" required>
+							<input type="text" name="trade" value="${escapeHtml(model.interactionDrafts.request.trade)}" placeholder="Trade" required>
+							<input type="text" name="location" value="${escapeHtml(model.interactionDrafts.request.location)}" placeholder="Location">
+							<input type="text" name="budget" value="${escapeHtml(model.interactionDrafts.request.budget)}" placeholder="Budget range">
+							<input type="text" name="urgency" value="${escapeHtml(model.interactionDrafts.request.urgency)}" placeholder="Urgency">
+							<textarea name="description" placeholder="Describe the work" required>${escapeHtml(model.interactionDrafts.request.description)}</textarea>
 							<button type="submit">Review Request</button>
 						</form>
 					</div>
-				</div>`, 'This mirrors the in-app ‚ÄúContact Through Request Flow‚Äù action.'),
+				</div>`, 'This mirrors the in-app ìContact Through Request Flowî action.'),
 			renderPendingRequest(model)
 		]
 	});
@@ -251,6 +351,20 @@ function renderModel(model) {
 
 async function handlePost(requestUrl, form) {
 	const url = new URL(requestUrl, 'http://127.0.0.1');
+	if (url.pathname === '/actions/register') {
+		const validationError = validateRegistrationForm(form);
+		if (validationError) {
+			return buildRegistrationRedirect(form, validationError);
+		}
+		await customerData.registerCustomer({
+			firstName: String(form.firstName || '').trim(),
+			lastName: String(form.lastName || '').trim(),
+			email: String(form.email || '').trim(),
+			phoneNumber: String(form.phoneNumber || '').trim(),
+			password: form.password
+		});
+		return '/?notice=' + encodeURIComponent('Profile created successfully. Customer session is now active.');
+	}
 	if (url.pathname === '/actions/login') {
 		await customerData.loginCustomer({ email: form.email, password: form.password });
 		return '/?notice=' + encodeURIComponent('Customer sign-in completed.');

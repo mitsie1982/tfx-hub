@@ -17,6 +17,9 @@ export type SharedLogicClientOptions = ApiClientOptions & {
   context?: RequestContext;
 };
 
+export function cloneDemoSeed<T>(value: T): T;
+export function getHumanFacingDemoSeed(): Record<string, unknown>;
+
 export const JOB_STATUS: { OPEN: 'OPEN'; IN_PROGRESS: 'IN_PROGRESS'; COMPLETED: 'COMPLETED'; CANCELLED: 'CANCELLED' };
 export const ONBOARDING_STAGES: string[];
 

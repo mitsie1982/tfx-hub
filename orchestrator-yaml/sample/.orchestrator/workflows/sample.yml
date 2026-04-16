@@ -1,0 +1,9 @@
+name: Sample Build and Test
+description: Example workflow that installs, builds, and runs tests
+steps:
+  - name: Install
+    run: npm ci
+  - name: Build
+    run: npm run build
+  - name: Test
+    run: npm test

@@ -39,6 +39,7 @@ The sender now renders:
 
 - `DATABASE_URL` or `DB_HOST`/`DB_PORT`/`DB_USER`/`DB_PASSWORD`/`DB_NAME`
 - `TFX_ADMIN_USERNAME`, `TFX_ADMIN_EMAIL`, `TFX_ADMIN_PASSWORD` for bootstrap admin startup validation and local admin smoke testing
+- `TFX_ADMIN_ALLOW_AFTER_HOURS=true` only for controlled local smoke/demo environments where admin access must remain available outside the default `08:00-17:00 Africa/Johannesburg` window
 - `TFX_API_ENABLE_DEMO_SEED=true` only when you explicitly want demo users inserted on startup; production startup now applies schema without demo seed by default
 - Optional SMTP delivery: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`
 - `PORT` defaults to `3000`

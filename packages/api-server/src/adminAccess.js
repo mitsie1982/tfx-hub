@@ -7,6 +7,10 @@ const DEFAULT_TIME_ZONE = 'Africa/Johannesburg';
 const DEFAULT_START_HOUR = 8;
 const DEFAULT_END_HOUR = 17;
 
+function parseBooleanFlag(value) {
+  return ['1', 'true', 'yes', 'on'].includes(String(value || '').trim().toLowerCase());
+}
+
 function normalizeUsername(value) {
   return String(value || '').trim().toLowerCase() || null;
 }
@@ -32,11 +36,13 @@ function validateAdminBootstrapEnv(env = process.env) {
 function getAdminAccessPolicy(overrides = {}) {
   const startHour = Number.isFinite(overrides.startHour) ? overrides.startHour : DEFAULT_START_HOUR;
   const endHour = Number.isFinite(overrides.endHour) ? overrides.endHour : DEFAULT_END_HOUR;
+  const allowAfterHours = overrides.allowAfterHours === true || parseBooleanFlag(overrides.allowAfterHours);
 
   return {
     timeZone: overrides.timeZone || DEFAULT_TIME_ZONE,
     startHour,
     endHour,
+    allowAfterHours,
     startMinutes: (startHour * 60),
     endMinutes: (endHour * 60)
   };
@@ -57,6 +63,10 @@ function getClockMinutes(date, timeZone) {
 }
 
 function isAdminWithinAccessWindow(date = new Date(), policy = getAdminAccessPolicy()) {
+  if (policy.allowAfterHours) {
+    return true;
+  }
+
   const minutes = getClockMinutes(date, policy.timeZone);
   return minutes >= policy.startMinutes && minutes < policy.endMinutes;
 }

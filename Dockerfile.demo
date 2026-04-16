@@ -1,0 +1,20 @@
+# Demo Dockerfile for TFX Hub
+FROM node:20-alpine
+WORKDIR /app
+# Copy minimal backend package.json, package-lock.json, and tsconfig
+COPY demo-backend/package.json ./
+COPY demo-backend/package-lock.json ./
+COPY demo-backend/tsconfig.json ./
+# Install all dependencies (including dev for build)
+RUN npm install @prisma/client prisma
+# Copy Prisma schema
+COPY prisma ./prisma
+# Generate Prisma client
+RUN npx prisma generate
+# Copy backend source files
+COPY src ./src
+# Build TypeScript
+RUN npx tsc --project tsconfig.json
+# Set environment and run
+ENV NODE_ENV=production
+CMD ["node", "dist/server.js"]

@@ -1,0 +1,44 @@
+openapi: 3.0.3
+info:
+  title: TFX Hub Demo API
+  version: 1.0.0
+  description: OpenAPI spec for TFX Hub demo endpoints
+servers:
+  - url: http://localhost:4000
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  service:
+                    type: string
+  /api/tfxhub/ping:
+    post:
+      summary: Ping endpoint for TFX Hub integration
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Pong
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pong:
+                    type: boolean
+                  received:
+                    type: object

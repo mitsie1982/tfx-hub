@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "orchestrator-model.fullname" . }}
+  labels:
+    app: {{ include "orchestrator-model.name" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "orchestrator-model.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "orchestrator-model.name" . }}
+    spec:
+      containers:
+        - name: model
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: 8080
+          resources: {{ toYaml .Values.resources | nindent 12 }}

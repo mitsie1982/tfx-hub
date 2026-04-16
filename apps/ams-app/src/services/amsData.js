@@ -1,5 +1,5 @@
 const { createAMSApp } = require('../../../../packages/ams-app/src');
-const { auth } = require('@tfx/shared-logic');
+const { auth, getHumanFacingDemoSeed } = require('@tfx/shared-logic');
 const secureTokenStorage = require('../secureTokenStorage');
 
 const runtime = {
@@ -8,65 +8,12 @@ const runtime = {
   secureTokenStorage
 };
 
-const SAMPLE_OVERVIEW = {
-  totals: { openJobs: 6, inProgressJobs: 3, completedJobs: 12, cancelledJobs: 1, professionals: 24 },
-  professionalsByTier: { PREMIUM: 5, VERIFIED: 6, TRUSTED: 9, ONBOARDED: 4 },
-  openJobsByTrade: { plumber: 2, builder: 2, electrician: 1, roofer: 1 },
-  recentOpenJobs: [
-    { id: 'job-301', title: 'Kitchen leak repair', trade: 'plumber' },
-    { id: 'job-302', title: 'Boundary wall extension', trade: 'builder' }
-  ],
-  totalJobsTracked: 22
-};
-
-const SAMPLE_CONTRACTORS = [
-  { id: 'pro-001', name: 'John Smit', trade: 'plumber', tier: 'PREMIUM', rating: 4.8 },
-  { id: 'pro-002', name: 'Naledi Khumalo', trade: 'general contractor', tier: 'TRUSTED', rating: 4.7 }
-];
-
-const SAMPLE_ADMIN_ACCOUNTS = [
-  { id: 'admin-001', email: 'admin@example.com', username: 'local-admin-secret', firstName: 'Platform', lastName: 'Admin', role: 'admin', isBootstrapAdmin: true, createdAt: '2026-04-02T07:00:00.000Z' },
-  { id: 'admin-ops-001', email: 'ops-admin@example.com', username: 'ops.admin', firstName: 'Ops', lastName: 'Admin', role: 'admin', isBootstrapAdmin: false, createdAt: '2026-04-02T08:30:00.000Z' }
-];
-
-const SAMPLE_ADMIN_AUDIT_EVENTS = [
-  { id: 'audit-001', adminUserId: 'admin-001', eventType: 'admin_login', outcome: 'success', reason: 'authenticated', identifier: 'local-admin-secret', requestPath: '/auth/login', requestMethod: 'POST', targetUserId: null, ipAddress: '127.0.0.1', createdAt: '2026-04-02T08:00:00.000Z' },
-  { id: 'audit-002', adminUserId: 'admin-001', eventType: 'admin_password_reset_request', outcome: 'denied', reason: 'bootstrap_admin_reset_forbidden', identifier: 'admin@example.com', requestPath: '/auth/password-reset/request', requestMethod: 'POST', targetUserId: 'admin-001', ipAddress: '127.0.0.1', createdAt: '2026-04-02T08:05:00.000Z' },
-  { id: 'audit-003', adminUserId: 'admin-001', eventType: 'admin_account_create', outcome: 'success', reason: 'created_admin_account', identifier: null, requestPath: '/admin/accounts', requestMethod: 'POST', targetUserId: 'admin-ops-001', ipAddress: '127.0.0.1', createdAt: '2026-04-02T08:30:00.000Z' }
-];
-
-const SAMPLE_CONTRACTOR_DETAILS = {
-  'pro-001': {
-    id: 'pro-001',
-    name: 'John Smit',
-    trade: 'plumber',
-    tier: 'PREMIUM',
-    rating: 4.8,
-    completedJobs: 247,
-    responseTime: '9 min',
-    activeQuotes: 11,
-    summary: 'High-volume plumbing contractor with strong response times and premium tier performance.',
-    tierReview: { status: 'Eligible for retention review', reason: 'Premium performance sustained for 90 days', recommendedAction: 'Queue for monthly tier audit' },
-    compliance: { status: 'Healthy', lastCheck: '2026-03-29', notes: ['No recent violations', 'Credential renewal due in 42 days'] },
-    disputes: [{ id: 'disp-101', status: 'Resolved', summary: 'Minor callout timing dispute closed within SLA' }],
-    adminActions: [{ id: 'admin-action-sample-001', actionType: 'tier-review', summary: 'Tier review queued', note: 'Monthly premium retention check', createdBy: 'admin-sample', createdAt: '2026-04-02T08:00:00.000Z', source: 'sample' }]
-  },
-  'pro-002': {
-    id: 'pro-002',
-    name: 'Naledi Khumalo',
-    trade: 'general contractor',
-    tier: 'TRUSTED',
-    rating: 4.7,
-    completedJobs: 67,
-    responseTime: '12 min',
-    activeQuotes: 5,
-    summary: 'Trusted general contractor with steady quote flow and strong homeowner satisfaction.',
-    tierReview: { status: 'Watchlist for promotion', reason: 'Approaching VERIFIED threshold', recommendedAction: 'Review after next 5 completed jobs' },
-    compliance: { status: 'Attention needed', lastCheck: '2026-03-30', notes: ['Insurance certificate pending upload', 'One warning acknowledged'] },
-    disputes: [{ id: 'disp-102', status: 'Open', summary: 'Scope clarification mediation in progress' }],
-    adminActions: [{ id: 'admin-action-sample-002', actionType: 'compliance-review', summary: 'Compliance review opened', note: 'Insurance certificate follow-up', createdBy: 'admin-sample', createdAt: '2026-04-02T09:15:00.000Z', source: 'sample' }]
-  }
-};
+const demoSeed = getHumanFacingDemoSeed();
+const SAMPLE_OVERVIEW = demoSeed.admin.overview;
+const SAMPLE_CONTRACTORS = demoSeed.admin.contractors;
+const SAMPLE_ADMIN_ACCOUNTS = demoSeed.admin.accounts;
+const SAMPLE_ADMIN_AUDIT_EVENTS = demoSeed.admin.auditEvents;
+const SAMPLE_CONTRACTOR_DETAILS = demoSeed.admin.contractorDetails;
 
 const ADMIN_ACTION_SUMMARIES = {
   'tier-review': 'Tier review queued',
@@ -77,7 +24,7 @@ const ADMIN_ACTION_SUMMARIES = {
 function normalizeContractorDetail(professionalId, item) {
   const fallback = SAMPLE_CONTRACTOR_DETAILS[professionalId] || {
     id: professionalId,
-    name: 'Contractor',
+    name: "Contractor Customer Management System (CCMS)",
     trade: 'trade not specified',
     tier: 'ONBOARDED',
     rating: null,

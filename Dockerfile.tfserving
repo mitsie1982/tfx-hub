@@ -1,0 +1,5 @@
+FROM tensorflow/serving:latest
+# Mount /models at runtime; use --model_config_file or --model_name flags
+# Example usage:
+# docker run -p 8501:8501 --mount type=bind,source=$(pwd)/models,target=/models \
+#   tensorflow/serving:latest --model_name=my_model --model_base_path=/models/my_model

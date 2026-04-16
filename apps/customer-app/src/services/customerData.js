@@ -1,5 +1,5 @@
 const { createCustomerApp } = require('../../../../packages/customer-app/src');
-const { auth } = require('@tfx/shared-logic');
+const { auth, getHumanFacingDemoSeed } = require('@tfx/shared-logic');
 const secureTokenStorage = require('../secureTokenStorage');
 
 const runtime = {
@@ -8,74 +8,14 @@ const runtime = {
   secureTokenStorage
 };
 
-const SAMPLE_USER = {
-  id: 'client-001',
-  firstName: 'Ayanda',
-  lastName: 'Mokoena',
-  email: 'client@example.com',
-  role: 'client'
-};
-
-const SAMPLE_JOBS = [
-  {
-    id: 'job-201',
-    title: 'Bathroom plumbing repair',
-    trade: 'plumber',
-    location: 'Sandton',
-    budget: 'R2,500 - R5,000',
-    urgency: 'Urgent',
-    description: 'Repair a leaking shower mixer and replace two broken taps.',
-    status: 'OPEN'
-  },
-  {
-    id: 'job-202',
-    title: 'Boundary wall extension',
-    trade: 'builder',
-    location: 'Midrand',
-    budget: 'R12,000 - R20,000',
-    urgency: 'This week',
-    description: 'Extend an existing wall by 8 meters and plaster both sides.',
-    status: 'OPEN'
-  }
-];
-
-const SAMPLE_PROFESSIONALS = [
-  { id: 'pro-001', name: 'John Smit', trade: 'plumber', tier: 'PREMIUM', rating: 4.8 },
-  { id: 'pro-002', name: 'Sarah Khubone', trade: 'builder', tier: 'TRUSTED', rating: 4.6 }
-];
-
-const SAMPLE_PROFESSIONAL_DETAILS = {
-  'pro-001': {
-    id: 'pro-001',
-    name: 'John Smit',
-    trade: 'plumber',
-    tier: 'PREMIUM',
-    rating: 4.8,
-    completedJobs: 247,
-    responseTime: '9 min',
-    serviceArea: 'Johannesburg North',
-    summary: 'Specializes in residential plumbing repairs, leak detection, and bathroom upgrades.',
-    availability: 'Available this afternoon',
-    credentials: ['NHBRC registered', 'PIRB compliant', 'Background checked'],
-    portfolioHighlights: ['Rebuilt guest bathroom plumbing line', 'Completed leak tracing for townhouse complex', 'Installed pressure-balancing shower mixers'],
-    reviewHighlights: ['Arrived on time and explained the repair clearly.', 'Left the site clean and shared photo updates before departure.']
-  },
-  'pro-002': {
-    id: 'pro-002',
-    name: 'Sarah Khubone',
-    trade: 'builder',
-    tier: 'TRUSTED',
-    rating: 4.6,
-    completedJobs: 81,
-    responseTime: '18 min',
-    serviceArea: 'Midrand and Centurion',
-    summary: 'Handles boundary walls, extensions, and general building projects for homeowners.',
-    availability: 'Next site opening in 2 days',
-    credentials: ['MBSA member', 'Safety file ready', 'References verified'],
-    portfolioHighlights: ['Completed 8m boundary wall extension', 'Managed small garage conversion', 'Delivered paving and plaster finish bundle'],
-    reviewHighlights: ['Kept the project on schedule and communicated material delays early.', 'Quality of plaster finish was better than expected.']
-  }
-};
+const demoSeed = getHumanFacingDemoSeed();
+const SAMPLE_USER = demoSeed.customer.user;
+const SAMPLE_JOBS = demoSeed.customer.jobs;
+const SAMPLE_PROFESSIONALS = demoSeed.professionals.directory.map(({ id, name, trade, tier, rating }) => ({ id, name, trade, tier, rating }));
+const SAMPLE_PROFESSIONAL_DETAILS = demoSeed.professionals.directory.reduce((accumulator, professional) => {
+  accumulator[professional.id] = professional;
+  return accumulator;
+}, {});
 
 const shortlistedProfessionalIds = new Set();
 
@@ -168,9 +108,24 @@ async function registerCustomer(payload) {
       password: payload.password,
       firstName: payload.firstName,
       lastName: payload.lastName,
+      phoneNumber: payload.phoneNumber,
       role: 'client'
     });
   } catch (error) {
+    const status = error && error.response && error.response.status;
+    if (status === 409) {
+      const code = error && error.response && error.response.data && error.response.data.error;
+      if (code === 'phone_number_in_use') {
+        throw new Error('That phone number is already linked to another account.');
+      }
+      throw new Error('An account already exists for this email.');
+    }
+    if (status === 400) {
+      const code = error && error.response && error.response.data && error.response.data.error;
+      if (code === 'invalid_phone_number') {
+        throw new Error('Enter a valid RSA mobile number, for example +27710000003.');
+      }
+    }
     throw new Error('Unable to register a customer account.');
   }
 }
@@ -203,7 +158,15 @@ async function fetchCustomerOverview() {
       app.professionals.browse({})
     ]);
 
-    return { user, jobs, professionals, source: 'live', warning: null };
+    // Always show demo data if live is empty
+    const useDemo = (!jobs || jobs.length === 0) || (!professionals || professionals.length === 0);
+    return {
+      user: useDemo ? SAMPLE_USER : user,
+      jobs: useDemo ? SAMPLE_JOBS : jobs,
+      professionals: useDemo ? SAMPLE_PROFESSIONALS : professionals,
+      source: !useDemo ? 'live' : 'sample',
+      warning: useDemo ? 'No live jobs or professionals found. Showing demo data.' : null
+    };
   } catch (error) {
     return {
       user: SAMPLE_USER,
@@ -333,11 +296,18 @@ function buildCustomerContactRequest(professional) {
     throw new Error('professional is required');
   }
 
+  const normalizedTrade = String(professional.trade || '').toLowerCase();
+  const defaultBudget = normalizedTrade.includes('electric')
+    ? 'R8,500 - R18,000'
+    : normalizedTrade.includes('plumb')
+      ? 'R6,000 - R14,000'
+      : 'R15,000 - R28,000';
+
   return {
     title: `Request ${professional.trade} consultation with ${professional.name}`,
     trade: professional.trade || '',
     description: `Please help me connect with ${professional.name}. ${professional.summary || ''}`.trim(),
-    budget: '',
+    budget: defaultBudget,
     location: professional.serviceArea || '',
     urgency: professional.availability || ''
   };

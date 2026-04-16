@@ -6,8 +6,12 @@
     "lib": ["ES2020", "DOM"],
     "moduleResolution": "node",
     "allowJs": true,
+    "noEmit": false,
+    "ignoreDeprecations": "6.0",
     "skipLibCheck": true,
+    "types": ["jest"],
     "esModuleInterop": true,
+    "outDir": "dist",
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
@@ -15,5 +19,6 @@
       "@tfx/shared-logic": ["packages/shared-logic/src"]
     }
   },
-  "include": ["apps/**/*", "packages/**/*"]
+  "include": ["src/**/*", "prisma/**/*", "tests/**/*"],
+  "exclude": ["apps/**/*", "packages/**/*"]
 }

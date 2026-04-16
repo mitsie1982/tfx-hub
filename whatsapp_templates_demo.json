@@ -1,0 +1,24 @@
+[
+  {
+    "name": "welcome",
+    "language": "en_US",
+    "components": [
+      {
+        "type": "BODY",
+        "text": "Welcome {{1}}! Let’s get you started with onboarding."
+      }
+    ],
+    "category": "TRANSACTIONAL"
+  },
+  {
+    "name": "onboarding_next_step",
+    "language": "en_US",
+    "components": [
+      {
+        "type": "BODY",
+        "text": "Please reply with your {{1}}."
+      }
+    ],
+    "category": "TRANSACTIONAL"
+  }
+]

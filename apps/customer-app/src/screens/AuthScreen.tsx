@@ -9,11 +9,11 @@ type Props = {
   authInfo: string | null;
   authError: string | null;
   credentials: { email: string; password: string };
-  registration: { email: string; password: string; firstName: string; lastName: string };
+  registration: { email: string; password: string; firstName: string; lastName: string; phoneNumber: string };
   resetEmail: string;
   onModeChange: (mode: AuthMode) => void;
   onCredentialsChange: (patch: Partial<{ email: string; password: string }>) => void;
-  onRegistrationChange: (patch: Partial<{ email: string; password: string; firstName: string; lastName: string }>) => void;
+  onRegistrationChange: (patch: Partial<{ email: string; password: string; firstName: string; lastName: string; phoneNumber: string }>) => void;
   onResetEmailChange: (value: string) => void;
   onSubmit: () => void;
 };
@@ -36,7 +36,7 @@ export default function AuthScreen({
       <View style={styles.heroCard}>
         <Text style={styles.eyebrow}>Customer workspace</Text>
         <Text style={styles.title}>Manage home projects and compare professionals</Text>
-        <Text style={styles.subtitle}>Sign in, create job requests, and browse trusted contractors.</Text>
+        <Text style={styles.subtitle}>Sign in, create an account with your mobile number, and browse trusted contractors.</Text>
       </View>
 
       <View style={styles.card}>
@@ -53,8 +53,9 @@ export default function AuthScreen({
 
         {authMode === 'register' ? (
           <>
-            <TextInput value={registration.firstName} onChangeText={(value) => onRegistrationChange({ firstName: value })} placeholder="First name" style={styles.input} />
-            <TextInput value={registration.lastName} onChangeText={(value) => onRegistrationChange({ lastName: value })} placeholder="Last name" style={styles.input} />
+            <TextInput value={registration.firstName} onChangeText={(value) => onRegistrationChange({ firstName: value })} placeholder="Michelle" style={styles.input} />
+            <TextInput value={registration.lastName} onChangeText={(value) => onRegistrationChange({ lastName: value })} placeholder="Brummer" style={styles.input} />
+            <TextInput value={registration.phoneNumber} onChangeText={(value) => onRegistrationChange({ phoneNumber: value })} placeholder="RSA mobile number (+27710000003)" autoCapitalize="none" style={styles.input} />
           </>
         ) : null}
 
@@ -84,7 +85,7 @@ export default function AuthScreen({
         ) : null}
 
         <Pressable onPress={onSubmit} style={styles.primaryButton}>
-          <Text style={styles.buttonText}>{authMode === 'login' ? 'Sign In' : authMode === 'register' ? 'Create Account' : 'Request Reset'}</Text>
+          <Text style={styles.buttonText}>{authMode === 'login' ? 'Sign In' : authMode === 'register' ? 'Create Profile' : 'Request Reset'}</Text>
         </Pressable>
       </View>
     </ScrollView>

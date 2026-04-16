@@ -1,0 +1,11 @@
+Pilot Ready Automation Starting
+Environment: dev
+Package manager: pnpm
+Node: node not found
+NPM: 11.9.0
+Cleaning workspace artifacts
+scripts/pilot-ready.sh: line 85: yarn: command not found
+Installing dependencies
+scripts/pilot-ready.sh: line 93: yarn: command not found
+ERROR: yarn install failed
+CI mode enabled. Exiting with failure.

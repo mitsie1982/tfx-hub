@@ -1,8 +1,30 @@
-ï»¿const http = require("http");
-const url = require("url");
+const http = require("http");
+// Use WHATWG URL API instead of deprecated url.parse
 const port = process.env.PORT || 3011;
 function sendHtml(res, html){ res.writeHead(200, {"Content-Type":"text/html; charset=utf-8"}); res.end(html); }
 function sendJson(res, obj){ res.writeHead(200, {"Content-Type":"application/json; charset=utf-8"}); res.end(JSON.stringify(obj)); }
-const html = `<!doctype html><html><head><meta charset="utf-8"/><title>Contractor Demo</title><meta name="viewport" content="width=device-width,initial-scale=1"/><style>body{font-family:Segoe UI,Arial;margin:0;background:#f4f6f8;color:#222}.wrap{max-width:980px;margin:48px auto;padding:24px;background:#fff;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.06)}h1{margin:0 0 8px}.meta{color:#666;margin-bottom:16px}.cards{display:flex;gap:12px;flex-wrap:wrap}.card{flex:1 1 220px;padding:12px;border-radius:6px;background:#fafafa;border:1px solid #eee}pre{background:#111;color:#0f0;padding:12px;border-radius:6px;overflow:auto}footer{margin-top:18px;color:#888;font-size:13px}</style></head><body><div class="wrap"><h1>Contractor Demo</h1><div class="meta">Status: <strong id="status">starting</strong> â€¢ Keys: <span id="keys">â€”</span></div><div class="cards"><div class="card"><h3>Overview</h3><p id="overview">Loading overviewâ€¦</p></div><div class="card"><h3>Live Data</h3><pre id="live">waiting for dataâ€¦</pre></div></div><footer>Local demo served on port ${port}</footer></div><script>async function refresh(){try{const r=await fetch('/api/status');const j=await r.json();document.getElementById('status').textContent=j.status;document.getElementById('keys').textContent=j.keys.join(', ');document.getElementById('overview').textContent=j.overview;document.getElementById('live').textContent=JSON.stringify(j.live,null,2);}catch(e){document.getElementById('status').textContent='error';document.getElementById('overview').textContent=e.message;}}refresh();setInterval(refresh,3000);</script></body></html>`;
-const server = http.createServer((req,res)=>{ const u = url.parse(req.url,true); if(u.pathname==='/'||u.pathname==='/index.html'){ sendHtml(res, html); return; } if(u.pathname==='/api/status'){ const payload={ status:'ready', keys:['auth','client'], overview:'This is a placeholder contractor demo with live sample data.', live:{ timestamp:new Date().toISOString(), activeContracts: Math.floor(Math.random()*20), pendingApprovals: Math.floor(Math.random()*5) } }; sendJson(res,payload); return; } res.writeHead(404,{'Content-Type':'text/plain'}); res.end('Not found'); });
+const html = `<!doctype html><html><head><meta charset="utf-8"/><title>Contractor Demo</title><meta name="viewport" content="width=device-width,initial-scale=1"/><style>body{font-family:Segoe UI,Arial;margin:0;background:#f4f6f8;color:#222}.wrap{max-width:980px;margin:48px auto;padding:24px;background:#fff;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.06)}h1{margin:0 0 8px}.meta{color:#666;margin-bottom:16px}.cards{display:flex;gap:12px;flex-wrap:wrap}.card{flex:1 1 220px;padding:12px;border-radius:6px;background:#fafafa;border:1px solid #eee}pre{background:#111;color:#0f0;padding:12px;border-radius:6px;overflow:auto}footer{margin-top:18px;color:#888;font-size:13px}</style></head><body><div class="wrap"><h1>Contractor Demo</h1><div class="meta">Status: <strong id="status">starting</strong> • Keys: <span id="keys">—</span></div><div class="cards"><div class="card"><h3>Overview</h3><p id="overview">Loading overview…</p></div><div class="card"><h3>Live Data</h3><pre id="live">waiting for data…</pre></div></div><footer>Local demo served on port ${port}</footer></div><script>async function refresh(){try{const r=await fetch('/api/status');const j=await r.json();document.getElementById('status').textContent=j.status;document.getElementById('keys').textContent=j.keys.join(', ');document.getElementById('overview').textContent=j.overview;document.getElementById('live').textContent=JSON.stringify(j.live,null,2);}catch(e){document.getElementById('status').textContent='error';document.getElementById('overview').textContent=e.message;}}refresh();setInterval(refresh,3000);</script></body></html>`;
+const server = http.createServer((req, res) => {
+	const u = new URL(req.url, `http://${req.headers.host}`);
+	if (u.pathname === '/' || u.pathname === '/index.html') {
+		sendHtml(res, html);
+		return;
+	}
+	if (u.pathname === '/api/status') {
+		const payload = {
+			status: 'ready',
+			keys: ['auth', 'client'],
+			overview: 'This is a placeholder contractor demo with live sample data.',
+			live: {
+				timestamp: new Date().toISOString(),
+				activeContracts: Math.floor(Math.random() * 20),
+				pendingApprovals: Math.floor(Math.random() * 5)
+			}
+		};
+		sendJson(res, payload);
+		return;
+	}
+	res.writeHead(404, { 'Content-Type': 'text/plain' });
+	res.end('Not found');
+});
 server.listen(port, '127.0.0.1', () => console.log('Listening on', port));

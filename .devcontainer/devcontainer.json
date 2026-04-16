@@ -1,0 +1,14 @@
+{
+  "name": "Workspace Dev Container",
+  "image": "mcr.microsoft.com/vscode/devcontainers/base:ubuntu",
+  "features": {},
+  "postCreateCommand": "bash .devcontainer/post-create.sh || true",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint"
+      ]
+    }
+  }
+}

@@ -1,9 +1,6 @@
 {
-  "root": true,
-  "extends": ["@react-native-community", "eslint:recommended"],
-  "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint"],
-  "rules": {
-    "no-console": ["warn", { "allow": ["warn", "error"] }]
-  }
+  "env": { "es2021": true, "node": true },
+  "extends": ["eslint:recommended"],
+  "parserOptions": { "ecmaVersion": 12 },
+  "rules": {}
 }

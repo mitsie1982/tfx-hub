@@ -1,4 +1,4 @@
-﻿# Windows Demo Prerequisites
+# Windows Demo Prerequisites
 
 - Windows 10/11 Pro or Windows Server
 - Visual Studio 2022 with "Desktop development with C++" workload

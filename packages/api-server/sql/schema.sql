@@ -115,3 +115,41 @@ CREATE INDEX IF NOT EXISTS idx_admin_access_audit_created_at ON admin_access_aud
 CREATE INDEX IF NOT EXISTS idx_users_phone_number ON users(phone_number);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username_unique ON users(lower(username)) WHERE username IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_customer_professional_shortlist_customer ON customer_professional_shortlist(customer_user_id, created_at DESC);
+
+# --- Scheduling & Calendar Sync ---
+CREATE TABLE IF NOT EXISTS contractor_availability (
+  id TEXT PRIMARY KEY,
+  professional_id TEXT NOT NULL,
+  start_time TIMESTAMPTZ NOT NULL,
+  end_time TIMESTAMPTZ NOT NULL,
+  status TEXT NOT NULL DEFAULT 'available', -- available, booked, unavailable
+  source TEXT DEFAULT 'manual', -- manual, google, outlook
+  external_event_id TEXT, -- for Google/Outlook sync
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_contractor_availability_professional ON contractor_availability(professional_id, start_time, end_time);
+
+CREATE TABLE IF NOT EXISTS bookings (
+  id TEXT PRIMARY KEY,
+  contractor_id TEXT NOT NULL,
+  client_id TEXT NOT NULL,
+  availability_id TEXT NOT NULL REFERENCES contractor_availability(id) ON DELETE CASCADE,
+  status TEXT NOT NULL DEFAULT 'pending', -- pending, confirmed, cancelled
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_bookings_contractor ON bookings(contractor_id, status);
+
+CREATE TABLE IF NOT EXISTS calendar_sync_tokens (
+  id TEXT PRIMARY KEY,
+  professional_id TEXT NOT NULL,
+  provider TEXT NOT NULL, -- google, outlook
+  access_token TEXT NOT NULL,
+  refresh_token TEXT,
+  expires_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);

@@ -1,0 +1,20 @@
+name: Advanced Sample Workflow
+description: Demonstrates variables, parallel steps, and retries
+variables:
+  BUILD_DIR: dist
+steps:
+  - name: Clean
+    run: rm -rf ${{BUILD_DIR}}
+  - name: Install
+    run: npm ci
+  - parallel:
+      - name: Lint
+        run: npm run lint
+      - name: Build
+        run: npm run build
+        retries: 2
+        retryDelaySeconds: 5
+      - name: Test
+        run: npm test
+  - name: Deploy
+    run: echo Deploying to ${{BUILD_DIR}}

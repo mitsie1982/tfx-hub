@@ -1,12 +1,33 @@
+
 // src/health_endpoints.js
 // Health check and metrics endpoints for monitoring integration
 
-const express = require('express');
+import express from 'express';
+import * as prometheus from 'prom-client';
 const router = express.Router();
-
-// Prometheus metrics registry
-const prometheus = require('prom-client');
 const register = new prometheus.Registry();
+
+// --- Sprint 5: Job/Dispute Metrics ---
+const jobCreated = new prometheus.Counter({
+  name: 'job_created_total',
+  help: 'Total jobs created',
+  labelNames: ['source'],
+  registers: [register]
+});
+
+const disputeCreated = new prometheus.Counter({
+  name: 'dispute_created_total',
+  help: 'Total disputes created',
+  labelNames: ['source'],
+  registers: [register]
+});
+
+const disputeResolved = new prometheus.Counter({
+  name: 'dispute_resolved_total',
+  help: 'Total disputes resolved',
+  labelNames: ['source'],
+  registers: [register]
+});
 
 // Standard metrics (CPU, memory, GC events)
 prometheus.collectDefaultMetrics({ register });
@@ -138,19 +159,20 @@ setInterval(() => {
   appStartTime.set(process.uptime());
 }, 10000);
 
-module.exports = {
+export {
   router,
   register,
-  metrics: {
-    httpRequestDuration,
-    httpRequestsTotal,
-    dbQueryDuration,
-    mobileUnhandledExceptions,
-    mobileCrashes,
-    mobileActiveSessions,
-    checkoutStarted,
-    checkoutCompleted,
-    jobSubmitted
-  },
+  httpRequestDuration,
+  httpRequestsTotal,
+  dbQueryDuration,
+  mobileUnhandledExceptions,
+  mobileCrashes,
+  mobileActiveSessions,
+  checkoutStarted,
+  checkoutCompleted,
+  jobSubmitted,
+  jobCreated,
+  disputeCreated,
+  disputeResolved,
   instrumentRequest
 };

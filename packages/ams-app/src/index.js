@@ -1,6 +1,6 @@
-﻿/*
+/*
  packages/ams-app/src/index.js
- AMS app entry point — composes shared-logic with admin workspaces.
+ AMS app entry point � composes shared-logic with admin workspaces.
 */
 'use strict';
 

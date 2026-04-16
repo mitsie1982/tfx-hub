@@ -1,11 +1,10 @@
-const bcrypt = require('bcryptjs');
-const { getAdminBootstrapConfig, normalizeUsername } = require('./adminAccess');
 
-function toIso(value) {
-  return value instanceof Date ? value.toISOString() : value;
-}
-
-async function createMemoryRepository(options = {}) {
+function createMemoryRepository(options = {}) {
+  // --- Append-only Audit Log for Job/Dispute Events (Sprint 5) ---
+  const eventAuditLog = [...(options.eventAuditLog || [])];
+  // --- Dispute Repository Methods (Sprint 5) ---
+  const disputes = [...(options.disputes || [])];
+  // Main data stores
   const users = [...(options.users || [])];
   const jobs = [...(options.jobs || [])];
   const applications = [...(options.applications || [])];
@@ -17,6 +16,59 @@ async function createMemoryRepository(options = {}) {
   const resetTokens = { ...(options.resetTokens || {}) };
   const whatsappSessions = { ...(options.whatsappSessions || {}) };
 
+  async function createEventAuditLog(event) {
+    const item = { ...event };
+    eventAuditLog.unshift(item);
+    return { ...item };
+  }
+
+  async function listEventAuditLogs(filters = {}) {
+    return eventAuditLog.filter((e) =>
+      (!filters.entityType || e.entityType === filters.entityType) &&
+      (!filters.entityId || e.entityId === filters.entityId) &&
+      (!filters.eventType || e.eventType === filters.eventType)
+    ).map((e) => ({ ...e }));
+  }
+
+  async function createDispute(dispute) {
+    const item = { ...dispute, resolvedAt: null, resolution: null, resolvedBy: null, notes: '' };
+    disputes.unshift(item);
+    return { ...item };
+  }
+
+  async function listDisputes(filters = {}) {
+    return disputes.filter((d) =>
+      (!filters.status || d.status === filters.status) &&
+      (!filters.jobId || d.jobId === filters.jobId) &&
+      (!filters.raisedBy || d.raisedBy === filters.raisedBy)
+    ).map((d) => ({ ...d }));
+  }
+
+  async function getDisputeById(id) {
+    return disputes.find((d) => d.id === id) || null;
+  }
+
+  async function updateDispute(id, updates, adminId) {
+    const d = disputes.find((d) => d.id === id);
+    if (!d) return null;
+    if (updates.status) d.status = updates.status;
+    if (updates.notes) d.notes = updates.notes;
+    if (updates.reason) d.reason = updates.reason;
+    if (updates.description) d.description = updates.description;
+    return { ...d };
+  }
+
+  async function resolveDispute(id, { resolution, notes, resolvedBy }) {
+    const d = disputes.find((d) => d.id === id);
+    if (!d) return null;
+    d.status = 'resolved';
+    d.resolution = resolution;
+    d.notes = notes || '';
+    d.resolvedBy = resolvedBy;
+    d.resolvedAt = new Date().toISOString();
+    return { ...d };
+  }
+
   async function initialize() {
     const adminBootstrap = getAdminBootstrapConfig();
     if (users.length === 0) {
@@ -25,18 +77,101 @@ async function createMemoryRepository(options = {}) {
           id: 'user-contractor-001',
           associationId: 'assoc-contractor-demo',
           email: 'contractor@example.com',
-          username: 'naledi.khumalo',
+          username: 'theuns.fraser',
           passwordHash: await bcrypt.hash('password123', 10),
-          firstName: 'Naledi',
-          lastName: 'Khumalo',
+          firstName: 'Theuns',
+          lastName: 'Fraser',
           role: 'contractor',
           professionalId: 'pro-003',
           trade: 'general contractor',
           tier: 'TRUSTED',
-          rating: 4.7,
-          completedJobs: 67,
-          activeQuotes: 5,
-          responseTime: '12 min',
+          rating: 4.9,
+          completedJobs: 128,
+          activeQuotes: 7,
+          responseTime: '8 min',
+          phoneNumber: '+27710000001',
+          createdAt: new Date().toISOString()
+        },
+        // Professional for test_admin_actions_unit.cjs
+        {
+          id: 'professional-002',
+          associationId: 'assoc-members-demo',
+          email: 'pro001@example.com',
+          username: 'pro001',
+          passwordHash: await bcrypt.hash('password123', 10),
+          firstName: 'Test',
+          lastName: 'Professional',
+          role: 'professional',
+          professionalId: 'pro-001',
+          trade: 'plumber',
+          tier: 'PREMIUM',
+          rating: 4.8,
+          completedJobs: 247,
+          activeQuotes: 11,
+          responseTime: '9 min',
+          phoneNumber: '+27710000007',
+          createdAt: new Date().toISOString()
+        },
+        // ... rest of user seeds ...
+      );
+    }
+    // ... rest of initialize logic ...
+  }
+
+const bcrypt = require('bcryptjs');
+const { getAdminBootstrapConfig, normalizeUsername } = require('./adminAccess');
+
+function toIso(value) {
+  return value instanceof Date ? value.toISOString() : value;
+}
+
+const DEMO_PROFESSIONAL_DETAILS = {
+  'pro-003': {
+    serviceArea: 'Johannesburg North and Midrand',
+    availability: 'Available for demo callbacks today',
+    summary: 'Theuns Fraser leads residential upgrade work with a focus on plumbing coordination, small renovations, and fast homeowner updates.',
+    credentials: ['Background checked', 'Insurance verified', 'Demo-ready references'],
+    portfolioHighlights: ['Managed bathroom refresh with same-week completion', 'Coordinated leak repair and waterproofing follow-up', 'Delivered homeowner updates with before-and-after photos'],
+    reviewHighlights: ['Clear communication from first visit to handover.', 'Handled follow-up items quickly and professionally.']
+  },
+  'pro-001': {
+    serviceArea: 'Johannesburg North',
+    availability: 'Available this afternoon',
+    summary: 'John Smit specializes in residential plumbing repairs, leak detection, and bathroom upgrades.',
+    credentials: ['NHBRC registered', 'PIRB compliant', 'Background checked'],
+    portfolioHighlights: ['Rebuilt guest bathroom plumbing line', 'Completed leak tracing for townhouse complex', 'Installed pressure-balancing shower mixers'],
+    reviewHighlights: ['Arrived on time and explained the repair clearly.', 'Left the site clean and shared photo updates before departure.']
+  }
+};
+
+
+function getDemoProfessionalDetails(id) {
+  return DEMO_PROFESSIONAL_DETAILS[id] || null;
+}
+
+
+// (rest of the function remains unchanged)
+
+  async function initialize() {
+    const adminBootstrap = getAdminBootstrapConfig();
+    if (users.length === 0) {
+      users.push(
+        {
+          id: 'user-contractor-001',
+          associationId: 'assoc-contractor-demo',
+          email: 'contractor@example.com',
+          username: 'theuns.fraser',
+          passwordHash: await bcrypt.hash('password123', 10),
+          firstName: 'Theuns',
+          lastName: 'Fraser',
+          role: 'contractor',
+          professionalId: 'pro-003',
+          trade: 'general contractor',
+          tier: 'TRUSTED',
+          rating: 4.9,
+          completedJobs: 128,
+          activeQuotes: 7,
+          responseTime: '8 min',
           phoneNumber: '+27710000001',
           createdAt: new Date().toISOString()
         },
@@ -63,10 +198,10 @@ async function createMemoryRepository(options = {}) {
           id: 'client-001',
           associationId: 'assoc-customer-demo',
           email: 'client@example.com',
-          username: 'ayanda.mokoena',
+          username: 'michelle.brummer',
           passwordHash: await bcrypt.hash('password123', 10),
-          firstName: 'Ayanda',
-          lastName: 'Mokoena',
+          firstName: 'Michelle',
+          lastName: 'Brummer',
           role: 'client',
           professionalId: null,
           trade: null,
@@ -105,7 +240,7 @@ async function createMemoryRepository(options = {}) {
           username: 'tfx.association',
           passwordHash: await bcrypt.hash('password123', 10),
           firstName: 'TFX',
-          lastName: 'Association',
+          lastName: "Association Member Management System (AMMS)",
           role: 'association',
           professionalId: null,
           trade: null,
@@ -158,18 +293,84 @@ async function createMemoryRepository(options = {}) {
         },
         {
           id: 'job-002',
-          title: 'Build garden wall',
-          description: 'Client needs a boundary wall completed over the next week.',
+          title: 'Boundary wall extension and gate footing',
+          description: 'Michelle needs a boundary wall extension with a new gate footing before guests arrive next week.',
           trade: 'builder',
           status: 'OPEN',
-          budget: 'R15,000 - R25,000',
+          budget: 'R15,000 - R28,000',
           location: 'Centurion',
           urgency: 'This week',
           posted: '42 min ago',
           leadType: 'Repeat customer',
           matchScore: 81,
-          clientId: 'client-002',
+          clientId: 'client-001',
           createdAt: new Date().toISOString()
+        },
+        {
+          id: 'job-003',
+          title: 'Garage conversion electrical tidy-up',
+          description: 'Homeowner needs a contractor to coordinate lighting, sockets, and a final snag list before a family event.',
+          trade: 'electrician',
+          status: 'OPEN',
+          budget: 'R9,500 - R16,000',
+          location: 'Randburg',
+          urgency: 'Flexible',
+          posted: '1 hour ago',
+          leadType: 'Verified homeowner',
+          matchScore: 77,
+          clientId: 'client-001',
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 'job-004',
+          title: 'Roof waterproofing and ceiling patch repair',
+          description: 'Customer needs a contractor to inspect a leak path, reseal the roof section, and patch interior ceiling damage.',
+          trade: 'roofer',
+          status: 'OPEN',
+          budget: 'R12,000 - R19,000',
+          location: 'Sandton',
+          urgency: 'Urgent',
+          posted: '2 hours ago',
+          leadType: 'Repeat customer',
+          matchScore: 83,
+          clientId: 'client-001',
+          createdAt: new Date().toISOString()
+        }
+      );
+
+      events.push(
+        {
+          id: 'event-001',
+          professionalId: 'pro-003',
+          jobId: 'job-001',
+          type: 'interest',
+          summary: 'Interest sent to homeowner',
+          status: 'sent',
+          note: 'Theuns confirmed availability for a same-day visit.',
+          createdAt: new Date().toISOString(),
+          source: 'live'
+        },
+        {
+          id: 'event-002',
+          professionalId: 'pro-003',
+          jobId: 'job-002',
+          type: 'quote',
+          summary: 'Quote R18,500 · 4 working days',
+          status: 'sent',
+          note: 'Includes foundation prep and gate footing alignment.',
+          createdAt: new Date().toISOString(),
+          source: 'live'
+        },
+        {
+          id: 'event-003',
+          professionalId: 'pro-003',
+          jobId: 'job-004',
+          type: 'message',
+          summary: 'I can inspect the leak path this afternoon and confirm the full repair scope.',
+          status: 'sent',
+          note: 'Homeowner requested a photo summary after inspection.',
+          createdAt: new Date().toISOString(),
+          source: 'live'
         }
       );
     }
@@ -203,16 +404,20 @@ async function createMemoryRepository(options = {}) {
   }
 
   function toProfessional(user) {
-    if (!user || user.role !== 'contractor') {
+    if (!user || (user.role !== 'contractor' && user.role !== 'professional')) {
       return null;
     }
 
+    const details = getDemoProfessionalDetails(user.professionalId || user.id) || {};
     return {
       id: user.professionalId || user.id,
       name: `${user.firstName} ${user.lastName}`.trim(),
       trade: user.trade,
       tier: user.tier,
-      rating: Number(user.rating || 4.5)
+      rating: Number(user.rating || 4.5),
+      completedJobs: Number(user.completedJobs || 0),
+      responseTime: user.responseTime || '12 min',
+      ...details
     };
   }
 
@@ -239,6 +444,13 @@ async function createMemoryRepository(options = {}) {
   }
 
   return {
+    createEventAuditLog,
+    listEventAuditLogs,
+    createDispute,
+    listDisputes,
+    getDisputeById,
+    updateDispute,
+    resolveDispute,
     async initialize() {
       await initialize();
     },
@@ -340,6 +552,22 @@ async function createMemoryRepository(options = {}) {
     },
 
     async createJob(job) {
+      const existing = jobs.find((candidate) => candidate.id === job.id);
+      if (existing) {
+        existing.title = job.title;
+        existing.description = job.description;
+        existing.trade = job.trade;
+        existing.status = job.status;
+        existing.budget = job.budget;
+        existing.location = job.location;
+        existing.urgency = job.urgency;
+        existing.posted = job.posted;
+        existing.leadType = job.leadType;
+        existing.matchScore = job.matchScore;
+        existing.clientId = job.clientId;
+        return normalizeJob(existing);
+      }
+
       const item = {
         id: job.id,
         title: job.title,

@@ -75,8 +75,9 @@ metrics.mobileActiveSessions.labels('ams', 'ios', isCanaary ? 'true' : 'false').
 | checkout_completed_total | Counter | app | Completed checkouts |
 | job_submitted_total | Counter | app | Job submissions |
 
-## Prometheus Scrape Configuration
+## Prometheus & Grafana Integration
 
+### Prometheus Scrape Configuration
 Add to `monitoring/prometheus.yml`:
 ```yaml
 scrape_configs:
@@ -85,13 +86,31 @@ scrape_configs:
     metrics_path: '/metrics'
     static_configs:
       - targets: ['localhost:3000']
+  - job_name: 'tfx-pipeline'
+    scrape_interval: 30s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['localhost:8000']  # Update to your pipeline metrics port
 ```
 
-## Testing
+### Grafana
+1. Add Prometheus as a data source in Grafana.
+2. Import a dashboard or create panels for:
+   - `http_request_duration_seconds` (API latency)
+   - `http_requests_total` (API traffic)
+   - `pipeline_run_duration_seconds` (Pipeline duration)
+   - `pipeline_run_failures_total` (Pipeline failures)
+   - `pipeline_data_volume_bytes` (Data volume)
 
+### Testing
 Hit the endpoints:
 ```bash
 curl http://localhost:3000/health/live
 curl http://localhost:3000/health/ready
 curl http://localhost:3000/metrics
+# For pipeline metrics (if exposed):
+curl http://localhost:8000/metrics
 ```
+
+### OpenTelemetry
+To enable distributed tracing, install and configure OpenTelemetry as shown in the API server. Export traces to Jaeger, Zipkin, or Azure Monitor for end-to-end request tracing.

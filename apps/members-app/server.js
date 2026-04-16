@@ -1,4 +1,4 @@
-ï»¿'use strict';
+'use strict';
 
 const { URL } = require('url');
 const {
@@ -9,8 +9,9 @@ const {
 	renderSection,
 	renderShell,
 	renderStats
-} = require('../browserHostUtils');
+} = require('../browserHostUtils.cjs');
 const { createMembersApp } = require('../../packages/members-app/src');
+const { getHumanFacingDemoSeed } = require('@tfx/shared-logic');
 const { signToken } = require('../../packages/shared-auth/src');
 
 const ASSOCIATION_ACTION_OPTIONS = {
@@ -23,17 +24,15 @@ const PROFESSIONAL_ACTION_OPTIONS = {
 	'tier-review-request': 'Tier review requested'
 };
 
-const SAMPLE_OVERVIEW = {
-	totals: { openJobs: 4, inProgressJobs: 2, completedJobs: 13, professionals: 9 },
-	openJobsByTrade: { plumber: 2, electrician: 1, builder: 1 },
-	professionalsByTrade: { plumber: 3, builder: 2, electrician: 2, roofer: 2 }
-};
-
-const SAMPLE_PROFESSIONALS = [
-	{ id: 'pro-001', name: 'John Smit', trade: 'plumber', tier: 'PREMIUM', rating: 4.8 },
-	{ id: 'pro-002', name: 'Sarah Khubone', trade: 'builder', tier: 'TRUSTED', rating: 4.6 },
-	{ id: 'pro-003', name: 'Naledi Khumalo', trade: 'general contractor', tier: 'TRUSTED', rating: 4.7 }
-];
+const demoSeed = getHumanFacingDemoSeed();
+const SAMPLE_OVERVIEW = demoSeed.members.overview;
+const SAMPLE_PROFESSIONALS = demoSeed.members.professionals;
+const SAMPLE_ASSOCIATION_ACTIONS = demoSeed.members.associationActions;
+const SAMPLE_PROFESSIONAL_REQUESTS = demoSeed.members.professionalRequests;
+const SAMPLE_PROFESSIONAL_DETAILS = demoSeed.professionals.directory.reduce((accumulator, professional) => {
+	accumulator[professional.id] = professional;
+	return accumulator;
+}, {});
 
 function createApp() {
 	return createMembersApp({
@@ -79,9 +78,9 @@ async function loadModel(requestUrl) {
 			warning: 'Unable to reach the members API. Showing association and professional sample data.',
 			overview: SAMPLE_OVERVIEW,
 			professionals: SAMPLE_PROFESSIONALS,
-			selectedProfessional: SAMPLE_PROFESSIONALS.find((item) => item.id === professionalId) || SAMPLE_PROFESSIONALS[0],
-			selectedProfessionalActions: [],
-			professionalRequests: []
+			selectedProfessional: SAMPLE_PROFESSIONAL_DETAILS[professionalId] || SAMPLE_PROFESSIONALS.find((item) => item.id === professionalId) || SAMPLE_PROFESSIONAL_DETAILS[SAMPLE_PROFESSIONALS[0].id],
+			selectedProfessionalActions: SAMPLE_ASSOCIATION_ACTIONS[professionalId] || SAMPLE_ASSOCIATION_ACTIONS[SAMPLE_PROFESSIONALS[0].id] || [],
+			professionalRequests: SAMPLE_PROFESSIONAL_REQUESTS[professionalId] || SAMPLE_PROFESSIONAL_REQUESTS[SAMPLE_PROFESSIONALS[0].id] || []
 		};
 	}
 }
@@ -112,7 +111,7 @@ function renderModel(model) {
 			].join('')),
 			renderSection('Professional Directory', renderCards((model.professionals || []).map((professional) => ({
 				title: professional.name,
-				meta: `${professional.trade} Â· ${professional.tier || 'Tier pending'} Â· ${professional.rating || 'N/A'} rating`,
+				meta: `${professional.trade} · ${professional.tier || 'Tier pending'} · ${professional.rating || 'N/A'} rating`,
 				actionHref: `/?professionalId=${encodeURIComponent(professional.id)}`,
 				actionLabel: 'Open professional'
 			}))), 'Professional-facing browser visibility now exists as a dedicated members surface.'),
@@ -148,12 +147,12 @@ function renderModel(model) {
 					</div>
 				</div>` + renderSection('Association Action History', renderCards((model.selectedProfessionalActions || []).map((item) => ({
 				title: item.summary,
-				meta: `${item.actionType} Â· ${item.createdAt || 'Recently'}`,
+				meta: `${item.actionType} · ${item.createdAt || 'Recently'}`,
 				body: item.note || 'No note recorded.',
 				footer: `Source: ${item.source || 'live'}`
 			}))), 'Queued member-review and trade-outreach actions.') + renderSection('Professional Request History', renderCards((model.professionalRequests || []).map((item) => ({
 				title: item.summary,
-				meta: `${item.actionType} Â· ${item.createdAt || 'Recently'}`,
+				meta: `${item.actionType} · ${item.createdAt || 'Recently'}`,
 				body: item.note || 'No note recorded.',
 				footer: `Source: ${item.source || 'live'}`
 			}))), 'Availability and tier-review requests recorded by the professional workflow.') : '<p class="muted">No professional selected.</p>', 'This surface verifies the Professional role separately from Contractor and Customer flows and now exposes operational actions across browser and mobile-style surfaces.')

@@ -193,13 +193,13 @@ Get the current contractor profile resolved from the authenticated session.
 {
   "item": {
     "professionalId": "pro-003",
-    "name": "Naledi Khumalo",
+    "name": "Theuns Fraser",
     "trade": "general contractor",
     "tier": "TRUSTED",
-    "rating": 4.7,
-    "completedJobs": 67,
-    "activeQuotes": 5,
-    "responseTime": "12 min"
+    "rating": 4.9,
+    "completedJobs": 128,
+    "activeQuotes": 7,
+    "responseTime": "8 min"
   }
 }
 ```
@@ -264,7 +264,7 @@ Send an inbound WhatsApp-style contractor message into the backend chat flow. Th
 **Response:**
 ```json
 {
-  "reply": "Welcome back, Naledi.\n\nYou have 2 open leads and 5 active quotes.",
+  "reply": "Welcome back, Theuns.\n\nYou have 2 open leads and 7 active quotes.",
   "options": ["1", "2", "3", "4", "5", "6"],
   "session": {
     "phoneNumber": "+27710000001",

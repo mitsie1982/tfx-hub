@@ -69,9 +69,9 @@
         "title": "Dashboard example",
         "lines": [
           "Contractor workspace",
-          "Naledi Khumalo",
-          "general contractor · TRUSTED tier · 4.7★ rating",
-          "Completed jobs: 67 | Active quotes: 5 | Open leads: 2 | Response time: 12 min"
+          "Theuns Fraser",
+          "general contractor · TRUSTED tier · 4.9★ rating",
+          "Completed jobs: 128 | Active quotes: 7 | Open leads: 2 | Response time: 8 min"
         ]
       },
       {
@@ -88,7 +88,7 @@
       {
         "title": "Main menu example",
         "lines": [
-          "Welcome back, Naledi.",
+          "Welcome back, Theuns.",
           "Contractor snapshot",
           "Open leads: 2",
           "Active quotes: 5",
