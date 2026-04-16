@@ -1,0 +1,39 @@
+replicaCount: 2
+
+image:
+  repository: gcr.io/my-gcp-project/tfx-model
+  tag: latest
+
+service:
+  type: ClusterIP
+  port: 80
+
+canary:
+  enabled: true
+  initialWeight: 10
+  stepWeight: 20
+  maxWeight: 100
+  analysisIntervalSeconds: 60
+  rollbackOnError: true
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 1Gi
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8080
+  initialDelaySeconds: 10
+  periodSeconds: 10
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8080
+  initialDelaySeconds: 30
+  periodSeconds: 20
