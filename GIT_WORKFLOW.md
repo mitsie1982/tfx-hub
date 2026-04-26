@@ -1,6 +1,6 @@
 # Git Workflow
 
-**Purpose**  
+**Purpose**
 Standard, safe, and repeatable Git workflow for day‑to‑day development, task switching, and collaboration.
 
 ---
