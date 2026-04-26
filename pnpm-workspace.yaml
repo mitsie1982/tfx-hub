@@ -1,3 +1,13 @@
 packages:
   - 'apps/*'
+<<<<<<< Updated upstream
   - 'packages/*'
+=======
+  - 'packages/*'
+allowBuilds:
+  '@prisma/engines': true
+  aws-sdk: true
+  prisma: true
+  protobufjs: true
+  unrs-resolver: true
+>>>>>>> Stashed changes

@@ -1,0 +1,58 @@
+name: RAG Index Smoke Test
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/**'
+      - 'data/samples/**'
+
+jobs:
+  build-and-index:
+    runs-on: ubuntu-latest
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      EMBEDDING_MODEL: text-embedding-3-small
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Prepare small sample data
+        run: |
+          mkdir -p data/samples
+          echo "Sample document for RAG smoke test." > data/samples/sample1.txt
+          echo "Another short sample for indexing." > data/samples/sample2.txt
+          ls -la data/samples
+
+      - name: Run FAISS indexer (smoke)
+        id: indexer
+        run: |
+          python3 scripts/rag_faiss_index.py --source data/samples --index out/faiss_smoke.index --meta out/meta_smoke.json
+          echo "INDEX_PATH=out/faiss_smoke.index" >> $GITHUB_OUTPUT
+          echo "META_PATH=out/meta_smoke.json" >> $GITHUB_OUTPUT
+
+      - name: Show manifest
+        if: success()
+        run: |
+          echo "Manifest:"
+          jq . out/meta_smoke.json || cat out/meta_smoke.json
+
+      - name: Upload index and manifest artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: rag-smoke-artifacts
+          path: |
+            out/faiss_smoke.index
+            out/meta_smoke.json
+            out/meta_smoke.json.manifest.json
+# Trigger workflow

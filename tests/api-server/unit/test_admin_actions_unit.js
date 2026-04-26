@@ -5,11 +5,27 @@ const { createApp, createMemoryRepository } = require('../../../packages/api-ser
 async function run() {
   const repository = await createMemoryRepository();
   await repository.initialize();
+  // Ensure professional's associationId matches the JWT's associationId
+  await repository.createUser({
+    id: 'professional-001', professionalId: 'pro-001', role: 'professional',
+    associationId: 'assoc-members-demo',
+    firstName: 'Test',
+    lastName: 'Professional',
+    trade: 'plumber',
+    tier: 'PREMIUM',
+    rating: 5.0
+  });
 
   const app = createApp({
     repository,
+<<<<<<< Updated upstream:tests/api-server/unit/test_admin_actions_unit.js
     logger: { info() {}, warn() {}, error() {} },
     getCurrentDate: () => new Date('2026-04-02T07:00:00.000Z')
+=======
+    logger: console,
+    getCurrentDate: () => new Date('2026-04-02T07:00:00.000Z'),
+    adminAccessPolicy: { allowAfterHours: true }
+>>>>>>> Stashed changes:tests/api-server/unit/test_admin_actions_unit.cjs
   });
 
   const server = await new Promise((resolve) => {
@@ -30,7 +46,7 @@ async function run() {
       headers: {
         authorization: `Bearer ${token}`,
         'content-type': 'application/json',
-        'x-association-id': 'assoc-contractor-demo'
+        'x-association-id': 'assoc-members-demo'
       },
       body: JSON.stringify({ note: 'Quarterly premium review' })
     });
@@ -41,7 +57,7 @@ async function run() {
     const listResponse = await fetch(`${baseUrl}/professionals/pro-001/admin-actions`, {
       headers: {
         authorization: `Bearer ${token}`,
-        'x-association-id': 'assoc-contractor-demo'
+        'x-association-id': 'assoc-members-demo'
       }
     });
     const listPayload = await listResponse.json();
@@ -51,8 +67,14 @@ async function run() {
 
     const closedApp = createApp({
       repository,
+<<<<<<< Updated upstream:tests/api-server/unit/test_admin_actions_unit.js
       logger: { info() {}, warn() {}, error() {} },
       getCurrentDate: () => new Date('2026-04-02T18:00:00.000Z')
+=======
+      logger: console,
+      getCurrentDate: () => new Date('2026-04-02T18:00:00.000Z'),
+      adminAccessPolicy: { allowAfterHours: false, startHour: 8, endHour: 17, timeZone: 'Africa/Johannesburg' }
+>>>>>>> Stashed changes:tests/api-server/unit/test_admin_actions_unit.cjs
     });
     const closedServer = await new Promise((resolve) => {
       const instance = closedApp.listen(0, () => resolve(instance));
@@ -63,7 +85,7 @@ async function run() {
       const closedListResponse = await fetch(`${closedBaseUrl}/professionals/pro-001/admin-actions`, {
         headers: {
           authorization: `Bearer ${token}`,
-          'x-association-id': 'assoc-contractor-demo'
+          'x-association-id': 'assoc-members-demo'
         }
       });
       const closedListPayload = await closedListResponse.json();
@@ -86,4 +108,11 @@ if (require.main === module) {
     console.error(error);
     process.exit(1);
   });
+<<<<<<< Updated upstream:tests/api-server/unit/test_admin_actions_unit.js
 }
+=======
+}
+
+
+
+>>>>>>> Stashed changes:tests/api-server/unit/test_admin_actions_unit.cjs

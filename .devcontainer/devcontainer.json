@@ -1,0 +1,20 @@
+{
+  "name": "TFX Orchestrator Dev",
+  "image": "mcr.microsoft.com/vscode/devcontainers/base:0-focal",
+  "extensions": [
+    "ms-python.python",
+    "ms-azuretools.vscode-docker",
+    "eamodio.gitlens",
+    "GitHub.copilot",
+    "GitHub.copilot-chat"
+  ],
+  "settings": {
+    "terminal.integrated.shell.linux": "/bin/bash"
+  },
+  "runArgs": [
+    "--env-file",
+    "${localWorkspaceFolder}/.env"
+  ],
+  "postCreateCommand": "python3 -m pip install --upgrade pip && pip install -r requirements.txt || true",
+  "remoteUser": "vscode"
+}

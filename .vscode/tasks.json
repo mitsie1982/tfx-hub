@@ -2,6 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
+<<<<<<< Updated upstream
       "label": "Shared-Logic: Install Dependencies",
       "type": "shell",
       "command": "pnpm install",
@@ -131,6 +132,100 @@
         "reveal": "always",
         "panel": "shared"
       },
+=======
+      "label": "Build Image",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/build-and-push.sh",
+      "args": ["gcr.io", "my-project", "tfx-model", "latest"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "showReuseMessage": true
+      },
+      "problemMatcher": [],
+      "group": { "kind": "build", "isDefault": true }
+    },
+    {
+      "label": "Run TFDV",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/run-tfdv.sh",
+      "args": ["--input", "gs://my-bucket/data/train", "--output", "tfdv-output"],
+      "presentation": { "reveal": "silent", "panel": "shared" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run TFMA Gate",
+      "type": "shell",
+      "command": "python",
+      "args": ["${workspaceFolder}/scripts/tfma_gate.py", "--tfma-dir", "tfma-output", "--thresholds", "{\"accuracy\":0.90,\"auc\":0.85}"],
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Sample Heavy Task",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/sample-heavy-task.sh",
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": []
+    }
+    ,
+    {
+      "label": "Build FAISS RAG Index",
+      "type": "shell",
+      "command": "python3 scripts/rag_faiss_index.py --source data/sources --index out/faiss.index --meta out/meta.json",
+      "presentation": { "reveal": "always" },
+      "group": "build"
+    },
+    {
+      "label": "Build Large FAISS Index",
+      "type": "shell",
+      "command": "python3 scripts/rag_faiss_large.py --source data/corpus --index out/faiss_ivf.index --meta out/meta.json --method ivf --nlist 1024 --nprobe 8",
+      "presentation": { "reveal": "always" },
+      "group": "build"
+    },
+    {
+      "label": "Run Recall@K Harness",
+      "type": "shell",
+      "command": "python3 scripts/test_recall_harness.py --index-flat out/faiss_flat.index --index-ivf out/faiss_ivf.index --index-hnsw out/faiss_hnsw.index --meta out/meta.json --queries \"data/queries/*.txt\" --k 10 --out out/recall_report.json",
+      "presentation": { "reveal": "always" },
+      "group": "test"
+    },
+    {
+      "label": "Generate Queries from Logs",
+      "type": "shell",
+      "command": "python3 scripts/generate_queries_from_logs.py --logs logs/*.jsonl --out data/queries --sample 200 --min_len 10 --max_len 400",
+      "presentation": { "reveal": "always" },
+      "group": "test"
+    }
+  ]
+}
+      "label": "Build Image",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/build-and-push.sh",
+      "args": ["gcr.io", "my-project", "tfx-model", "latest"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "showReuseMessage": true
+      },
+      "problemMatcher": [],
+      "group": { "kind": "build", "isDefault": true }
+    },
+    {
+      "label": "Run TFDV",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/run-tfdv.sh",
+      "args": ["--input", "gs://my-bucket/data/train", "--output", "tfdv-output"],
+      "presentation": { "reveal": "silent", "panel": "shared" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run TFMA Gate",
+      "type": "shell",
+      "command": "python",
+      "args": ["${workspaceFolder}/scripts/tfma_gate.py", "--tfma-dir", "tfma-output", "--thresholds", "{\"accuracy\":0.90,\"auc\":0.85}"],
+      "presentation": { "reveal": "always", "panel": "shared" },
+>>>>>>> Stashed changes
       "problemMatcher": []
     }
   ]

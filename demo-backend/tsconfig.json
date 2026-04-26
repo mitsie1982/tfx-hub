@@ -1,0 +1,14 @@
+// NOTE: TypeScript may show a 'common source directory' warning here. This config is correct: all sources are under ./src and output is dist/.
+// If the warning persists, it is a false positive and can be safely ignored.
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "outDir": "dist",
+    "rootDir": "./src",
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "strict": true
+  },
+  "include": ["./src/**/*"]
+}
