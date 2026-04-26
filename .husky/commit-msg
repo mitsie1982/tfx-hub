@@ -1,9 +1,1 @@
-#!/usr/bin/env sh
-. "$(dirname "$0")/_/husky.sh"
-
-MSG_FILE="$1"
-# Use commitlint to validate commit message
-npx --no-install commitlint --config node_modules/@commitlint/config-conventional/index.js --edit "$MSG_FILE" || {
-  echo "Commit message does not follow Conventional Commits. See https://www.conventionalcommits.org/"
-  exit 1
-}
+npx --no-install commitlint --edit "$1"

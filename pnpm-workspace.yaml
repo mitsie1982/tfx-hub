@@ -1,8 +1,5 @@
 packages:
   - 'apps/*'
-<<<<<<< Updated upstream
-  - 'packages/*'
-=======
   - 'packages/*'
 allowBuilds:
   '@prisma/engines': true
@@ -10,4 +7,3 @@ allowBuilds:
   prisma: true
   protobufjs: true
   unrs-resolver: true
->>>>>>> Stashed changes
