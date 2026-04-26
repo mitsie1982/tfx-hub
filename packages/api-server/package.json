@@ -10,7 +10,7 @@
   "dependencies": {
     "@tfx/shared-auth": "workspace:*",
     "@tfx/shared-logging": "workspace:*",
-    "bcryptjs": "^2.4.3",
+    "bcryptjs": "^3.0.3",
     "express": "^5.2.1",
     "nodemailer": "^6.10.0",
     "pg": "^8.13.1"
