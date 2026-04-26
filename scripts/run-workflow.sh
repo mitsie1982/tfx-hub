@@ -13,4 +13,3 @@ grep -E "^[[:space:]]*- run:" -A0 "$wf" | sed -E "s/^[[:space:]]*- run:[[:space:
   echo ">>> $cmd"
   bash -lc "$cmd"
 done
-

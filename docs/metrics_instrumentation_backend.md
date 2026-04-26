@@ -20,7 +20,7 @@ app.use(instrumentRequest);
 // In your route handlers:
 app.post('/checkout', async (req, res) => {
   metrics.checkoutStarted.labels('web').inc();
-  
+
   try {
     // Process checkout
     const result = await processCheckout(req.body);

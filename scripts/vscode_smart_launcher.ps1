@@ -11,7 +11,7 @@ function Log($msg) {
 }
 
 function IsAdmin {
-  return ([Security.Principal.WindowsPrincipal] 
+  return ([Security.Principal.WindowsPrincipal]
     [Security.Principal.WindowsIdentity]::GetCurrent()
   ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
@@ -91,7 +91,7 @@ else {
 # Decision
 if ($shouldElevate -and -not $admin) {
   Log "Launching VS Code as ADMIN..."
-  
+
   Start-Process -FilePath $codeExe `
     -ArgumentList "`"$WorkspacePath`"" `
     -Verb RunAs

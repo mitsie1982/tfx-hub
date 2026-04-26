@@ -125,7 +125,7 @@ function Update-GrafanaPortInIni {
       $content += "`n[server]`nhttp_port = $newPort`n"
     } else {
       # replace or add http_port under [server]
-      $content = [regex]::Replace($content, '(?ms)(`n\[server\]`n.*?)(`r?`nhttp_port\s*=\s*\d+)?', { param($m) 
+      $content = [regex]::Replace($content, '(?ms)(`n\[server\]`n.*?)(`r?`nhttp_port\s*=\s*\d+)?', { param($m)
         $block = $m.Groups[1].Value
         if ($m.Groups[2].Success) {
           return $block -replace 'http_port\s*=\s*\d+', "http_port = $newPort"

@@ -27,4 +27,3 @@ Run a minimal React Native Windows sample on a developer laptop.
 ## Troubleshooting
 - If build fails, open the solution in Visual Studio and build to see errors.
 - Ensure required workloads and SDKs are installed.
-

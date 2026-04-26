@@ -27,8 +27,8 @@ Evaluate feasibility, effort, and tradeoffs to support Windows for TFX Hub mobil
 - [ ] Document build time, dev setup time, and any Visual Studio requirements.
 
 ## Findings (fill during spike)
-- RNW: 
-  - Build success: 
+- RNW:
+  - Build success:
   - Key blockers:
   - Native modules compatibility:
   - Packaging notes:
@@ -43,4 +43,3 @@ Evaluate feasibility, effort, and tradeoffs to support Windows for TFX Hub mobil
 
 ## Recommendation
 (Choose RNW or Flutter or hybrid approach; include rationale and estimated migration cost)
-

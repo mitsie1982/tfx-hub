@@ -15,9 +15,15 @@ import json
 import os
 import sys
 
+
 def load_metrics(tfma_dir):
     # Look for common filenames
-    candidates = ["tfma_metrics.json", "tfma_output.json", "metrics.json", "tfma_metrics_overall.json"]
+    candidates = [
+        "tfma_metrics.json",
+        "tfma_output.json",
+        "metrics.json",
+        "tfma_metrics_overall.json",
+    ]
     for c in candidates:
         p = os.path.join(tfma_dir, c)
         if os.path.exists(p):
@@ -32,6 +38,7 @@ def load_metrics(tfma_dir):
             except Exception:
                 continue
     return None
+
 
 def extract_overall(metrics_json):
     # Accept multiple shapes; prefer metrics_json["overall"]
@@ -50,6 +57,7 @@ def extract_overall(metrics_json):
                 return metrics_json[key]
     return {}
 
+
 def compare(overall, thresholds):
     failures = []
     for metric, thresh in thresholds.items():
@@ -65,11 +73,17 @@ def compare(overall, thresholds):
             failures.append((metric, val, thresh, "below"))
     return failures
 
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--tfma-dir", default=os.environ.get("TFMA_OUTPUT_DIR", "tfma-output"))
-    parser.add_argument("--thresholds", default=os.environ.get("TFMA_THRESHOLDS", None),
-                        help="JSON string of thresholds, e.g. '{\"accuracy\":0.9,\"auc\":0.85}'")
+    parser.add_argument(
+        "--tfma-dir", default=os.environ.get("TFMA_OUTPUT_DIR", "tfma-output")
+    )
+    parser.add_argument(
+        "--thresholds",
+        default=os.environ.get("TFMA_THRESHOLDS", None),
+        help='JSON string of thresholds, e.g. \'{"accuracy":0.9,"auc":0.85}\'',
+    )
     args = parser.parse_args()
 
     if not args.thresholds:
@@ -93,7 +107,9 @@ def main():
 
     overall = extract_overall(metrics_json)
     if not overall:
-        print("No overall metrics extracted; ensure TFMA writes a JSON metrics file with 'overall' or numeric keys.")
+        print(
+            "No overall metrics extracted; ensure TFMA writes a JSON metrics file with 'overall' or numeric keys."
+        )
         sys.exit(2)
 
     failures = compare(overall, thresholds)
@@ -104,6 +120,7 @@ def main():
         sys.exit(3)
     print("TFMA gating PASSED. All metrics meet thresholds.")
     sys.exit(0)
+
 
 if __name__ == "__main__":
     main()

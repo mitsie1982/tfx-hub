@@ -186,7 +186,7 @@ groups:
 
   - alert: JobSubmissionRateDrop
     expr: |
-      rate(job_submitted_total[5m]) < 
+      rate(job_submitted_total[5m]) <
       (avg_over_time(rate(job_submitted_total[5m])[1h:5m]) * 0.90)
     for: 15m
     labels:

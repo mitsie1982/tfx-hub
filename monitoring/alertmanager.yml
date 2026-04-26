@@ -8,13 +8,13 @@ global:
 route:
   # Default receiver
   receiver: 'default'
-  
+
   # Alert grouping
   group_by: ['alertname', 'cluster', 'service']
   group_wait: 10s
   group_interval: 10s
   repeat_interval: 12h
-  
+
   # Routes for different severity levels
   routes:
     # Critical alerts - immediate notification
@@ -24,7 +24,7 @@ route:
       continue: true
       group_wait: 0s
       repeat_interval: 1h
-    
+
     # Warning alerts - batched
     - match:
         severity: warning
@@ -39,7 +39,7 @@ receivers:
       - channel: '#alerts'
         title: 'Alert: {{ .GroupLabels.alertname }}'
         text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
-  
+
   - name: 'critical'
     slack_configs:
       - channel: '#critical-alerts'

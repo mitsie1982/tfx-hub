@@ -13,7 +13,7 @@
 Ctrl+Shift+P → Type "Demo: Contractor" → Enter
 ```
 
-### Way 2: Task Menu  
+### Way 2: Task Menu
 ```
 Ctrl+Shift+P → Type "Tasks: Run Task" → Select demo → Enter
 ```
@@ -43,7 +43,7 @@ Set up quick keys by copying `.vscode/keybindings.example.json`:
 
 ---
 
-## ⌨️ Setting Up Keyboard Shortcuts  
+## ⌨️ Setting Up Keyboard Shortcuts
 
 **Option A (Recommended):**
 1. Press `Ctrl+Shift+P`

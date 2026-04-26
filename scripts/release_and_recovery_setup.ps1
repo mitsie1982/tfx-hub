@@ -51,7 +51,7 @@ Write-Output "Wrote Makefile to $makefile"
 
 # 2) publish_release.py - publish model metadata to MLflow and record data version alignment
 $publishScript = Join-Path $ScriptsPath "publish_release.py"
-$publishContent = @" 
+$publishContent = @"
 #!/usr/bin/env python3
 # publish_release.py
 # Publish release metadata to MLflow and record data version alignment.

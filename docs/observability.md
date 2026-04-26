@@ -25,4 +25,3 @@ This document describes the observability scaffold and how to configure Sentry, 
 ## CI checks
 - A CI workflow checks for the observability init marker in app entry points to avoid missing telemetry.
 - Ensure the marker comment OBSERVABILITY INIT is present in App.tsx for each app.
-

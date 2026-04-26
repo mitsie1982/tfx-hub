@@ -261,11 +261,11 @@ Each section should show `OK:` or `FAIL:` with details.
    ```bash
    # Alertmanager
    curl -v "${ALERTMANAGER_URL}/api/v2/status"
-   
+
    # LaunchDarkly
    curl -H "Authorization: Bearer ${LAUNCHDARKLY_API_TOKEN}" \
      "https://app.launchdarkly.com/api/v2/projects"
-   
+
    # Prometheus
    curl "${PROMETHEUS_URL}/api/v1/query?query=up"
    ```
@@ -412,19 +412,19 @@ If verification workflow causes issues:
 
 ## FAQ
 
-**Q: Can I run this workflow on production?**  
+**Q: Can I run this workflow on production?**
 A: Yes, but it performs actual canary promotions. Use a safeguard environment like staging first, then only promote to production when confident.
 
-**Q: How long does verification take?**  
+**Q: How long does verification take?**
 A: Typically 15-30 minutes (depends on observation windows in Stage 4). For faster testing, set `WINDOW_MINUTES=1` in workflow_dispatch inputs.
 
-**Q: What if Prometheus has no metrics yet?**  
+**Q: What if Prometheus has no metrics yet?**
 A: Queries will return `0`, and staged rollout will pass (since 0 < thresholds). This is expected during early dev. As system matures and metrics are emitted, thresholds become meaningful.
 
-**Q: Can I use self-hosted runners?**  
+**Q: Can I use self-hosted runners?**
 A: Yes! Self-hosted runners can have better network access to internal monitoring endpoints. Change `runs-on: ubuntu-latest` to `runs-on: [self-hosted, linux]`.
 
-**Q: How do I rotate LaunchDarkly token?**  
+**Q: How do I rotate LaunchDarkly token?**
 A: 1. Generate new token in LaunchDarkly console. 2. Update `LAUNCHDARKLY_API_TOKEN` secret in GitHub. 3. Revoke old token in LaunchDarkly. No code changes needed.
 
 ---
@@ -449,6 +449,6 @@ A: 1. Generate new token in LaunchDarkly console. 2. Update `LAUNCHDARKLY_API_TO
 
 ---
 
-**Document Status:** ✅ Ready for use  
-**Last Review:** 2026-04-01  
+**Document Status:** ✅ Ready for use
+**Last Review:** 2026-04-01
 **Next Review:** 2026-05-01

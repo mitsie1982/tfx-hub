@@ -1,0 +1,1 @@
+﻿import parser from '@typescript-eslint/parser'; import tsPlugin from '@typescript-eslint/eslint-plugin'; export default [ { files: ['**/*.{js,ts,jsx,tsx}'], ignores: ['node_modules', 'dist', 'build', '**/*.d.ts'], languageOptions: { parser, ecmaVersion: 2022, sourceType: 'module' }, plugins: { '@typescript-eslint': tsPlugin }, rules: { 'semi': ['error', 'always'] } } ];

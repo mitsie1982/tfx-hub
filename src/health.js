@@ -5,7 +5,7 @@
 
 function createHealthCheckHandler() {
   const startTime = Date.now();
-  
+
   return {
     live: (req, res) => {
       // Liveness probe: is process alive?
@@ -14,7 +14,7 @@ function createHealthCheckHandler() {
         timestamp: new Date().toISOString(),
       });
     },
-    
+
     ready: (req, res) => {
       // Readiness probe: is service ready to accept traffic?
       res.status(200).json({
@@ -23,7 +23,7 @@ function createHealthCheckHandler() {
         uptime: Math.floor((Date.now() - startTime) / 1000),
       });
     },
-    
+
     metrics: (req, res) => {
       // Prometheus-compatible metrics endpoint
       const uptime = Date.now() - startTime;
@@ -35,12 +35,12 @@ function createHealthCheckHandler() {
         '# HELP nodejs_memory_usage_bytes Node.js memory usage',
         '# TYPE nodejs_memory_usage_bytes gauge',
       ];
-      
+
       const memUsage = process.memoryUsage();
       Object.entries(memUsage).forEach(([key, value]) => {
         metrics.push(`nodejs_memory_usage_bytes{type="${key}"} ${value}`);
       });
-      
+
       res.set('Content-Type', 'text/plain');
       res.send(metrics.join('\n'));
     }

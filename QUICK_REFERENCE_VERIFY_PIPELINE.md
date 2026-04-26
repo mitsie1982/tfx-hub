@@ -1,6 +1,6 @@
 # Verify Full Pipeline - Quick Reference Card
 
-**Verification Status:** ✅ READY  
+**Verification Status:** ✅ READY
 **Last Updated:** 2026-04-01
 
 ---
@@ -110,11 +110,11 @@ WINDOW_MINUTES=1 CRASH_RATE_THRESHOLD=0.01 \
 
 ## 💡 Tips
 
-✓ Run on **staging first** before production  
-✓ Verify secrets are **not empty** (Settings → Secrets)  
-✓ **Download the logs** even on success for record-keeping  
-✓ Share logs with team in **incident post-mortems**  
-✓ Use **before every production release** as validation gate  
+✓ Run on **staging first** before production
+✓ Verify secrets are **not empty** (Settings → Secrets)
+✓ **Download the logs** even on success for record-keeping
+✓ Share logs with team in **incident post-mortems**
+✓ Use **before every production release** as validation gate
 
 ---
 

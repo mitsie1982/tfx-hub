@@ -7,7 +7,7 @@ $ErrorActionPreference = "Stop"
 function Log($m) { Write-Host "[TFX-Control] $m" -ForegroundColor Green }
 
 function IsAdmin {
-  ([Security.Principal.WindowsPrincipal] 
+  ([Security.Principal.WindowsPrincipal]
     [Security.Principal.WindowsIdentity]::GetCurrent()
   ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }

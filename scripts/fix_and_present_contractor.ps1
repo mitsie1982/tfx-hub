@@ -143,9 +143,9 @@ for (`$i=0; `$i -lt 30; `$i++) {
 if (`$detected) {
   Write-Host 'Opening presentation at' `$Url
   if (Get-Command msedge -ErrorAction SilentlyContinue) {
-    Start-Process msedge -ArgumentList "--app=`"`$Url`"" 
+    Start-Process msedge -ArgumentList "--app=`"`$Url`""
   } elseif (Get-Command chrome -ErrorAction SilentlyContinue) {
-    Start-Process chrome -ArgumentList "--app=`"`$Url`"" 
+    Start-Process chrome -ArgumentList "--app=`"`$Url`""
   } else {
     Start-Process `$Url
   }

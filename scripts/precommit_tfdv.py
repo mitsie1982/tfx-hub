@@ -3,14 +3,18 @@
 Pre-commit hook: Enforce TFDV data validation before commit.
 Blocks commit if TFDV detects schema anomalies or data drift.
 """
-import sys
 import os
+import sys
+
 import tensorflow_data_validation as tfdv
+
 
 def main():
     data_dir = os.environ.get("TFDV_DATA_DIR", "data")
     schema_path = os.environ.get("TFDV_SCHEMA", "data/schema.pbtxt")
-    csv_files = [os.path.join(data_dir, f) for f in os.listdir(data_dir) if f.endswith(".csv")]
+    csv_files = [
+        os.path.join(data_dir, f) for f in os.listdir(data_dir) if f.endswith(".csv")
+    ]
     if not csv_files or not os.path.exists(schema_path):
         print("[TFDV] Skipping: No CSV data or schema found.")
         return 0
@@ -23,6 +27,7 @@ def main():
         return 1
     print("[TFDV] Data validation passed.")
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

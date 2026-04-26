@@ -27,4 +27,3 @@ Provision, secure, and operate a self-hosted Windows runner for CI jobs requirin
 ## CI usage
 - Use `runs-on: self-hosted, windows` in workflows.
 - Restrict which repos can use the runner via repo settings.
-

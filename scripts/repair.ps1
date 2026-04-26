@@ -3,7 +3,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$IsAdmin = ([Security.Principal.WindowsPrincipal] 
+$IsAdmin = ([Security.Principal.WindowsPrincipal]
   [Security.Principal.WindowsIdentity]::GetCurrent()
 ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 

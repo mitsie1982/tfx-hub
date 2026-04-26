@@ -1,0 +1,8 @@
+# Pin Python and ML dependencies for reproducibility
+mlflow==2.11.3
+openai
+faiss-cpu
+tqdm
+python-dotenv
+numpy
+sentencepiece

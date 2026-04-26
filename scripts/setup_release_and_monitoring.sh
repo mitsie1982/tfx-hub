@@ -86,7 +86,7 @@ echo "New version: $NEW_VERSION"
 
 if [ "$DRY_RUN" != "--dry-run" ]; then
   echo "🏷️  Tagging release: v$NEW_VERSION"
-  
+
   # Update version in package.json
   node -e "
     const fs = require('fs');
@@ -94,17 +94,17 @@ if [ "$DRY_RUN" != "--dry-run" ]; then
     pkg.version = '$NEW_VERSION';
     fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
   "
-  
+
   # Generate changelog (if changelog tool available)
   if command -v conventional-changelog >/dev/null 2>&1; then
     conventional-changelog -p angular -i CHANGELOG.md -s || echo "Changelog generation skipped"
   fi
-  
+
   # Commit and tag
   git add package.json CHANGELOG.md 2>/dev/null || git add package.json
   git commit -m "chore(release): v$NEW_VERSION"
   git tag -a "v$NEW_VERSION" -m "Release v$NEW_VERSION"
-  
+
   echo "✅ Release tagged: v$NEW_VERSION"
   echo "📤 Push to trigger CI/CD release:"
   echo "   git push origin main --tags"
@@ -132,7 +132,7 @@ cat > "$HEALTH_CHECK" <<'JS'
 
 function createHealthCheckHandler() {
   const startTime = Date.now();
-  
+
   return {
     live: (req, res) => {
       // Liveness probe: is process alive?
@@ -141,7 +141,7 @@ function createHealthCheckHandler() {
         timestamp: new Date().toISOString(),
       });
     },
-    
+
     ready: (req, res) => {
       // Readiness probe: is service ready to accept traffic?
       res.status(200).json({
@@ -150,7 +150,7 @@ function createHealthCheckHandler() {
         uptime: Math.floor((Date.now() - startTime) / 1000),
       });
     },
-    
+
     metrics: (req, res) => {
       // Prometheus-compatible metrics endpoint
       const uptime = Date.now() - startTime;
@@ -162,12 +162,12 @@ function createHealthCheckHandler() {
         '# HELP nodejs_memory_usage_bytes Node.js memory usage',
         '# TYPE nodejs_memory_usage_bytes gauge',
       ];
-      
+
       const memUsage = process.memoryUsage();
       Object.entries(memUsage).forEach(([key, value]) => {
         metrics.push(`nodejs_memory_usage_bytes{type="${key}"} ${value}`);
       });
-      
+
       res.set('Content-Type', 'text/plain');
       res.send(metrics.join('\n'));
     }
@@ -492,13 +492,13 @@ global:
 route:
   # Default receiver
   receiver: 'default'
-  
+
   # Alert grouping
   group_by: ['alertname', 'cluster', 'service']
   group_wait: 10s
   group_interval: 10s
   repeat_interval: 12h
-  
+
   # Routes for different severity levels
   routes:
     # Critical alerts - immediate notification
@@ -508,7 +508,7 @@ route:
       continue: true
       group_wait: 0s
       repeat_interval: 1h
-    
+
     # Warning alerts - batched
     - match:
         severity: warning
@@ -523,7 +523,7 @@ receivers:
       - channel: '#alerts'
         title: 'Alert: {{ .GroupLabels.alertname }}'
         text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
-  
+
   - name: 'critical'
     slack_configs:
       - channel: '#critical-alerts'

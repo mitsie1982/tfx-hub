@@ -31,23 +31,23 @@ switch ($Check) {
     "all" {
         Write-Host "Running all security checks..." -ForegroundColor Yellow
         Write-Host ""
-        
+
         Write-Host "Step 1/4: Pre-commit hooks..." -ForegroundColor Cyan
         pre-commit run --all-files
         Write-Host ""
-        
+
         Write-Host "Step 2/4: Dependency audit..." -ForegroundColor Cyan
         pnpm.cmd audit
         Write-Host ""
-        
+
         Write-Host "Step 3/4: Secret scanning..." -ForegroundColor Cyan
         detect-secrets scan --baseline .secrets.baseline --all-files
         Write-Host ""
-        
+
         Write-Host "Step 4/4: Linting..." -ForegroundColor Cyan
         pnpm.cmd --filter @tfx/shared-auth run lint
         Write-Host ""
-        
+
         Write-Host "✅ All security checks completed" -ForegroundColor Green
     }
     default {

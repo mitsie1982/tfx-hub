@@ -502,4 +502,3 @@ Then refresh GitHub Actions tab after 1-2 minutes.
 | Date | Change |
 |------|--------|
 | 2026-04-01 | Initial documentation for verify_full_pipeline.yml workflow |
-

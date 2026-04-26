@@ -9,7 +9,7 @@ $codeCmd = Get-Command code -ErrorAction SilentlyContinue
 
 if (-not $codeCmd) {
     Log "VS Code CLI (code) not found in PATH."
-  
+
     $fallbackPaths = @(
         "$env:LOCALAPPDATA\Programs\Microsoft VS Code\Code.exe",
         "C:\Program Files\Microsoft VS Code\Code.exe"

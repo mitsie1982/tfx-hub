@@ -1,5 +1,5 @@
 // OPTIONAL: Copy these keybindings to your VS Code settings for quick demo access
-// 
+//
 // To use:
 // 1. Press Ctrl+Shift+P → Preferences: Open Keyboard Shortcuts (JSON)
 // 2. Copy the settings below into your keybindings.json file
@@ -7,7 +7,7 @@
 //
 // Keybindings:
 // - Ctrl+Alt+C : Demo: Contractor
-// - Ctrl+Alt+U : Demo: Customer  
+// - Ctrl+Alt+U : Demo: Customer
 // - Ctrl+Alt+A : Demo: AMS
 // - Ctrl+Alt+M : Demo: Members
 // - Ctrl+Alt+S : Create Desktop Shortcuts
