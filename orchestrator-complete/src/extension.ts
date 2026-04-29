@@ -1,3 +1,56 @@
+import * as crypto from 'crypto';
+import axios from 'axios';
+import { preExecute } from './preExecute';
+// Utility to load YAML or JSON tool contract
+function loadToolContract(contractPath: string): any {
+	if (!fs.existsSync(contractPath)) return null;
+	const raw = fs.readFileSync(contractPath, 'utf8');
+	if (contractPath.endsWith('.json')) return JSON.parse(raw);
+	return yaml.load(raw);
+}
+
+// Utility to call OPA or Python script for risk evaluation
+
+async function evaluateRisk(contract: any, adminToken?: string): Promise<{ risk: string, allowed: boolean, reason?: string }> {
+	try {
+		const opaInput = { contract, admin_token: adminToken };
+		const res = await axios.post('http://localhost:8181/v1/data/orchestrator/allow', { input: opaInput });
+		const allowed = !!res.data.result;
+		const risk = contract && contract.risk ? contract.risk : 'low';
+		return { risk, allowed, reason: allowed ? undefined : 'Denied by OPA policy' };
+	} catch (err) {
+		return { risk: contract && contract.risk ? contract.risk : 'low', allowed: false, reason: 'OPA error' };
+	}
+}
+
+async function getAgentToken(agent: string, scope: string, adminToken: string): Promise<string | null> {
+	try {
+		const res = await axios.post('http://localhost:5000/issue', { agent, scope }, {
+			headers: { 'X-Admin-Token': adminToken }
+		});
+		return res.data.token;
+	} catch {
+		return null;
+	}
+}
+
+// Utility to emit audit event with HMAC
+function emitAuditEvent(event: any, runLogFile: string) {
+	const secret = process.env.AUDIT_HMAC_SECRET || '';
+	const payload = JSON.stringify(event);
+	const hmac = crypto.createHmac('sha256', secret).update(payload).digest('hex');
+	const auditLine = JSON.stringify({ ...event, hmac }) + '\n';
+	fs.appendFileSync(runLogFile, auditLine);
+}
+
+// Modal approval helper
+async function requireApproval(stepName: string, reason?: string): Promise<boolean> {
+	const msg = `Approval required for high-risk step: ${stepName}${reason ? ' (' + reason + ')' : ''}`;
+	const result = await vscode.window.showWarningMessage(msg, { modal: true }, 'Approve', 'Reject');
+	return result === 'Approve';
+}
+
+// Use preExecute from ./preExecute before executing any step
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -330,12 +383,18 @@ export function activate(context: vscode.ExtensionContext) {
 					if ((s as any).parallel) {
 						const group: Step[] = (s as any).parallel;
 						panel.webview.postMessage({ type: 'stepGroupStatus', runId, index: i, status: 'running' });
-						const promises = group.map((step, idx) => {
+						const promises = group.map(async (step, idx) => {
 							// evaluate when for each parallel step
 							const shouldRun = !step.when || evalWhenExpression(step.when, vars, process.env);
 							if (!shouldRun) {
 								panel.webview.postMessage({ type: 'stepStatus', runId, index: i, subIndex: idx, status: 'skipped' });
-								return Promise.resolve({ idx, status: 'skipped' });
+								return { idx, status: 'skipped' };
+							}
+							// preExecute hook
+							const allowed = await preExecuteStep(step, vars, runLogFile);
+							if (!allowed) {
+								panel.webview.postMessage({ type: 'stepStatus', runId, index: i, subIndex: idx, status: 'rejected' });
+								return { idx, status: 'rejected' };
 							}
 							panel.webview.postMessage({ type: 'stepStatus', runId, index: i, subIndex: idx, status: 'running' });
 							return executeStepWithRetries(step, root, runLogFile, out, vars)
@@ -373,6 +432,26 @@ export function activate(context: vscode.ExtensionContext) {
 							fs.writeFileSync(runsFile, JSON.stringify(arr, null, 2), 'utf8');
 							continue;
 						}
+						// load action and contract for the step
+						const action = step; // or build action object as needed
+						const contract = loadToolContract('demo/contract.json'); // adjust path as needed
+						const currentUser = 'admin'; // replace with actual user context if available
+						const verdict = await preExecute(action, contract, currentUser);
+						if (!verdict.allowed) {
+							panel.webview.postMessage({ type: 'stepStatus', runId, index: i, status: 'rejected' });
+							const runsFile = path.join(ensureLogsDir(root), 'runs.json');
+							const arr = JSON.parse(fs.readFileSync(runsFile, 'utf8') || '[]');
+							const entry = arr.find((r: any) => r.id === runId);
+							if (entry) entry.steps[i].status = 'rejected';
+							fs.writeFileSync(runsFile, JSON.stringify(arr, null, 2), 'utf8');
+							if (verdict.reason === 'pending_human_approval') {
+								vscode.window.showWarningMessage('Action pending human approval. See out/pending_action.json');
+							} else {
+								vscode.window.showErrorMessage('Action blocked: ' + (verdict.reason || 'policy'));
+							}
+							break;
+						}
+						// proceed with step execution
 						panel.webview.postMessage({ type: 'stepStatus', runId, index: i, status: 'running' });
 						try {
 							await executeStepWithRetries(step, root, runLogFile, out, vars);

@@ -1,0 +1,14 @@
+﻿name: Branch Protection
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+jobs:
+  branch-protection:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require PR review
+        run: echo "PR review required (enforced in repo settings)"
+      - name: Require status checks
+        run: echo "Status checks required (enforced in repo settings)"

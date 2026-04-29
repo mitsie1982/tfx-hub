@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const auth = require('@tfx/shared-auth');
@@ -10,41 +9,6 @@ const { createWhatsappProfessionalService } = require('./whatsappProfessional');
 const { createWhatsappCustomerService } = require('./whatsappCustomer');
 const { createWhatsappAdminService } = require('./whatsappAdmin');
 const { createAdminAccessClosedMessage, getAdminAccessPolicy, isAdminWithinAccessWindow, normalizeUsername } = require('./adminAccess');
-=======
-const bcrypt = require('bcryptjs');
-const auth = require('../../shared-auth/src');
-const { tenantMiddleware, roleMiddleware } = require('../../shared-auth/src');
-
-// --- Sprint 5: Import metrics for job/dispute rates ---
-    const express = require('express');
-  const { disputeCreated, disputeResolved, jobCreated } = require('../../../src/health_endpoints.js');
-    const { getAdminAccessPolicy, isAdminWithinAccessWindow, createAdminAccessClosedMessage, normalizeUsername } = require('./adminAccess');
-    const { createPasswordResetNotifier } = require('./passwordResetNotifier');
-    const { createWhatsappAssociationService } = require('./whatsappAssociation');
-    const { createWhatsappContractorService, normalizePhoneNumber } = require('./whatsappContractor');
-    const { createWhatsappProfessionalService } = require('./whatsappProfessional');
-    const { createWhatsappCustomerService } = require('./whatsappCustomer');
-    const { createWhatsappAdminService } = require('./whatsappAdmin');
-    const { createMetaWhatsAppWebhookAdapter } = require('./metaWhatsAppWebhook');
-
-
-
-// --- RBAC & Tenant Isolation Pattern ---
-// Usage:
-//   const { tenantMiddleware, roleMiddleware } = require('@tfx/shared-auth');
-//   app.get('/protected', tenantMiddleware(), roleMiddleware(['admin','contractor']), (req, res) => { ... });
-//   req.auth.role and req.association.id are available in handlers.
-
-// Example: Protect a route for contractors only, with tenant isolation
-// app.get('/contractor/secure-data', auth.tenantMiddleware(), auth.roleMiddleware(['contractor']), (req, res) => {
-//   res.json({ message: `Hello contractor ${req.auth.userId} in tenant ${req.association.id}` });
-// });
-
-// To enforce tenant isolation everywhere, wrap all protected routes with tenantMiddleware().
-// To enforce RBAC, wrap with roleMiddleware(['role1','role2']).
-
-// For multi-tenancy: always filter DB queries by req.association.id.
->>>>>>> Stashed changes
 
 function randomId(prefix) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;

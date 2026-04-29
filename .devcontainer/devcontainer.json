@@ -1,20 +1,8 @@
-{
-  "name": "TFX Orchestrator Dev",
+﻿{
+  "name": "Governed Dev Container",
   "image": "mcr.microsoft.com/vscode/devcontainers/base:0-focal",
-  "extensions": [
-    "ms-python.python",
-    "ms-azuretools.vscode-docker",
-    "eamodio.gitlens",
-    "GitHub.copilot",
-    "GitHub.copilot-chat"
-  ],
-  "settings": {
-    "terminal.integrated.shell.linux": "/bin/bash"
-  },
-  "runArgs": [
-    "--env-file",
-    "${localWorkspaceFolder}/.env"
-  ],
+  "runArgs": ["--env-file","./.env","--security-opt=no-new-privileges"],
+  "mounts": ["source=/.secrets,target=/workspaces/.secrets,type=bind,consistency=cached"],
   "postCreateCommand": "python3 -m pip install --upgrade pip && pip install -r requirements.txt || true",
   "remoteUser": "vscode"
 }

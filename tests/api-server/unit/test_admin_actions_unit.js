@@ -19,8 +19,9 @@ async function run() {
   const app = createApp({
     repository,
 <<<<<<< Updated upstream:tests/api-server/unit/test_admin_actions_unit.js
-    logger: { info() {}, warn() {}, error() {} },
-    getCurrentDate: () => new Date('2026-04-02T07:00:00.000Z')
+    logger: console,
+    getCurrentDate: () => new Date('2026-04-02T07:00:00.000Z'),
+    adminAccessPolicy: { allowAfterHours: true }
 =======
     logger: console,
     getCurrentDate: () => new Date('2026-04-02T07:00:00.000Z'),
@@ -68,8 +69,9 @@ async function run() {
     const closedApp = createApp({
       repository,
 <<<<<<< Updated upstream:tests/api-server/unit/test_admin_actions_unit.js
-      logger: { info() {}, warn() {}, error() {} },
-      getCurrentDate: () => new Date('2026-04-02T18:00:00.000Z')
+      logger: console,
+      getCurrentDate: () => new Date('2026-04-02T18:00:00.000Z'),
+      adminAccessPolicy: { allowAfterHours: false, startHour: 8, endHour: 17, timeZone: 'Africa/Johannesburg' }
 =======
       logger: console,
       getCurrentDate: () => new Date('2026-04-02T18:00:00.000Z'),

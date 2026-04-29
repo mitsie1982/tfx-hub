@@ -1,0 +1,18 @@
+﻿name: Compliance & License Check
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+jobs:
+  compliance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: License check
+        uses: pilosus/action-pip-license@v2
+        with:
+          requirements: requirements.txt
+      - name: Check for forbidden licenses
+        run: |
+          pip install pip-licenses
+          pip-licenses --fail-on forbidden --forbidden=AGPL,GPL

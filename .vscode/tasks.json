@@ -2,230 +2,46 @@
   "version": "2.0.0",
   "tasks": [
     {
-<<<<<<< Updated upstream
-      "label": "Shared-Logic: Install Dependencies",
+      "label": "Backup TFX Hub (interactive)",
       "type": "shell",
-      "command": "pnpm install",
-      "presentation": { "reveal": "always" }
-    },
-    {
-      "label": "Shared-Logic: Run Unit Tests",
-      "type": "shell",
-      "command": "pnpm --filter @tfx/shared-logic test",
-      "presentation": { "reveal": "always" }
-    },
-    {
-      "label": "Shared-Logic: Run Integration Tests",
-      "type": "shell",
-      "command": "pnpm --filter @tfx/shared-logic test:integration",
-      "presentation": { "reveal": "always" }
-    },
-    {
-      "label": "Shared-Logic: Run Demo Consumer",
-      "type": "shell",
-      "command": "node examples/shared_logic_demo.js",
-      "presentation": { "reveal": "always" }
-    },
-    {
-      "label": "Contractor-App: Run Unit Tests",
-      "type": "shell",
-      "command": "pnpm --filter @tfx/contractor-app test",
-      "presentation": { "reveal": "always" }
-    },
-    {
-      "label": "Contractor-App: Run Demo",
-      "type": "shell",
-      "command": "node packages/contractor-app/src/index.js",
-      "presentation": { "reveal": "always" }
-    },
-    {
-      "label": "Grafana Port Fix Orchestrator",
-      "type": "shell",
-      "command": "powershell",
-      "args": [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-Command",
-        "& { . '${workspaceFolder}\\scripts\\grafana_port_conflict_orchestrator.ps1' -StartPresentationOrchestrator }"
-      ],
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "Recreate Demo Desktop Shortcuts (clean)",
-      "type": "shell",
-      "command": "powershell",
-      "args": [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-Command",
-        "& { . '${workspaceFolder}\\scripts\\recreate_desktop_shortcuts_clean.ps1' }"
-      ],
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "Local Live Stack: Start",
-      "type": "shell",
-      "command": "pnpm.cmd",
-      "args": [
-        "run",
-        "stack:local:windows:start"
-      ],
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "Local Live Stack: Status",
-      "type": "shell",
-      "command": "pnpm.cmd",
-      "args": [
-        "run",
-        "stack:local:windows:status"
-      ],
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "Local Live Stack: Smoke",
-      "type": "shell",
-      "command": "pnpm.cmd",
-      "args": [
-        "run",
-        "stack:local:windows:smoke"
-      ],
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "Local Live Stack: Stop",
-      "type": "shell",
-      "command": "pnpm.cmd",
-      "args": [
-        "run",
-        "stack:local:windows:stop"
-      ],
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "panel": "shared"
-      },
-=======
-      "label": "Build Image",
-      "type": "shell",
-      "command": "${workspaceFolder}/scripts/build-and-push.sh",
-      "args": ["gcr.io", "my-project", "tfx-model", "latest"],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared",
-        "showReuseMessage": true
-      },
-      "problemMatcher": [],
-      "group": { "kind": "build", "isDefault": true }
-    },
-    {
-      "label": "Run TFDV",
-      "type": "shell",
-      "command": "${workspaceFolder}/scripts/run-tfdv.sh",
-      "args": ["--input", "gs://my-bucket/data/train", "--output", "tfdv-output"],
-      "presentation": { "reveal": "silent", "panel": "shared" },
-      "problemMatcher": []
-    },
-    {
-      "label": "Run TFMA Gate",
-      "type": "shell",
-      "command": "python",
-      "args": ["${workspaceFolder}/scripts/tfma_gate.py", "--tfma-dir", "tfma-output", "--thresholds", "{\"accuracy\":0.90,\"auc\":0.85}"],
-      "presentation": { "reveal": "always", "panel": "shared" },
-      "problemMatcher": []
-    },
-    {
-      "label": "Sample Heavy Task",
-      "type": "shell",
-      "command": "${workspaceFolder}/scripts/sample-heavy-task.sh",
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"${workspaceFolder}/scripts/backup_prompt_and_run.ps1\"",
       "presentation": { "reveal": "always", "panel": "shared" },
       "problemMatcher": []
     }
     ,
     {
-      "label": "Build FAISS RAG Index",
+      "label": "Run Orchestrator",
       "type": "shell",
-      "command": "python3 scripts/rag_faiss_index.py --source data/sources --index out/faiss.index --meta out/meta.json",
-      "presentation": { "reveal": "always" },
-      "group": "build"
-    },
-    {
-      "label": "Build Large FAISS Index",
-      "type": "shell",
-      "command": "python3 scripts/rag_faiss_large.py --source data/corpus --index out/faiss_ivf.index --meta out/meta.json --method ivf --nlist 1024 --nprobe 8",
-      "presentation": { "reveal": "always" },
-      "group": "build"
-    },
-    {
-      "label": "Run Recall@K Harness",
-      "type": "shell",
-      "command": "python3 scripts/test_recall_harness.py --index-flat out/faiss_flat.index --index-ivf out/faiss_ivf.index --index-hnsw out/faiss_hnsw.index --meta out/meta.json --queries \"data/queries/*.txt\" --k 10 --out out/recall_report.json",
-      "presentation": { "reveal": "always" },
-      "group": "test"
-    },
-    {
-      "label": "Generate Queries from Logs",
-      "type": "shell",
-      "command": "python3 scripts/generate_queries_from_logs.py --logs logs/*.jsonl --out data/queries --sample 200 --min_len 10 --max_len 400",
-      "presentation": { "reveal": "always" },
-      "group": "test"
-    }
-  ]
-}
-      "label": "Build Image",
-      "type": "shell",
-      "command": "${workspaceFolder}/scripts/build-and-push.sh",
-      "args": ["gcr.io", "my-project", "tfx-model", "latest"],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared",
-        "showReuseMessage": true
-      },
-      "problemMatcher": [],
-      "group": { "kind": "build", "isDefault": true }
-    },
-    {
-      "label": "Run TFDV",
-      "type": "shell",
-      "command": "${workspaceFolder}/scripts/run-tfdv.sh",
-      "args": ["--input", "gs://my-bucket/data/train", "--output", "tfdv-output"],
-      "presentation": { "reveal": "silent", "panel": "shared" },
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"${workspaceFolder}/scripts/run_orchestrator.ps1\"",
+      "presentation": { "reveal": "always", "panel": "shared" },
       "problemMatcher": []
     },
     {
-      "label": "Run TFMA Gate",
+      "label": "Run Health Checks",
       "type": "shell",
-      "command": "python",
-      "args": ["${workspaceFolder}/scripts/tfma_gate.py", "--tfma-dir", "tfma-output", "--thresholds", "{\"accuracy\":0.90,\"auc\":0.85}"],
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"${workspaceFolder}/scripts/run_health_checks.ps1\"",
       "presentation": { "reveal": "always", "panel": "shared" },
->>>>>>> Stashed changes
+      "problemMatcher": []
+    },
+    {
+      "label": "Start Dashboard",
+      "type": "shell",
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"${workspaceFolder}/scripts/start_dashboard.ps1\"",
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Install Scheduler (Admin)",
+      "type": "shell",
+      "command": "powershell -NoProfile -Command \"Start-Process pwsh -ArgumentList '-NoProfile','-ExecutionPolicy','Bypass','-File','${workspaceFolder}/scripts/install_scheduler.ps1' -Verb RunAs\"",
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run Demo",
+      "type": "shell",
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"${workspaceFolder}/scripts/run_demo.ps1\"",
+      "presentation": { "reveal": "always", "panel": "shared" },
       "problemMatcher": []
     }
   ]

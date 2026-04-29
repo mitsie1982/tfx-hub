@@ -26,22 +26,22 @@ jobs:
           if [ -z "$KEY_VAULT_URL" ]; then echo "::error::KEY_VAULT_URL secret is missing"; missing=1; fi
           if [ -z "$KEY_VAULT_SECRET_NAME" ]; then echo "::error::KEY_VAULT_SECRET_NAME secret is missing"; missing=1; fi
           if [ "$missing" -eq 1 ]; then exit 1; fi
-        - name: Azure Login
-          uses: azure/login@v1
-          with:
-            creds: ${{ secrets.AZURE_CREDENTIALS }}
-        - name: Fetch secret from Key Vault
-          env:
-            KEY_VAULT_URL: ${{ secrets.KEY_VAULT_URL }}
-            SECRET_NAME: ${{ secrets.KEY_VAULT_SECRET_NAME }}
-          run: |
-            pip install azure-identity azure-keyvault-secrets
-            python -c "
-  from azure.identity import DefaultAzureCredential
-  from azure.keyvault.secrets import SecretClient
-  import os
-  vault_url = os.environ['KEY_VAULT_URL']
-  secret_name = os.environ['SECRET_NAME']
-  client = SecretClient(vault_url=vault_url, credential=DefaultAzureCredential())
-  print(client.get_secret(secret_name).value)
-  "
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Fetch secret from Key Vault
+        env:
+          KEY_VAULT_URL: ${{ secrets.KEY_VAULT_URL }}
+          SECRET_NAME: ${{ secrets.KEY_VAULT_SECRET_NAME }}
+        run: |
+          pip install azure-identity azure-keyvault-secrets
+          python -vC "
+from azure.identity import DefaultAzureCredential
+from azure.keyvault.secrets import SecretClient
+import os
+vault_url = os.environ['KEY_VAULT_URL']
+secret_name = os.environ['SECRET_NAME']
+client = SecretClient(vault_url=vault_url, credential=DefaultAzureCredential())
+print(f'Successfully fetched secret: {secret_name}')
+"

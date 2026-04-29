@@ -1,0 +1,67 @@
+name: CI PreExecute Integration Test
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  preexecute-integration:
+    runs-on: ubuntu-latest
+    env:
+      AUDIT_HMAC_SECRET: ${{ secrets.AUDIT_HMAC_SECRET }}
+      AGENT_MANAGER_SECRET: ${{ secrets.AGENT_MANAGER_SECRET }}
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+      BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests pyyaml
+
+      - name: Make test scripts executable
+        run: |
+          chmod +x scripts/*.sh || true
+          chmod +x scripts/*.py || true
+
+      - name: Run preExecute integration test
+        id: run_test
+        run: |
+          python3 scripts/test_preexecute_flow.py --verbose
+        continue-on-error: false
+
+      - name: Upload logs and artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: preexecute-artifacts
+          path: |
+            out/*
+            scripts/test_preexecute_flow.log
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "Job failed; sending failure notification"
+          python3 scripts/notifier.py --channel failure --profile ci --message "CI preExecute integration test failed on ${{ github.ref }}"
+
+      - name: Notify on success
+        if: success()
+        run: |
+          echo "Job succeeded; sending success notification"
+          python3 scripts/notifier.py --channel success --profile ci --message "CI preExecute integration test succeeded on ${{ github.ref }}"

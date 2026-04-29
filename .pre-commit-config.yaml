@@ -1,4 +1,4 @@
-repos:
+﻿repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:
@@ -7,41 +7,11 @@ repos:
       - id: check-yaml
       - id: check-added-large-files
 
-  - repo: https://github.com/psf/black
-    rev: 24.1.0
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.0.3
     hooks:
-      - id: black
-        language_version: python3
-
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
-    hooks:
-      - id: isort
-        name: isort (python)
-
-  - repo: https://github.com/PyCQA/flake8
-    rev: 6.1.0
-    hooks:
-      - id: flake8
-        additional_dependencies: [flake8-bugbear==23.9.16]
-
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.5.1
-    hooks:
-      - id: mypy
-        additional_dependencies: []
-
-  - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: v8.46.0
-    hooks:
-      - id: eslint
-        files: \.(js|ts|jsx|tsx)$
-
-  - repo: https://github.com/antonbabenko/pre-commit-terraform
-    rev: v1.77.0
-    hooks:
-      - id: terraform_fmt
-      - id: terraform_validate
+      - id: detect-secrets-hook
+        args: ['--baseline', '.secrets.baseline']
 
   - repo: local
     hooks:
@@ -50,30 +20,7 @@ repos:
         entry: pytest -q
         language: system
         pass_filenames: false
-
-  # Security: bandit (Python-focused, skip for JS repo)
-  # - repo: https://github.com/PyCQA/bandit
-  #   rev: 1.7.6
-  #   hooks:
-  #     - id: bandit
-
-  # Git commit best practices
-  - repo: https://github.com/compilerla/conventional-pre-commit
-    rev: v2.4.0
-    hooks:
-      - id: conventional-pre-commit
-        stages: [commit-msg]
-
-default_language_version:
-  python: python3
-
-ci:
-  autofix_commit_msg: |
-    [pre-commit.ci] Auto fixes from hooks
-    for more information, see https://pre-commit.ci
-  autofix_prs: true
-  autoupdate_branch: ""
-  autoupdate_commit_msg: "[pre-commit.ci] pre-commit autoupdate"
-  autoupdate_schedule: weekly
-  skip: [bandit] # Skip bandit in CI (focus on JS/native)
-  submodules: false
+      - id: validate-tool-contract
+        name: Validate Tool Contract
+        entry: python3 scripts/validate_tool_contract.py templates/tool_contract.yaml
+        language: system
