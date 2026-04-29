@@ -1,0 +1,60 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build Extension",
+			"type": "shell",
+			"command": "npm run compile",
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Test Extension",
+			"type": "shell",
+			"command": "npm test",
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "Commit All Changes",
+			"type": "shell",
+			"command": "pwsh ./scripts/commit-all-changes.ps1 -Message 'Automated commit from VS Code task' -Push -Force",
+			"problemMatcher": [],
+			"group": "none"
+		},
+		{
+			"label": "Build Extension",
+			"type": "shell",
+			"command": "npm run compile",
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Test Extension",
+			"type": "shell",
+			"command": "npm test",
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "Commit All Changes",
+			"type": "shell",
+			"command": "pwsh ./scripts/commit-all-changes.ps1 -Message 'Automated commit from VS Code task' -Push -Force",
+			"problemMatcher": [],
+			"group": "none"
+		},
+		{
+			"label": "Build Extension",
+			"type": "shell",
+			"command": "npm run compile",
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		}
+	]
+}
