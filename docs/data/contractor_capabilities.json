@@ -1,0 +1,346 @@
+{
+  "generatedFrom": "docs/data/contractor_capabilities.json",
+  "browser": {
+    "canDo": [
+      "Sign in to the contractor workspace",
+      "Register a new contractor account",
+      "Request a password reset and confirm it with a reset token",
+      "Restore an existing session automatically",
+      "Browse matched project leads",
+      "Search leads by project, suburb, or scope",
+      "Filter leads by trade",
+      "Select a lead and open its detail view",
+      "Express interest in a lead",
+      "Submit a quote with amount, timeline, and note",
+      "Send an opening message to the homeowner",
+      "Review lead history",
+      "Sign out"
+    ],
+    "canView": [
+      "Contractor profile summary including name, trade, tier, rating, completed jobs, active quotes, and response time",
+      "Dashboard stats for completed jobs, active quotes, open leads, and response time",
+      "Pipeline snapshot for interest count and history count",
+      "Lead list entries showing title, trade, match score, location, budget, urgency, posted time, lead type, and short description",
+      "Lead detail including description, homeowner requirements, and lead type",
+      "Quote entry fields and message entry fields",
+      "History feed with interest, quote, and message actions, including status, timestamp, and source",
+      "Live-data versus sample-data status",
+      "Warnings when the app falls back or cannot reach live data"
+    ]
+  },
+  "whatsapp": {
+    "canDo": [
+      "Start from Hi, Menu, Start, or any inbound message from a registered number",
+      "Link an existing contractor account by email",
+      "Register a new contractor account directly in chat",
+      "Request a password reset and confirm it with a reset token in chat",
+      "Open the main contractor menu",
+      "View the contractor profile summary",
+      "Open account help from the linked contractor menu",
+      "View matched leads",
+      "Page through more matched leads in chat",
+      "Filter matched leads by trade in chat",
+      "Search matched leads by text in chat",
+      "Open a lead from the lead list",
+      "Express interest in a lead",
+      "Complete a guided quote flow",
+      "Complete a guided homeowner message flow",
+      "View recent activity",
+      "Page through older activity in chat",
+      "Request help and return to menu navigation"
+    ],
+    "canView": [
+      "Main menu with a contractor snapshot for open leads, active quotes, completed jobs, and response time",
+      "Account-help prompts with linked sign-in identifiers and password-reset actions",
+      "Profile details including name, trade, tier, rating, completed jobs, active quotes, and response time",
+      "Lead list with top matched leads, location, budget, urgency, match score, the active trade filter or text search when one is set, and the current lead page window",
+      "Lead detail with title, location, budget, urgency, scope, and homeowner requirements",
+      "Interest confirmation and next-step options",
+      "Quote flow prompts for amount, timeline, note, and confirmation summary",
+      "Message flow prompts and preview before sending",
+      "Activity feed with recent interest, quote, and message actions plus the current activity page window",
+      "Help text describing available contractor actions",
+      "Account-linking and registration prompts for unrecognized phone numbers"
+    ]
+  },
+  "examples": {
+    "browser": [
+      {
+        "title": "Dashboard example",
+        "lines": [
+          "Contractor workspace",
+          "Naledi Khumalo",
+          "general contractor · TRUSTED tier · 4.7★ rating",
+          "Completed jobs: 67 | Active quotes: 5 | Open leads: 2 | Response time: 12 min"
+        ]
+      },
+      {
+        "title": "Lead detail example",
+        "lines": [
+          "Kitchen plumbing and leak repair",
+          "Midrand · R4,000 - R8,500 · Urgent",
+          "Homeowner requirements: Own transport, Can start today, Photo updates required",
+          "Actions: Express Interest, Submit Quote, Send Message"
+        ]
+      }
+    ],
+    "whatsapp": [
+      {
+        "title": "Main menu example",
+        "lines": [
+          "Welcome back, Naledi.",
+          "Contractor snapshot",
+          "Open leads: 2",
+          "Active quotes: 5",
+          "1. My Profile",
+          "2. My Leads",
+          "3. My Activity",
+          "4. Quote a Lead",
+          "5. Message a Homeowner",
+          "6. Help",
+          "7. Account Help"
+        ]
+      },
+      {
+        "title": "Quote confirmation example",
+        "lines": [
+          "Confirm quote",
+          "Amount: R12,500",
+          "Timeline: 3 working days",
+          "Note: Includes labour and materials",
+          "Reply YES to send or NO to cancel."
+        ]
+      }
+    ]
+  },
+  "roles": [
+    {
+      "role": "Contractor",
+      "implementation": "Implemented",
+      "surface": "Browser, mobile app, package workspace, and WhatsApp",
+      "appOrService": "apps/contractor-app browser host and mobile shell, packages/contractor-app, and API WhatsApp contractor flow",
+      "whatTheyCanDo": "Sign in with email, username, or RSA mobile number plus password, register, request and confirm a password reset token, open linked account help in WhatsApp, browse leads, page through lead results, search and filter leads in browser and WhatsApp, view lead detail, express interest, review and confirm quotes before sending, preview homeowner messages before sending, review activity, inspect the browser dashboard and lead history, enter a contractor mobile number from the browser or mobile shell to subscribe it to TFX Hub WhatsApp, exercise contractor package views for jobs, onboarding, and profile state, and use in-chat onboarding, password reset, or account linking on WhatsApp.",
+      "whatTheyCanView": "Profile stats, browser dashboard metrics, mobile dashboard cards, lead lists, lead details, homeowner requirements, quote and message review flows, activity history, browser and mobile sign-in fields that accept email, username, or RSA mobile number, subscription guidance for WhatsApp, password-reset prompts, linked account-help prompts, contractor package profile and onboarding helpers, and menu-driven WhatsApp actions including active lead search, trade filters, lead-page progress, and the contractor stats snapshot."
+    },
+    {
+      "role": "Client",
+      "implementation": "Implemented",
+      "surface": "Browser, mobile app, package workspace, and WhatsApp",
+      "appOrService": "apps/customer-app browser host, apps/customer-app mobile shell, packages/customer-app, and API WhatsApp customer flow",
+      "whatTheyCanDo": "Sign in, register, request password reset, switch between explicit Overview, Professionals, and Request tabs, browse open jobs, browse professionals, open professional detail, shortlist professionals, prepare and review a contact request from a professional profile, submit job requests from the customer mobile workspace and browser host, inspect the same flows from the browser host, and use WhatsApp to request a customer password reset, open jobs, open a job detail, browse professionals, shortlist a professional, and submit a guided job request.",
+      "whatTheyCanView": "Customer overview cards, browser job summaries, professional directory entries, professional detail cards with credentials, portfolio highlights, and review highlights, a prefilled and reviewable job-request form in both the customer mobile and browser hosts, and a WhatsApp menu with job lists, job-detail prompts, professionals, shortlist state, password-reset prompts, and request-job prompts."
+    },
+    {
+      "role": "Association",
+      "implementation": "Implemented",
+      "surface": "Browser, mobile app, package workspace, and WhatsApp",
+      "appOrService": "apps/members-app browser host and mobile shell, packages/members-app association workspace, and API WhatsApp association flow",
+      "whatTheyCanDo": "Open an association overview, inspect job-volume totals, review open-job and professional distribution by trade, navigate the professional directory from the browser host, members package workspace, and members mobile screens, queue member-review and trade-outreach actions from browser, mobile, and WhatsApp surfaces, inspect and page through recent association actions, and register or link an association account from first-contact WhatsApp onboarding.",
+      "whatTheyCanView": "Association totals for open, in-progress, and completed jobs, professional counts, trade distribution, linked professional directory entries, dedicated members mobile overview and professional detail screens, a WhatsApp menu with overview, directory, trade-breakdown, and recent-action prompts, and paged recent queued association actions across browser, mobile, and WhatsApp surfaces."
+    },
+    {
+      "role": "Professional",
+      "implementation": "Implemented",
+      "surface": "Browser, mobile app, package workspace, and WhatsApp",
+      "appOrService": "apps/members-app browser host and mobile shell, packages/members-app professional workspace, and API WhatsApp professional flow",
+      "whatTheyCanDo": "Browse the professional directory, open a professional detail record, verify a standalone professional-facing surface separate from contractor, customer, and admin roles, and use browser, mobile, and WhatsApp surfaces to review a linked profile, browse professional directory entries, check in availability, request a tier review, inspect and page through recent operational requests, and register or link a professional account from first-contact WhatsApp onboarding.",
+      "whatTheyCanView": "Professional directory cards, a dedicated professional detail panel with ID, trade, tier, and rating fields, members mobile directory and detail screens, a mobile request history surface, a WhatsApp menu with profile and directory navigation, and paged recent professional request history."
+    },
+    {
+      "role": "Admin",
+      "implementation": "Implemented",
+      "surface": "Browser, mobile app, and package workspace",
+      "appOrService": "apps/ams-app browser host, apps/ams-app mobile shell, packages/ams-app, and API admin routes",
+      "whatTheyCanDo": "Sign in with a secret admin username and the admin email address as the password, switch between explicit Overview and Contractors tabs, open contractor detail, review platform metrics, execute persisted contractor-detail admin actions for tier review, compliance review, and dispute audit from the admin mobile workspace, and inspect the same contractor and operations state from the browser host.",
+      "whatTheyCanView": "Operations totals by job status, professionals by tier, open jobs by trade, contractor directory cards, contractor detail cards with tier review, compliance notes, dispute history, an admin action log, and browser and mobile guidance that admin WhatsApp access is disabled."
+    }
+  ],
+  "matrix": [
+    {
+      "capability": "Sign in to contractor workspace",
+      "browser": "Yes",
+      "whatsapp": "No",
+      "status": "Implemented"
+    },
+    {
+      "capability": "Register new contractor account",
+      "browser": "Yes",
+      "whatsapp": "Yes",
+      "status": "Implemented"
+    },
+    {
+      "capability": "Link existing account to phone number",
+      "browser": "No",
+      "whatsapp": "Yes",
+      "status": "Implemented"
+    },
+    {
+      "capability": "Password reset request and confirm",
+      "browser": "Yes",
+      "whatsapp": "Yes",
+      "status": "Implemented"
+    },
+    {
+      "capability": "Browse older activity pages",
+      "browser": "Yes",
+      "whatsapp": "Yes",
+      "status": "Implemented"
+    },
+    {
+      "capability": "Restore session automatically",
+      "browser": "Yes",
+      "whatsapp": "Yes",
+      "status": "Implemented"
+    },
+    {
+      "capability": "View contractor profile summary",
+      "browser": "Yes",
+      "whatsapp": "Yes",
+      "status": "Implemented"
+    },
+    {
+      "capability": "View name, trade, tier, rating",
+      "browser": "Yes",
+      "whatsapp": "Yes",
+      "status": "Implemented"
+    },
+    {
+      "capability": "View completed jobs, active quotes, response time",
+      "browser": "Yes",
+      "whatsapp": "Yes",
+      "status": "Implemented"
+    },
+    {
+      "capability": "View dashboard summary cards",
+      "browser": "Yes",
+      "whatsapp": "Yes",
+      "status": "Implemented"
+    },
+    {
+      "capability": "Browse matched leads",
+      "browser": "Yes",
+      "whatsapp": "Yes",
+      "status": "Implemented"
+    },
+    {
+      "capability": "Browse more than the first lead page",
+      "browser": "Yes",
+      "whatsapp": "Yes",
+      "status": "Implemented"
+    },
+    {
+      "capability": "Search leads by text",
+      "browser": "Yes",
+      "whatsapp": "Yes",
+      "status": "Implemented"
+    },
+    {
+      "capability": "Filter leads by trade",
+      "browser": "Yes",
+      "whatsapp": "Yes",
+      "status": "Implemented"
+    },
+    {
+      "capability": "View top lead matches",
+      "browser": "Yes",
+      "whatsapp": "Yes",
+      "status": "Implemented"
+    },
+    {
+      "capability": "View lead title, budget, location, urgency",
+      "browser": "Yes",
+      "whatsapp": "Yes",
+      "status": "Implemented"
+    },
+    {
+      "capability": "View lead description",
+      "browser": "Yes",
+      "whatsapp": "Yes",
+      "status": "Implemented"
+    },
+    {
+      "capability": "View homeowner requirements",
+      "browser": "Yes",
+      "whatsapp": "Yes",
+      "status": "Implemented"
+    },
+    {
+      "capability": "Express interest in a lead",
+      "browser": "Yes",
+      "whatsapp": "Yes",
+      "status": "Implemented"
+    },
+    {
+      "capability": "Submit quote amount, timeline, and note",
+      "browser": "Yes",
+      "whatsapp": "Yes",
+      "status": "Implemented"
+    },
+    {
+      "capability": "Confirm quote before sending",
+      "browser": "Yes",
+      "whatsapp": "Yes",
+      "status": "Implemented"
+    },
+    {
+      "capability": "Send homeowner message",
+      "browser": "Yes",
+      "whatsapp": "Yes",
+      "status": "Implemented"
+    },
+    {
+      "capability": "Preview message before sending",
+      "browser": "Yes",
+      "whatsapp": "Yes",
+      "status": "Implemented"
+    },
+    {
+      "capability": "View lead history or activity",
+      "browser": "Yes",
+      "whatsapp": "Yes",
+      "status": "Implemented"
+    },
+    {
+      "capability": "View quote, message, and interest statuses",
+      "browser": "Yes",
+      "whatsapp": "Yes",
+      "status": "Implemented"
+    },
+    {
+      "capability": "Help and usage guidance",
+      "browser": "Minimal",
+      "whatsapp": "Yes",
+      "status": "Implemented, stronger on WhatsApp"
+    },
+    {
+      "capability": "Live versus sample data indicator",
+      "browser": "Yes",
+      "whatsapp": "No",
+      "status": "Implemented only on Browser"
+    },
+    {
+      "capability": "Browse many leads quickly",
+      "browser": "Yes",
+      "whatsapp": "Limited",
+      "status": "Implemented, better on Browser"
+    },
+    {
+      "capability": "Back-to-menu navigation",
+      "browser": "UI navigation",
+      "whatsapp": "Yes",
+      "status": "Implemented"
+    },
+    {
+      "capability": "Open project detail directly from list",
+      "browser": "Yes",
+      "whatsapp": "Yes",
+      "status": "Implemented"
+    },
+    {
+      "capability": "Onboard entirely inside the channel",
+      "browser": "Forms",
+      "whatsapp": "Yes",
+      "status": "Implemented"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Release: Build AMS Artifacts (local placeholder)",
+      "type": "shell",
+      "command": "./scripts/build-android.sh ams release",
+      "presentation": { "reveal": "always" }
+    },
+    {
+      "label": "Release: Build Contractor Artifacts (local placeholder)",
+      "type": "shell",
+      "command": "./scripts/build-android.sh contractor release",
+      "presentation": { "reveal": "always" }
+    },
+    {
+      "label": "Open Release Docs",
+      "type": "shell",
+      "command": "code -r docs/release-readme.md || true",
+      "presentation": { "reveal": "always" }
+    }
+  ]
+}

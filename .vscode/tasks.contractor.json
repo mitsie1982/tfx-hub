@@ -1,0 +1,23 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "RN: Start Metro (contractor)",
+      "type": "shell",
+      "command": "pnpm --filter contractor-app dev",
+      "presentation": { "reveal": "always" }
+    },
+    {
+      "label": "RN: Run Android (contractor)",
+      "type": "shell",
+      "command": "pnpm --filter contractor-app android",
+      "presentation": { "reveal": "always" }
+    },
+    {
+      "label": "RN: Run iOS (contractor)",
+      "type": "shell",
+      "command": "pnpm --filter contractor-app ios",
+      "presentation": { "reveal": "always" }
+    }
+  ]
+}

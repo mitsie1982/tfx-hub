@@ -1,0 +1,15 @@
+{
+  "name": "@tfx/contractor-app",
+  "version": "0.0.1",
+  "private": true,
+  "main": "src/index.js",
+  "scripts": {
+    "build": "echo 'build @tfx/contractor-app (no-op)'",
+    "test": "node ../../tests/contractor-package/unit/run_unit_tests.js",
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "@tfx/shared-logic": "workspace:*",
+    "express": "^5.2.1"
+  }
+}

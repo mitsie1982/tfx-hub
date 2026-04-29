@@ -1,0 +1,51 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Model Serving Overview",
+    "panels": [
+      {
+        "type": "graph",
+        "title": "95th Percentile Latency",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(request_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "95th Percentile Latency"
+          }
+        ],
+        "yaxes": [
+          { "format": "s", "label": "Seconds" },
+          { "format": "short" }
+        ]
+      },
+      {
+        "type": "graph",
+        "title": "Error Rate",
+        "targets": [
+          {
+            "expr": "sum(rate(request_errors_total[5m])) / sum(rate(requests_total[5m]))",
+            "legendFormat": "Error Rate"
+          }
+        ],
+        "yaxes": [
+          { "format": "percent", "label": "Error Rate" },
+          { "format": "short" }
+        ]
+      },
+      {
+        "type": "stat",
+        "title": "Data Drift Events",
+        "targets": [
+          {
+            "expr": "sum(data_drift_events_total[5m])",
+            "legendFormat": "Drift Events"
+          }
+        ],
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center"
+      }
+    ],
+    "schemaVersion": 30,
+    "version": 1
+  }
+}

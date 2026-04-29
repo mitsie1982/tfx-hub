@@ -1,0 +1,29 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "E2E: Run Detox iOS",
+      "type": "shell",
+      "command": "cd e2e/detox && pnpm install && pnpm run build:ios && pnpm run test:ios",
+      "presentation": { "reveal": "always" }
+    },
+    {
+      "label": "E2E: Run Detox Android",
+      "type": "shell",
+      "command": "cd e2e/detox && pnpm install && pnpm run build:android && pnpm run test:android",
+      "presentation": { "reveal": "always" }
+    },
+    {
+      "label": "E2E: Run Appium smoke",
+      "type": "shell",
+      "command": "node e2e/appium/run_appium_test.js",
+      "presentation": { "reveal": "always" }
+    },
+    {
+      "label": "E2E: Upload APK to Firebase Test Lab",
+      "type": "shell",
+      "command": "./scripts/upload_to_firebase_test_lab.sh apps/ams-app/android/app/build/outputs/apk/debug/app-debug.apk",
+      "presentation": { "reveal": "always" }
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+name: CI - Local Live Stack Windows
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'package.json'
+      - 'scripts/start_local_live_stack_windows.ps1'
+      - 'scripts/stop_local_live_stack_windows.ps1'
+      - 'scripts/status_local_live_stack_windows.ps1'
+      - 'scripts/smoke_local_live_stack_windows.ps1'
+      - 'scripts/run_local_live_stack_process.ps1'
+      - 'scripts/postgres_tools.ps1'
+      - '.vscode/tasks.json'
+      - '.github/workflows/ci_local_live_stack_windows.yml'
+      - 'docs/runbooks/local_live_stack_windows.md'
+
+jobs:
+  smoke-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install PostgreSQL tools
+        shell: powershell
+        run: |
+          choco install postgresql --no-progress -y
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Start local live stack
+        shell: powershell
+        run: pnpm.cmd run stack:local:windows:start
+
+      - name: Check local live stack status
+        shell: powershell
+        run: pnpm.cmd run stack:local:windows:status
+
+      - name: Run local live stack smoke
+        shell: powershell
+        run: pnpm.cmd run stack:local:windows:smoke
+
+      - name: Stop local live stack
+        if: always()
+        shell: powershell
+        run: pnpm.cmd run stack:local:windows:stop

@@ -1,0 +1,23 @@
+# Fastlane Fastfile placeholder for com.tfxhub.ams
+default_platform(:ios)
+
+platform :ios do
+  desc "Build and upload iOS app for com.tfxhub.ams"
+  lane :release do
+    # Replace with your provisioning and signing setup
+    # match(type: "appstore", app_identifier: "com.tfxhub.ams")
+    # build_app(scheme: "com.tfxhub.ams")
+    # upload_to_app_store
+    sh "echo 'iOS release lane placeholder for com.tfxhub.ams'"
+  end
+end
+
+platform :android do
+  desc "Build and upload Android app for com.tfxhub.ams"
+  lane :release do
+    # Replace with your keystore and play store setup
+    # gradle(task: 'assembleRelease')
+    # supply(track: 'production', apk: 'app/build/outputs/apk/release/app-release.apk')
+    sh "echo 'Android release lane placeholder for com.tfxhub.ams'"
+  end
+end

@@ -1,0 +1,32 @@
+name: CI Monitoring Gates
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'docs/**'
+      - 'monitoring/**'
+      - 'scripts/**'
+      - '.github/**'
+
+jobs:
+  check-monitoring:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure monitoring and KPI artifacts present
+        run: |
+          set -e
+          if [ ! -f "monitoring/prometheus_alerts_kpis.yml" ]; then
+            echo "Missing monitoring/prometheus_alerts_kpis.yml"
+            exit 1
+          fi
+          if [ ! -f "monitoring/feature_flags_example.json" ]; then
+            echo "Missing monitoring/feature_flags_example.json"
+            exit 1
+          fi
+          if [ ! -f "docs/release_and_monitoring_checklist.md" ]; then
+            echo "Missing docs/release_and_monitoring_checklist.md"
+            exit 1
+          fi
+          echo "✓ Monitoring and KPI artifacts present"

@@ -1,0 +1,12 @@
+{
+    "agent_id":  "local-ci-agent",
+    "capability":  "read_customer",
+    "timestamp":  "2026-04-29T11:23:43.2605413+02:00",
+    "approved":  false,
+    "type":  "external",
+    "risk":  "high",
+    "inputs":  {
+                   "customer_id":  "CUST-LOCAL-001"
+               },
+    "name":  "export_customer_profile"
+}

@@ -1,0 +1,16 @@
+{
+  "name": "@tfx/shared-auth",
+  "version": "0.0.1",
+  "private": true,
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "scripts": {
+    "build": "echo 'build @tfx/shared-auth (no-op)'",
+    "test": "node ../../tests/shared-auth/unit/run_unit_tests.js",
+    "test:integration": "node ../../tests/shared-auth/integration/run_integration_test.js"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^9.0.0",
+    "express": "^4.18.2"
+  }
+}

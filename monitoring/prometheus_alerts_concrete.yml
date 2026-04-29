@@ -1,0 +1,70 @@
+# monitoring/prometheus_alerts_concrete.yml
+# Concrete alert rules for TFX Hub mobile + backend
+# Replace metric names with your actual exporters/SDK metrics if different.
+
+groups:
+- name: tfxhub-mobile-alerts
+  rules:
+  - alert: MobileHighCrashRate
+    expr: |
+      increase(mobile_crashes_total[10m])
+      /
+      max(1, increase(mobile_active_users_total[10m])) > 0.005
+    for: 10m
+    labels:
+      severity: page
+    annotations:
+      summary: "High mobile crash rate"
+      description: "Crash rate > 0.5% over last 10m. Query: increase(mobile_crashes_total[10m]) / increase(mobile_active_users_total[10m])"
+
+  - alert: MobileUnhandledExceptionsSpike
+    expr: increase(mobile_unhandled_exceptions_total[5m]) > 50
+    for: 5m
+    labels:
+      severity: ticket
+    annotations:
+      summary: "Spike in unhandled client exceptions"
+      description: "Unhandled exceptions increased by more than 50 in 5m."
+
+  - alert: BackendHigh5xxRate
+    expr: |
+      increase(api_responses_total{status=~"5.."}[5m])
+      /
+      max(1, increase(api_responses_total[5m])) > 0.01
+    for: 5m
+    labels:
+      severity: page
+    annotations:
+      summary: "High backend 5xx rate"
+      description: "5xx responses > 1% over last 5m."
+
+  - alert: BackendHighP95Latency
+    expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 2
+    for: 10m
+    labels:
+      severity: ticket
+    annotations:
+      summary: "High backend P95 latency"
+      description: "P95 latency > 2s over last 10m."
+
+  - alert: PaymentFailureRateHigh
+    expr: |
+      increase(payment_failures_total[15m])
+      /
+      max(1, increase(payment_attempts_total[15m])) > 0.02
+    for: 15m
+    labels:
+      severity: page
+    annotations:
+      summary: "High payment failure rate"
+      description: "Payment failure rate > 2% over last 15m."
+
+  - alert: KeyBusinessMetricDrop
+    expr: |
+      (1 - (sum(rate(job_bid_submissions_total[15m])) / max(1, sum(rate(job_bid_submissions_total[1h]))))) > 0.05
+    for: 15m
+    labels:
+      severity: page
+    annotations:
+      summary: "Key business metric drop"
+      description: "Job bid submissions dropped >5% vs 1h baseline."

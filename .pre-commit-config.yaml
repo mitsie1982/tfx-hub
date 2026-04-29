@@ -1,0 +1,26 @@
+﻿repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.0.3
+    hooks:
+      - id: detect-secrets-hook
+        args: ['--baseline', '.secrets.baseline']
+
+  - repo: local
+    hooks:
+      - id: run-tests
+        name: Run unit tests
+        entry: pytest -q
+        language: system
+        pass_filenames: false
+      - id: validate-tool-contract
+        name: Validate Tool Contract
+        entry: python3 scripts/validate_tool_contract.py templates/tool_contract.yaml
+        language: system

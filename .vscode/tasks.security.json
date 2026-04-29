@@ -1,0 +1,86 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Security: Pre-commit All Files",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-lc",
+        "cd ${workspaceFolder} && pre-commit run --all-files"
+      ],
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      }
+    },
+    {
+      "label": "Security: Dependency Audit",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-lc",
+        "cd ${workspaceFolder} && pnpm audit"
+      ],
+      "problemMatcher": [],
+      "group": "build"
+    },
+    {
+      "label": "Security: Scan Secrets",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-lc",
+        "cd ${workspaceFolder} && detect-secrets scan --baseline .secrets.baseline --all-files"
+      ],
+      "problemMatcher": [],
+      "group": "build"
+    },
+    {
+      "label": "Security: ESLint Fix",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-lc",
+        "cd ${workspaceFolder} && pnpm --filter @tfx/shared-auth run lint --fix"
+      ],
+      "problemMatcher": [],
+      "group": "build"
+    },
+    {
+      "label": "Security: Run All Checks",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-lc",
+        "cd ${workspaceFolder} && echo '🔐 Running security checks...' && pre-commit run --all-files && pnpm audit && detect-secrets scan --baseline .secrets.baseline && echo '✅ All checks passed'"
+      ],
+      "problemMatcher": [],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "Security: Install Pre-commit Hooks",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-lc",
+        "cd ${workspaceFolder} && pip install pre-commit && pre-commit install && pre-commit install --hook-type commit-msg && echo '✅ Pre-commit hooks installed'"
+      ],
+      "problemMatcher": [],
+      "group": "build"
+    },
+    {
+      "label": "Security: Open Documentation",
+      "type": "shell",
+      "command": "code",
+      "args": ["docs/security.md"],
+      "problemMatcher": [],
+      "group": "build"
+    }
+  ]
+}

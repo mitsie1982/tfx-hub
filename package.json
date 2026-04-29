@@ -41,4 +41,19 @@
     "openai": "^4.21.0"
   },
   "type": "module"
+=======
+    "supertest": "^7.2.2",
+    "winston": "^3.19.0"
+  },
+  "lint-staged": {
+    "*.{js,ts,tsx,jsx}": [
+      "eslint --fix"
+    ]
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.5.2",
+    "@commitlint/config-conventional": "^20.5.0",
+    "husky": "^9.1.7"
+  }
+>>>>>>> cc1c7797782e87057760a5e8e5bb5fb628d51041
 }

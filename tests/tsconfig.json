@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.demo.json",
+  "compilerOptions": {
+    "types": ["jest"],
+    "forceConsistentCasingInFileNames": true,
+    "rootDir": "..",
+    "ignoreDeprecations": "6.0"
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["../apps/**/*", "../packages/**/*"]
+}

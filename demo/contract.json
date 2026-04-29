@@ -1,0 +1,17 @@
+{
+  "name": "example-http-api",
+  "version": "0.1.0",
+  "description": "HTTP API wrapper for customer data reads",
+  "owner": "team@example.com",
+  "capabilities": [
+    {
+      "name": "read_customer",
+      "type": "external",
+      "allowed_inputs": { "customer_id": "string" },
+      "allowed_outputs": { "customer_profile": "object" },
+      "side_effects": "none",
+      "risk": "low",
+      "preconditions": { "authenticated": true, "approved_roles": ["operator","admin"] }
+    }
+  ]
+}

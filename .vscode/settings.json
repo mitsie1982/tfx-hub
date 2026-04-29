@@ -1,0 +1,5 @@
+﻿{
+  "files.exclude": { ".secrets": true, ".env": true, "out/": true },
+  "security.workspace.trust.enabled": true,
+  "git.autofetch": true
+}

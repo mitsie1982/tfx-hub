@@ -1,0 +1,17 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Shared-Auth: Run Unit Tests",
+      "type": "shell",
+      "command": "pnpm --filter @tfx/shared-auth test",
+      "presentation": { "reveal": "always" }
+    },
+    {
+      "label": "Shared-Auth: Run Integration Tests",
+      "type": "shell",
+      "command": "pnpm --filter @tfx/shared-auth test:integration",
+      "presentation": { "reveal": "always" }
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+name: TFX CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  # Set these in repository secrets or override in workflow_dispatch inputs
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GCR_HOST: gcr.io
+  IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
+  IMAGE_TAG: ${{ github.sha }}
+  TF_ENV: "ci"
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.build-image.outputs.image }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install tfx==1.12.0 tensorflow-data-validation tensorflow-model-analysis google-cloud-storage
+
+      - name: Run TFDV (data validation)
+        env:
+          BUCKET: ${{ secrets.GCS_BUCKET }}
+        run: |
+          # run-tfdv.sh should accept dataset path and output path; adapt as needed
+          bash scripts/run-tfdv.sh --input gs://${{ secrets.GCS_BUCKET }}/data/train --output tfdv-output || true
+
+      - name: Run TFMA (model analysis)
+        run: |
+          # run-tfma.sh should accept model path and eval config; adapt as needed
+          bash scripts/run-tfma.sh --model-path gs://${{ secrets.GCS_BUCKET }}/models/latest --output tfma-output || true
+
+      - name: Build and push Docker image
+        id: build-image
+        env:
+          GCR_HOST: ${{ env.GCR_HOST }}
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
+        run: |
+          bash scripts/build-and-push.sh "${GCR_HOST}/${PROJECT_ID}/${IMAGE_NAME}:${IMAGE_TAG}"
+        # Note: configure GCP auth via secrets (GCP_SA_KEY) and actions/setup-gcloud if needed
+
+  integration-tests:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run integration tests
+        run: |
+          # Example: run a lightweight pipeline integration test using the built image
+          echo "Running integration tests (placeholder)"
+          # Add commands to run pipeline with test dataset and assert outputs

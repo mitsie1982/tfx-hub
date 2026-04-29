@@ -1,0 +1,15 @@
+replicaCount: 2
+image:
+  repository: gcr.io/PROJECT/IMAGE
+  tag: latest
+service:
+  type: ClusterIP
+  port: 80
+canary:
+  enabled: true
+  initialWeight: 10
+  stepWeight: 30
+  maxWeight: 100
+  analysisIntervalSeconds: 60
+  rollbackOnError: true
+resources: {}

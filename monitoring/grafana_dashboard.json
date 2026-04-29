@@ -1,0 +1,69 @@
+{
+  "dashboard": {
+    "title": "TFX Hub - System Overview",
+    "tags": ["tfx", "overview"],
+    "timezone": "UTC",
+    "panels": [
+      {
+        "id": 1,
+        "title": "API Requests (5m avg)",
+        "targets": [
+          {
+            "expr": "rate(http_requests_total[5m])"
+          }
+        ],
+        "type": "graph"
+      },
+      {
+        "id": 2,
+        "title": "Error Rate",
+        "targets": [
+          {
+            "expr": "rate(http_requests_total{status=~\"5..\"}[5m])"
+          }
+        ],
+        "type": "gauge"
+      },
+      {
+        "id": 3,
+        "title": "p95 API Latency",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, http_request_duration_seconds_bucket)"
+          }
+        ],
+        "type": "stat"
+      },
+      {
+        "id": 4,
+        "title": "Memory Usage",
+        "targets": [
+          {
+            "expr": "nodejs_memory_usage_bytes"
+          }
+        ],
+        "type": "graph"
+      },
+      {
+        "id": 5,
+        "title": "Active Database Connections",
+        "targets": [
+          {
+            "expr": "pg_stat_activity_count"
+          }
+        ],
+        "type": "stat"
+      },
+      {
+        "id": 6,
+        "title": "Uptime",
+        "targets": [
+          {
+            "expr": "process_uptime_seconds"
+          }
+        ],
+        "type": "stat"
+      }
+    ]
+  }
+}

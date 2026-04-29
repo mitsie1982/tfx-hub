@@ -1,0 +1,6 @@
+﻿python-dotenv
+pyyaml
+requests
+cryptography
+detect-secrets
+pytest

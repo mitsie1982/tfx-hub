@@ -1,0 +1,37 @@
+name: CI Observability Checks
+
+on:
+  pull_request:
+    paths:
+      - 'apps/**'
+      - 'packages/shared-logging/**'
+
+jobs:
+  check-telemetry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check for observability init marker
+        run: |
+          set -e
+          MISSING=0
+          for APP in apps/ams-app apps/contractor-app; do
+            FILE="$APP/App.tsx"
+            if [ ! -f "$FILE" ]; then
+              echo "Warning: $FILE not found"
+              MISSING=1
+              continue
+            fi
+            if ! grep -q "OBSERVABILITY INIT" "$FILE"; then
+              echo "ERROR: Observability init marker missing in $FILE"
+              MISSING=1
+            else
+              echo "Found observability init in $FILE"
+            fi
+          done
+          if [ "$MISSING" -ne 0 ]; then
+            echo "Observability init checks failed"
+            exit 1
+          fi

@@ -1,0 +1,40 @@
+name: Release TFX Hub AMS
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'release/*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install pnpm
+        run: npm install -g pnpm
+      - name: Install dependencies
+        run: pnpm install
+      - name: Build Android artifact
+        run: |
+          ./scripts/build-android.sh ams release
+      - name: Build iOS artifact (placeholder)
+        run: |
+          ./scripts/build-ios.sh ams
+      - name: Build Windows artifact (placeholder)
+        run: |
+          pwsh ./scripts/build-windows.ps1 -App ams
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ams-artifacts
+          path: |
+            apps/ams-app/android/app/build/outputs/**/*.apk
+            apps/ams-app/ios/build/**/*.ipa
+            spikes/windows/ams-msix/**/*.msix

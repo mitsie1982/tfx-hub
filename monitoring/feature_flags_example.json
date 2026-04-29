@@ -1,0 +1,6 @@
+{
+  "flags": {
+    "ams_canary_release": { "type": "percentage", "value": 1 },
+    "contractor_canary_release": { "type": "percentage", "value": 1 }
+  }
+}

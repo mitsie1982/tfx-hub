@@ -1,0 +1,4 @@
+﻿# CODEOWNERS: Enforce review by designated owners for critical paths
+*       @your-org/engineering-leads
+scripts/* @your-org/devops
+policies/* @your-org/security

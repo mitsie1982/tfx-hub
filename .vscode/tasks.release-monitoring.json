@@ -1,0 +1,29 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Open Release Checklist",
+      "type": "shell",
+      "command": "code -r docs/release_and_monitoring_checklist.md",
+      "presentation": { "reveal": "always" }
+    },
+    {
+      "label": "Open Telemetry KPIs",
+      "type": "shell",
+      "command": "code -r docs/telemetry_kpis.md",
+      "presentation": { "reveal": "always" }
+    },
+    {
+      "label": "Canary Promote 1%",
+      "type": "shell",
+      "command": "./scripts/canary_rollout.sh ams 1 promote",
+      "presentation": { "reveal": "always" }
+    },
+    {
+      "label": "Canary Rollback",
+      "type": "shell",
+      "command": "./scripts/canary_rollout.sh ams 1 rollback",
+      "presentation": { "reveal": "always" }
+    }
+  ]
+}

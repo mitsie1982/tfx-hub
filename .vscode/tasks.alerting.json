@@ -1,0 +1,23 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Alerting: Trigger Alertmanager Test",
+      "type": "shell",
+      "command": "ALERTMANAGER_URL=\"$ALERTMANAGER_URL\" ./scripts/trigger_alert_test.sh",
+      "presentation": { "reveal": "always" }
+    },
+    {
+      "label": "Alerting: Simulate Metric Spike (Pushgateway)",
+      "type": "shell",
+      "command": "PUSHGATEWAY_URL=\"$PUSHGATEWAY_URL\" ./scripts/simulate_metric_spike.sh",
+      "presentation": { "reveal": "always" }
+    },
+    {
+      "label": "Alerting: Open Runbook",
+      "type": "shell",
+      "command": "code -r docs/alerting_test_runbook.md || true",
+      "presentation": { "reveal": "always" }
+    }
+  ]
+}

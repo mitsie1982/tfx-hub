@@ -1,0 +1,17 @@
+{
+  "testRunner": "jest",
+  "configurations": {
+    "ios.sim.debug": {
+      "type": "ios.simulator",
+      "binaryPath": "apps/ams-app/ios/build/Build/Products/Debug-iphonesimulator/ams-app.app",
+      "build": "xcodebuild -workspace apps/ams-app/ios/ams-app.xcworkspace -scheme ams-app -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build",
+      "device": { "type": "iPhone 14" }
+    },
+    "android.emu.debug": {
+      "type": "android.emulator",
+      "binaryPath": "apps/ams-app/android/app/build/outputs/apk/debug/app-debug.apk",
+      "build": "cd apps/ams-app && ./gradlew assembleDebug assembleAndroidTest -DtestBuildType=debug",
+      "device": { "avdName": "Pixel_4_API_30" }
+    }
+  }
+}

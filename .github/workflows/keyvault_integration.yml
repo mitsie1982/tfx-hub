@@ -1,0 +1,47 @@
+name: Validate Azure Key Vault Integration
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ chore/verify-full-pipeline-setup ]
+
+jobs:
+  keyvault-access:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Validate required secrets
+        env:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+          KEY_VAULT_URL: ${{ secrets.KEY_VAULT_URL }}
+          KEY_VAULT_SECRET_NAME: ${{ secrets.KEY_VAULT_SECRET_NAME }}
+        run: |
+          missing=0
+          if [ -z "$AZURE_CREDENTIALS" ]; then echo "::error::AZURE_CREDENTIALS secret is missing"; missing=1; fi
+          if [ -z "$KEY_VAULT_URL" ]; then echo "::error::KEY_VAULT_URL secret is missing"; missing=1; fi
+          if [ -z "$KEY_VAULT_SECRET_NAME" ]; then echo "::error::KEY_VAULT_SECRET_NAME secret is missing"; missing=1; fi
+          if [ "$missing" -eq 1 ]; then exit 1; fi
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Fetch secret from Key Vault
+        env:
+          KEY_VAULT_URL: ${{ secrets.KEY_VAULT_URL }}
+          SECRET_NAME: ${{ secrets.KEY_VAULT_SECRET_NAME }}
+        run: |
+          pip install azure-identity azure-keyvault-secrets
+          python -vC "
+from azure.identity import DefaultAzureCredential
+from azure.keyvault.secrets import SecretClient
+import os
+vault_url = os.environ['KEY_VAULT_URL']
+secret_name = os.environ['SECRET_NAME']
+client = SecretClient(vault_url=vault_url, credential=DefaultAzureCredential())
+print(f'Successfully fetched secret: {secret_name}')
+"

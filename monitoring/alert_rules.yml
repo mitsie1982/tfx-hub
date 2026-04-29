@@ -1,0 +1,83 @@
+# Prometheus alert rules for TFX Hub
+# Triggered alerts are sent to Alertmanager, configured in prometheus.yml
+
+groups:
+  - name: tfx_hub_alerts
+    interval: 30s
+    rules:
+      # API availability
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate detected"
+          description: "{{ $value }}% of requests are returning 5xx errors"
+
+      - alert: ServiceDown
+        expr: up{job="tfx-hub-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "TFX Hub API is down"
+          description: "Service has been unreachable for more than 1 minute"
+
+      # Performance
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, http_request_duration_seconds_bucket) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High API latency detected"
+          description: "p95 latency is {{ $value }}s (threshold: 1s)"
+
+      # Resource usage
+      - alert: HighMemoryUsage
+        expr: nodejs_memory_usage_bytes{type="heapUsed"} / nodejs_memory_usage_bytes{type="heapTotal"} > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is {{ $value | humanizePercentage }}"
+
+      - alert: HighCPUUsage
+        expr: rate(node_cpu_seconds_total{mode!="idle"}[5m]) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is {{ $value | humanizePercentage }}"
+
+      # Database
+      - alert: DatabaseConnectionTimeout
+        expr: rate(pg_connect_timeout_total[5m]) > 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Database connection timeout detected"
+          description: "Cannot connect to PostgreSQL database"
+
+      - alert: DatabaseSlowQueries
+        expr: histogram_quantile(0.95, pg_query_duration_seconds_bucket) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow database queries detected"
+          description: "p95 query time is {{ $value }}s"
+
+      # Certificate expiration
+      - alert: SSLCertificateExpiration
+        expr: ssl_cert_expiration_days < 30
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "SSL/TLS certificate expiring soon"
+          description: "Certificate expires in {{ $value }} days"

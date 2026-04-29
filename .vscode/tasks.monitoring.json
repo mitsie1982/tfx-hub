@@ -1,0 +1,42 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Grafana: Open Dashboard (kiosk)",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-Command",
+        "if (Get-Command msedge -ErrorAction SilentlyContinue) { Start-Process msedge -ArgumentList \"--app='${env:GRAFANA_DASHBOARD_URL}?kiosk=tv'\" } elseif (Get-Command chrome -ErrorAction SilentlyContinue) { Start-Process chrome -ArgumentList \"--app='${env:GRAFANA_DASHBOARD_URL}?kiosk=tv'\" } else { Start-Process \"${env:GRAFANA_DASHBOARD_URL}?kiosk=tv\" }"
+      ],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+
+    {
+      "label": "Grafana: Create Snapshot (fetch dashboard then snapshot)",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-Command",
+        "try { $apiUrl = '${env:GRAFANA_API_URL}'; if (-not $apiUrl) { throw 'GRAFANA_API_URL not set' }; $key = '${env:GRAFANA_API_KEY}'; if (-not $key) { throw 'GRAFANA_API_KEY not set' }; $dashUrl = '${env:GRAFANA_DASHBOARD_URL}'; if (-not $dashUrl) { throw 'GRAFANA_DASHBOARD_URL not set' }; Write-Host 'Fetching dashboard JSON from Grafana...'; $uid = ($dashUrl -split '/d/')[1] -split '/' | Select-Object -First 1; if (-not $uid) { throw 'Cannot extract dashboard UID from GRAFANA_DASHBOARD_URL' }; $dashResp = Invoke-RestMethod -Uri \"$apiUrl/api/dashboards/uid/$uid\" -Headers @{ Authorization = \"Bearer $key\" } -Method Get; $dashboardJson = $dashResp.dashboard; if (-not $dashboardJson) { throw 'Failed to retrieve dashboard JSON' }; Write-Host 'Posting snapshot request...'; $payload = @{ dashboard = $dashboardJson; name = \"Demo snapshot $(Get-Date -Format yyyyMMddTHHmmss)\"; expires = 3600 } | ConvertTo-Json -Depth 20; $snapResp = Invoke-RestMethod -Uri \"$apiUrl/api/snapshots\" -Headers @{ Authorization = \"Bearer $key\"; 'Content-Type' = 'application/json' } -Method Post -Body $payload; if ($snapResp.url) { Write-Host \"Snapshot created: $($snapResp.url)\" } else { Write-Host 'Snapshot response:'; $snapResp | ConvertTo-Json -Depth 5 } } catch { Write-Error $_.Exception.Message; exit 1 }"
+      ],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

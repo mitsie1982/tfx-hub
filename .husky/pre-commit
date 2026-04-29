@@ -1,0 +1,1 @@
+pnpm -w -r lint && pnpm -w -r test --silent

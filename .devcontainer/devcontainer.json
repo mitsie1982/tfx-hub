@@ -1,0 +1,8 @@
+﻿{
+  "name": "Governed Dev Container",
+  "image": "mcr.microsoft.com/vscode/devcontainers/base:0-focal",
+  "runArgs": ["--env-file","./.env","--security-opt=no-new-privileges"],
+  "mounts": ["source=/.secrets,target=/workspaces/.secrets,type=bind,consistency=cached"],
+  "postCreateCommand": "python3 -m pip install --upgrade pip && pip install -r requirements.txt || true",
+  "remoteUser": "vscode"
+}

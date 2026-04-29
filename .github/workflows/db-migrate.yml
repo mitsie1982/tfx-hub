@@ -1,0 +1,24 @@
+name: Database Migration - Normalize Entity Names
+
+on:
+  push:
+    branches:
+      - main
+      - chore/verify-full-pipeline-setup
+  workflow_dispatch:
+
+jobs:
+  migrate-entity-names:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up PostgreSQL client
+        run: sudo apt-get install -y postgresql-client
+
+      - name: Run entity normalization migration
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          psql "$DATABASE_URL" -f migrations/20260409_normalize_entity_names.sql

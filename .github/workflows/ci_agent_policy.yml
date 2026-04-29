@@ -1,0 +1,34 @@
+name: CI - Agent Policy Adjudication
+
+on:
+  push:
+    paths:
+      - 'scripts/agent_action_adjudicator.py'
+      - 'policies/agent_policy.rego'
+      - 'scripts/no_before_action.py'
+      - 'demo/action.json'
+      - 'demo/contract.json'
+  pull_request:
+    paths:
+      - 'scripts/agent_action_adjudicator.py'
+      - 'policies/agent_policy.rego'
+      - 'scripts/no_before_action.py'
+      - 'demo/action.json'
+      - 'demo/contract.json'
+
+jobs:
+  adjudicate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install OPA
+        run: |
+          curl -L -o opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64_static
+          chmod +x opa
+          sudo mv opa /usr/local/bin/opa
+      - name: Run agent action adjudicator (OPA/Judge LLM)
+        run: |
+          python3 scripts/agent_action_adjudicator.py demo/action.json demo/contract.json || true
+      - name: Run no_before_action.py contract check
+        run: |
+          python3 scripts/no_before_action.py demo/action.json demo/contract.json || true

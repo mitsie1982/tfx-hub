@@ -1,0 +1,43 @@
+
+# Secrets and environment
+.env
+.env.*
+.tfxhub-secrets/
+
+# Devcontainer local copies
+.devcontainer/.env
+
+# Local build and index outputs
+out/
+*.index
+*.index.*
+
+# Python artifacts
+__pycache__/
+*.pyc
+
+# Virtual environments
+.venv/
+venv/
+
+# Logs and runtime state
+logs/
+*.log
+
+# Editor and OS files
+.vscode/.history
+.vscode/*.code-workspace
+.DS_Store
+Thumbs.db
+
+# Node and build artifacts
+node_modules/
+dist/
+build/
+.secrets.baseline
+<<<<<<< Updated upstream
+=======
+*.bak.*
+>>>>>>> Stashed changes
+artifacts/
+apps/*/package-lock.json
