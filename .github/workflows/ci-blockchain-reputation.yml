@@ -1,0 +1,43 @@
+name: CI - Blockchain Reputation
+
+on:
+  push:
+    paths:
+      - 'blockchain/**'
+      - 'services/backend/**'
+      - 'services/frontend/**'
+  pull_request:
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install Hardhat deps
+        run: |
+          cd blockchain || exit 0
+          if [ -f package.json ]; then npm ci; fi
+      - name: Run contract lint/test
+        run: |
+          cd blockchain || exit 0
+          if [ -f package.json ]; then npm run test --if-present; fi
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install backend deps
+        run: |
+          cd services/backend || exit 0
+          if [ -f package.json ]; then npm ci; fi
+      - name: Run backend tests
+        run: |
+          cd services/backend || exit 0
+          if [ -f package.json ]; then npm test --if-present; fi
