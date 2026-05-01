@@ -1,0 +1,32 @@
+name: Apply - AWS API Gateway Terraform (Protected)
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment (e.g., production)'
+        required: true
+        default: 'production'
+
+jobs:
+  terraform-apply:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.event.inputs.environment }}
+      url: https://console.aws.amazon.com/apigateway
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+      - name: Terraform Init
+        working-directory: infra/aws_apigateway
+        run: terraform init -input=false
+      - name: Terraform Apply
+        working-directory: infra/aws_apigateway
+        run: terraform apply -input=false -auto-approve -var-file=example.tfvars
+        env:
+          TF_IN_AUTOMATION: true

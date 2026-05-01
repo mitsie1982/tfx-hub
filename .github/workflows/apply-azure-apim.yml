@@ -1,0 +1,33 @@
+name: Apply - Azure APIM Terraform (Protected)
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment (e.g., production)'
+        required: true
+        default: 'production'
+
+jobs:
+  terraform-apply:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.event.inputs.environment }}
+      url: https://portal.azure.com/
+    env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+      - name: Terraform Init
+        working-directory: infra/azure_apim
+        run: terraform init -input=false
+      - name: Terraform Apply
+        working-directory: infra/azure_apim
+        run: terraform apply -input=false -auto-approve -var-file=example.tfvars
+        env:
+          TF_IN_AUTOMATION: true
