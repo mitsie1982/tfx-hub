@@ -280,9 +280,9 @@ function createPostgresRepository(options = {}) {
       return mapUser(result.rows[0]);
     },
 
-    async getUserById(userId) {
-      const result = await pool.query('SELECT * FROM users WHERE id = $1 LIMIT 1', [userId]);
-      return mapUser(result.rows[0]);
+    async getUserById(id) {
+      const { rows } = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+      return rows[0] || null;
     },
 
     async createUser(user) {

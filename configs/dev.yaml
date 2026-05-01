@@ -1,0 +1,32 @@
+# configs/dev.yaml
+profile: dev
+region: local
+secrets:
+  vault: azure
+  vaultName: dev-keyvault
+  names:
+    - AGENT_MANAGER_SECRET
+    - AUDIT_HMAC_SECRET
+    - DB_CONN_STRING
+services:
+  - name: orchestrator-api
+    type: http
+    url: http://localhost:8080/health
+  - name: postgres
+    type: tcp
+    host: localhost
+    port: 5432
+rollbackSteps:
+  - 'pwsh -NoProfile -Command "docker-compose -f docker-compose.dev.yml down --remove-orphans"'
+  - 'pwsh -NoProfile -Command "docker-compose -f docker-compose.dev.yml up -d --force-recreate"'
+notifyOnSuccess: true
+notifyOnFailure: true
+selfHealing:
+  enabled: true
+  restartCommands:
+    - 'docker restart orchestrator_api || true'
+    - 'pwsh -NoProfile -File scripts/self_heal.ps1 -Profile dev'
+metrics:
+  prometheus:
+    enabled: true
+    scrape_target: localhost:9100

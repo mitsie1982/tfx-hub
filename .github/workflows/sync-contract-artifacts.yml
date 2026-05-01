@@ -1,0 +1,103 @@
+name: Sync Contract Artifacts
+
+on:
+  workflow_run:
+    workflows: ["Contract Deploy"]
+    types:
+      - completed
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download contract artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: contract-artifacts
+          path: packages/api-server/src
+      - name: Commit ABI and address to backend
+        run: |
+          git config --global user.email "ci@github.com"
+          git config --global user.name "CI Bot"
+          git add packages/api-server/src/ReputationContractABI.json packages/api-server/src/DEPLOYED_ADDRESS.txt
+          git commit -m "Sync contract ABI and address from deployment" || echo "No changes to commit"
+          git push || echo "No push (PR or fork)"
+      - name: Notify on contract sync
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "Contract Synced: ${{ github.repository }}"
+          to: ${{ secrets.NOTIFY_EMAIL }}
+          from: "ci-bot@${{ github.repository }}"
+          body: |
+            The contract ABI and address have been synced to the backend.
+            Repository: ${{ github.repository }}
+            Commit: ${{ github.sha }}
+      - name: Notify on Slack (custom)
+        if: always()
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "blocks": [
+                { "type": "header", "text": { "type": "plain_text", "text": ":rocket: Contract Sync Complete" } },
+                { "type": "section", "fields": [
+                  { "type": "mrkdwn", "text": "*Repository:* ${{ github.repository }}" },
+                  { "type": "mrkdwn", "text": "*Commit:* ${{ github.sha }}" },
+                  { "type": "mrkdwn", "text": "*Actor:* ${{ github.actor }}" },
+                  { "type": "mrkdwn", "text": "*Status:* ${{ job.status }}" }
+                ] },
+                { "type": "context", "elements": [
+                  { "type": "mrkdwn", "text": "<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow Run>" }
+                ] }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: Notify on Teams (custom)
+        if: always()
+        uses: skitionek/notify-microsoft-teams@v1
+        with:
+          webhook_url: ${{ secrets.TEAMS_WEBHOOK_URL }}
+          message: |
+            ### :rocket: Contract Sync Complete
+            - **Repository:** ${{ github.repository }}
+            - **Commit:** ${{ github.sha }}
+            - **Actor:** ${{ github.actor }}
+            - **Status:** ${{ job.status }}
+            [View Workflow Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+      - name: Escalate on Failure
+        if: failure()
+        run: |
+          echo "ALERT: Contract sync failed! Notifying escalation contacts."
+          # Example: send escalation email or call webhook
+          curl -X POST -H "Content-Type: application/json" -d '{"alert":"Contract sync failed","repo":"${{ github.repository }}","run_id":"${{ github.run_id }}"}' ${{ secrets.ESCALATION_WEBHOOK_URL }} || true
+      - name: Escalate via PagerDuty
+        if: failure()
+        uses: jaxxstorm/action-pagerduty@v2
+        with:
+          routing_key: ${{ secrets.PAGERDUTY_ROUTING_KEY }}
+          event_action: trigger
+          payload_summary: "Contract sync failed in ${{ github.repository }} by ${{ github.actor }}"
+          payload_source: github
+          payload_severity: critical
+      - name: Escalate via Opsgenie
+        if: failure()
+        uses: opsgenie/opsgenie-github-action@v1
+        with:
+          api-key: ${{ secrets.OPSGENIE_API_KEY }}
+          message: "Contract sync failed in ${{ github.repository }} by ${{ github.actor }}"
+          description: "Workflow run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          priority: P1
+      - name: Escalate via SMS (Twilio)
+        if: failure()
+        run: |
+          curl -X POST "https://api.twilio.com/2010-04-01/Accounts/${{ secrets.TWILIO_ACCOUNT_SID }}/Messages.json" \
+            --data-urlencode "To=${{ secrets.ESCALATION_PHONE }}" \
+            --data-urlencode "From=${{ secrets.TWILIO_FROM_NUMBER }}" \
+            --data-urlencode "Body=ALERT: Contract sync failed in ${{ github.repository }} by ${{ github.actor }}" \
+            -u ${{ secrets.TWILIO_ACCOUNT_SID }}:${{ secrets.TWILIO_AUTH_TOKEN }} || true

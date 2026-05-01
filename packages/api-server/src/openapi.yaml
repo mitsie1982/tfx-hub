@@ -1,0 +1,59 @@
+openapi: 3.0.3
+info:
+  title: TFX Hub Public API
+  version: 1.0.0
+  description: Public REST API for enterprise integrations
+servers:
+  - url: https://yourdomain/api/public
+paths:
+  /user/{userId}:
+    get:
+      summary: Get public user profile
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: string }
+                  name: { type: string }
+                  role: { type: string }
+        '404':
+          description: User not found
+  /reputation/{userId}:
+    get:
+      summary: Get blockchain reputation score
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId: { type: string }
+                  score: { type: integer }
+        '404':
+          description: User not found
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+security:
+  - ApiKeyAuth: []

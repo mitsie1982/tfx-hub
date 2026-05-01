@@ -1,0 +1,26 @@
+name: Multi-Region DB Sync
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Hourly
+
+jobs:
+  db-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Sync Cosmos DB
+        run: |
+          az cosmosdb create \
+            --name ${{ secrets.COSMOSDB_ACCOUNT }} \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --locations regionName=${{ secrets.PRIMARY_REGION }} failoverPriority=0 isZoneRedundant=false \
+            --locations regionName=${{ secrets.SECONDARY_REGION }} failoverPriority=1 isZoneRedundant=false
+          az cosmosdb failover-priority-change \
+            --name ${{ secrets.COSMOSDB_ACCOUNT }} \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --failover-policies ${{ secrets.PRIMARY_REGION }}=0 ${{ secrets.SECONDARY_REGION }}=1

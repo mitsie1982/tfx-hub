@@ -1,0 +1,35 @@
+name: CI - Omnichannel checks
+
+on:
+  push:
+    paths:
+      - 'services/backend/**'
+      - 'services/frontend/**'
+      - 'docs/OMNICHANNEL_FALLBACK.md'
+  pull_request:
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install backend deps
+        run: |
+          cd services/backend || exit 0
+          if [ -f package.json ]; then npm ci; fi
+      - name: Run backend lint (if configured)
+        run: |
+          cd services/backend || exit 0
+          if [ -f package.json ]; then npm run lint --if-present; fi
+      - name: Install frontend deps
+        run: |
+          cd services/frontend || exit 0
+          if [ -f package.json ]; then npm ci; fi
+      - name: Run frontend lint (if configured)
+        run: |
+          cd services/frontend || exit 0
+          if [ -f package.json ]; then npm run lint --if-present; fi

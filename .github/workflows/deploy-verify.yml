@@ -1,0 +1,26 @@
+name: Deployment Verification
+
+on:
+  workflow_run:
+    workflows: ["Multi-Environment Deploy"]
+    types:
+      - completed
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check deployment URL
+        run: |
+          echo "Verifying deployment at ${{ github.event.workflow_run.head_branch }}"
+          export URL="https://${{ secrets[format('AZURE_WEBAPP_NAME_{0}', github.event.workflow_run.head_branch)] }}.azurewebsites.net/api/public/health"
+          for i in {1..10}; do
+            http_code=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+            if [ "$http_code" = "200" ]; then
+              echo "Deployment verified!"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Deployment verification failed."
+          exit 1

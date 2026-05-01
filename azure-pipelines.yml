@@ -1,0 +1,18 @@
+trigger:
+  branches:
+    include:
+      - chore/verify-full-pipeline-setup
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- checkout: self
+- task: NodeTool@0
+  inputs:
+    versionSpec: '18.x'
+- script: npm install
+  env:
+    NODE_OPTIONS: --max-old-space-size=8192
+- script: npm run compile
+- script: npm test

@@ -1,0 +1,23 @@
+name: Notify on Deploy
+
+on:
+  workflow_run:
+    workflows: [blue-green-deploy, traffic-routing, multi-region-db-sync]
+    types:
+      - completed
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Slack
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: '{"text":"Deployment workflow ${{ github.workflow }} completed with status ${{ github.event.workflow_run.conclusion }}."}'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: Notify Teams
+        uses: skitionek/notify-microsoft-teams@v1
+        with:
+          webhook_url: ${{ secrets.TEAMS_WEBHOOK_URL }}
+          message: "Deployment workflow ${{ github.workflow }} completed with status ${{ github.event.workflow_run.conclusion }}."

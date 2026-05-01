@@ -1,0 +1,54 @@
+# configs/prod.yaml
+profile: prod
+region: eastus
+secrets:
+  vault: aws
+  names:
+    - AGENT_MANAGER_SECRET
+    - AUDIT_HMAC_SECRET
+    - DB_CONN_STRING
+    - APPINSIGHTS_INSTRUMENTATIONKEY
+    - S3_BACKUP_BUCKET
+services:
+  - name: orchestrator-api
+    type: http
+    url: https://orchestrator.example.com/health
+  - name: postgres
+    type: tcp
+    host: prod-db.example.com
+    port: 5432
+  - name: metrics-exporter
+    type: http
+    url: http://metrics-exporter.prod.svc.cluster.local:9100/metrics
+rollbackSteps:
+  - '# 1: scale down new deployment to zero'
+  - 'kubectl -n production scale deployment orchestrator --replicas=0'
+  - '# 2: restore previous image tag from release history'
+  - 'kubectl -n production set image deployment/orchestrator orchestrator=registry.example.com/orchestrator:previous'
+  - '# 3: scale back to previous replica count'
+  - 'kubectl -n production scale deployment orchestrator --replicas=3'
+  - '# 4: run post-rollback health check'
+  - 'pwsh -NoProfile -File scripts/health_check.ps1 -Profile prod'
+notifyOnSuccess: true
+notifyOnFailure: true
+selfHealing:
+  enabled: true
+  restartPolicy:
+    kubernetes:
+      restartThreshold: 5
+      action: 'delete_pod' # delete pod to force restart
+    docker:
+      restartFailedContainers: true
+metrics:
+  prometheus:
+    enabled: true
+    scrape_target: metrics-exporter.prod.svc.cluster.local:9100
+  appInsights:
+    enabled: true
+    instrumentation_key_secret_name: APPINSIGHTS_INSTRUMENTATIONKEY
+compliance:
+  policies:
+    - name: 'no-public-s3'
+      check: 'tfsec'
+    - name: 'cost-threshold'
+      check: 'cost-estimate'

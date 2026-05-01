@@ -33,36 +33,42 @@ New-Item -ItemType Directory -Path .\demo -Force | Out-Null
 New-Item -ItemType Directory -Path .\out -Force | Out-Null
 
 # 1) .vscode/tasks.json (cross-platform, admin auth)
+
 $tasksJson = @"
 {
-  "version": "2.0.0",
-  "tasks": [
-    { "label": "Start OPA (Docker)", "type": "shell", "command": "powershell -ExecutionPolicy Bypass -File scripts/run_opa_container.ps1", "presentation": { "reveal": "always" } },
-    { "label": "Issue Token", "type": "shell", "command": "python3 scripts/agent_manager.py issue agent-42 read_customer 300 > out/agent-42.token", "presentation": { "reveal": "always" } },
-    { "label": "Gate Action (No-Before-Action)", "type": "shell", "command": "python3 scripts/no_before_action.py demo/action.json demo/contract.json", "presentation": { "reveal": "always", "panel": "shared" } },
-    { "label": "Approve Pending Action", "type": "shell", "command": "python3 scripts/approve_action.py --action out/pending_action.json", "presentation": { "reveal": "always" } },
-    { "label": "Run Audited Runner (simulate)", "type": "shell", "command": "powershell -ExecutionPolicy Bypass -File scripts/audited_runner.ps1", "presentation": { "reveal": "always" } },
-    { "label": "Verify Audit Trail", "type": "shell", "command": "python3 scripts/audit_verify.py", "presentation": { "reveal": "always" } },
-    { "label": "Demo: Full Sequence", "type": "shell", "command": "bash scripts/demo_run_sequence.sh", "presentation": { "reveal": "always" } },
-    { "label": "Open Audit Log", "type": "shell", "command": "if (Get-Command code -ErrorAction SilentlyContinue) { code -r out/action_audit.log } else { Get-Content out/action_audit.log -Tail 200 }", "presentation": { "reveal": "always" } }
-  ]
+  "version": "2.0.0"
 }
 "@
+
 Write-File -path ".\.vscode\tasks.json" -content $tasksJson -force:$Force
 
 # 2) PowerShell OPA runner
+
+# 2) PowerShell OPA runner (robust $policies resolution)
 $opaRunner = @"
 #!/usr/bin/env pwsh
-$ErrorActionPreference = 'Stop'
-`$policies = if (`$PSScriptRoot) { Join-Path `$PSScriptRoot '..' 'policies' | Resolve-Path | ForEach-Object { `$_.Path } } else { Join-Path (Get-Location) 'policies' }
+`$ErrorActionPreference = 'Stop'
+if (`$PSScriptRoot) {
+  `$tmpArr = @(Join-Path `$PSScriptRoot '..' 'policies' | Resolve-Path -ErrorAction SilentlyContinue | ForEach-Object { `$_.Path })
+  `$policies = if (`$tmpArr.Count -gt 0) { `$tmpArr[0] } else { Join-Path `$PSScriptRoot 'policies' }
+} else {
+  `$try1 = Join-Path (Get-Location) 'policies'
+  if (Test-Path `$try1) { `$policies = `$try1 }
+  else {
+    `$tmp2 = Resolve-Path '../policies' -ErrorAction SilentlyContinue
+    `$policies = if (`$tmp2) { `$tmp2.Path } else { `$null }
+  }
+}
+if (-not `$policies -or -not (Test-Path `$policies)) {
+  Write-Host 'Policies directory not found.' -ForegroundColor Red
+  exit 1
+}
 if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
   Write-Host 'Docker is not installed or not in PATH.' -ForegroundColor Red
   exit 1
 }
 Write-Host "Running OPA container with policies from `$policies..."
-# Suppress linter false positive: correct PowerShell interpolation
-# shellcheck disable=SC2086
-docker run --rm -p 8181:8181 -v "$($policies):/policies" openpolicyagent/opa:latest run --server --set=decision_logs.console=true /policies
+docker run --rm -p 8181:8181 -v "`${policies}:/policies" openpolicyagent/opa:latest run --server --set=decision_logs.console=true /policies
 "@
 Write-File -path ".\scripts\run_opa_container.ps1" -content $opaRunner -force:$Force
 

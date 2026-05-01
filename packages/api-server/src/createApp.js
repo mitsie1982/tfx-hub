@@ -9,6 +9,18 @@ const { createWhatsappProfessionalService } = require('./whatsappProfessional');
 const { createWhatsappCustomerService } = require('./whatsappCustomer');
 const { createWhatsappAdminService } = require('./whatsappAdmin');
 const { createAdminAccessClosedMessage, getAdminAccessPolicy, isAdminWithinAccessWindow, normalizeUsername } = require('./adminAccess');
+const { sendNotification } = require('./channelRouter');
+const { requireAdminAuth } = require('./adminAuth');
+const { getReputationScore, setReputationScore } = require('./blockchainReputation');
+const { getAdminSigner } = require('./adminBlockchainAuth');
+const { createPublicApiRouter } = require('./publicApiRouter');
+const { initObservability, captureError } = require('./observability');
+const { getCache, setCache } = require('./cache');
+const { enqueueJob } = require('./queue');
+const cosmosRepo = require('./cosmosRepository');
+const crypto = require('crypto');
+const { logAudit } = require('./auditLogger');
+const { requireRole } = require('./rbac');
 
 function randomId(prefix) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -182,14 +194,11 @@ async function handleApplication(repository, req, res, randomizeId) {
   return res.status(201).json({ applicationId: application.id, jobId: req.params.id, professionalId });
 }
 
-function createApp({ repository, logger, metaWebhookOptions, adminAccessPolicy, getCurrentDate } = {}) {
-  if (!repository) {
-    throw new Error('repository is required');
-  }
-
+function createApp({ repository, logger }) {
+  initObservability();
   const app = express();
   const log = logger || { info() {}, warn() {}, error() {} };
-  const adminPolicy = getAdminAccessPolicy(adminAccessPolicy);
+  const adminPolicy = getAdminAccessPolicy();
   const resolveCurrentDate = typeof getCurrentDate === 'function' ? getCurrentDate : () => new Date();
   const notifier = createPasswordResetNotifier({ logger: log });
   const whatsappAssociation = createWhatsappAssociationService({ repository, logger: log, createId: randomId });
@@ -1189,9 +1198,11 @@ function createApp({ repository, logger, metaWebhookOptions, adminAccessPolicy, 
     return res.json({ ok: true, stage, completedStages: status.completedStages });
   });
 
-  app.use((error, req, res, next) => {
-    log.error('api request failed', { message: error.message });
-    res.status(500).json({ error: 'internal_error', message: error.message });
+  // Global error handler with observability
+  app.use((err, req, res, next) => {
+    captureError(err, req);
+    logger.error('unhandled error', { err });
+    res.status(500).json({ error: 'Internal server error', details: err.message });
   });
 
   return app;

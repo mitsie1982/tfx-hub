@@ -1,0 +1,21 @@
+name: Traffic Routing Automation
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update-routing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Update Front Door Routing
+        run: |
+          az network front-door routing-rule update \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --front-door-name ${{ secrets.AZURE_FRONTDOOR_NAME }} \
+            --name ${{ secrets.AZURE_ROUTING_RULE_NAME }} \
+            --backend-pool ${{ secrets.AZURE_BACKEND_POOL }}

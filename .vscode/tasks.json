@@ -11,85 +11,22 @@
 			"group": "build"
 		},
 		{
-			"label": "Test Extension",
-			"type": "shell",
-			"command": "npm test",
-			"problemMatcher": [],
-			"group": "test"
-		},
-		{
-			"label": "Commit All Changes",
-			"type": "shell",
-			"command": "pwsh ./scripts/commit-all-changes.ps1 -Message 'Automated commit from VS Code task' -Push -Force",
-			"problemMatcher": [],
-			"group": "none"
-		},
-		{
-			"label": "Build Extension",
-			"type": "shell",
-			"command": "npm run compile",
-			"problemMatcher": [
+			{
+			  "version": "2.0.0",
+			  "tasks": [
+			    { "label": "Build Extension", "type": "shell", "command": "npm run compile", "problemMatcher": ["$tsc"], "group": "build" },
+			    { "label": "Test Extension", "type": "shell", "command": "npm test", "problemMatcher": [], "group": "test" },
+			    { "label": "Commit All Changes", "type": "shell", "command": "pwsh ./scripts/commit-all-changes.ps1 -Message 'Automated commit from VS Code task' -Push -Force", "problemMatcher": [], "group": "none" },
+			    { "label": "Orchestrator: Run Workflow", "type": "shell", "command": "pwsh ./scripts/orchestrator_runner.ps1 -Profile dev -Workflow workflows/example.yaml", "presentation": { "reveal": "always" } },
+			    { "label": "Infra: Terraform Plan", "type": "shell", "command": "bash ./infra/terraform/plan.sh", "presentation": { "reveal": "always" } },
+			    { "label": "Infra: Bicep Deploy (Azure)", "type": "shell", "command": "pwsh ./infra/bicep/deploy.ps1 -Profile dev", "presentation": { "reveal": "always" } },
+			    { "label": "Infra: Pulumi Preview", "type": "shell", "command": "bash ./infra/pulumi/preview.sh", "presentation": { "reveal": "always" } },
+			    { "label": "Seed Test Data", "type": "shell", "command": "pwsh ./scripts/testdata_seed.ps1 -Profile dev", "presentation": { "reveal": "always" } },
+			    { "label": "Cleanup Test Data", "type": "shell", "command": "pwsh ./scripts/testdata_cleanup.ps1 -Profile dev", "presentation": { "reveal": "always" } },
+			    { "label": "Run Health Checks", "type": "shell", "command": "pwsh ./scripts/health_check.ps1 -Profile dev", "presentation": { "reveal": "always" } },
+			    { "label": "Start Dashboard (metrics/logs)", "type": "shell", "command": "node ./monitoring/dashboard.js", "presentation": { "reveal": "always" } },
+			    { "label": "Run Compliance Checks", "type": "shell", "command": "pwsh ./compliance/run_compliance_checks.ps1 -Profile dev", "presentation": { "reveal": "always" } },
+			    { "label": "Trigger Rollback (manual)", "type": "shell", "command": "pwsh ./scripts/rollback_on_failure.ps1 -Profile dev -Reason 'manual_trigger'", "presentation": { "reveal": "always" } }
+			  ]
+			}
 				"$tsc"
-			],
-			"group": "build"
-		},
-		{
-			"label": "Test Extension",
-			"type": "shell",
-			"command": "npm test",
-			"problemMatcher": [],
-			"group": "test"
-		},
-		{
-			"label": "Commit All Changes",
-			"type": "shell",
-			"command": "pwsh ./scripts/commit-all-changes.ps1 -Message 'Automated commit from VS Code task' -Push -Force",
-			"problemMatcher": [],
-			"group": "none"
-		},
-		{
-			"label": "Build Extension",
-			"type": "shell",
-			"command": "npm run compile",
-			"problemMatcher": [
-				"$tsc"
-			],
-			"group": "build"
-		}
-	]
-}
-=======
-  "version": "2.0.0",
-  "tasks": [
-		{
-			"version": "2.0.0",
-			"tasks": [
-				{
-					"label": "Build Extension",
-					"type": "shell",
-					"command": "npm run compile",
-					"problemMatcher": ["$tsc"],
-					"group": "build"
-				},
-				{
-					"label": "Test Extension",
-					"type": "shell",
-					"command": "npm test",
-					"problemMatcher": [],
-					"group": "test"
-				},
-				{
-					"label": "Commit All Changes",
-					"type": "shell",
-					"command": "powershell ./scripts/commit-all-changes.ps1 -Message 'Automated commit from VS Code task' -Push -Force",
-					"problemMatcher": [],
-					"group": "none"
-				}
-			]
-		}
-      "presentation": { "reveal": "always", "panel": "shared" },
-      "problemMatcher": []
-    }
-  ]
-}
->>>>>>> cc1c7797782e87057760a5e8e5bb5fb628d51041

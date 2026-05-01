@@ -1,0 +1,30 @@
+{
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json",
+  "name": "TFX Hub SLA Dashboard",
+  "items": [
+    {
+      "type": 1,
+      "content": {
+        "version": "KqlItem/v1",
+        "query": "requests | summarize count() by resultCode, bin(timestamp, 1h)",
+        "size": 1
+      }
+    },
+    {
+      "type": 1,
+      "content": {
+        "version": "KqlItem/v1",
+        "query": "requests | summarize avg(duration) by bin(timestamp, 1h)",
+        "size": 1
+      }
+    },
+    {
+      "type": 1,
+      "content": {
+        "version": "KqlItem/v1",
+        "query": "availabilityResults | summarize avg(availabilityPercentage) by bin(timestamp, 1h)",
+        "size": 1
+      }
+    }
+  ]
+}

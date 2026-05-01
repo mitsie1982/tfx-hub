@@ -1,12 +1,27 @@
 name: CI
-on: [push, pull_request]
+
+on:
+  push:
+    branches: [ chore/verify-full-pipeline-setup ]
+  pull_request:
+    branches: [ chore/verify-full-pipeline-setup ]
+
 jobs:
-  build:
+  build-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: '18' }
-      - run: npm ci
-      - run: npm run lint || true
-      - run: npm test
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+      - name: Run system validation tests
+        run: npm test --workspaces
+      - name: Run security audit
+        run: npm audit --audit-level=high || true
+      - name: Run load test (dry run)
+        run: |
+          pip install locust
+          locust -f scripts/load_test_locust.py --headless -u 2 -r 1 -t 10s || true

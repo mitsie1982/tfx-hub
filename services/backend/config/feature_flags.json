@@ -1,0 +1,6 @@
+{
+  "omnichannel_fallback": true,
+  "omnichannel_fallback_sms": true,
+  "omnichannel_fallback_email": true,
+  "omnichannel_fallback_web": true
+}

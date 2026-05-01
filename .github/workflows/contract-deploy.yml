@@ -1,0 +1,39 @@
+name: Contract Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      network:
+        description: 'Target network (goerli, polygon)'
+        required: true
+        default: 'goerli'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contracts
+    env:
+      GOERLI_RPC_URL: ${{ secrets.GOERLI_RPC_URL }}
+      POLYGON_RPC_URL: ${{ secrets.POLYGON_RPC_URL }}
+      DEPLOYER_PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+      - name: Compile contract
+        run: npx hardhat compile
+      - name: Deploy contract
+        run: npx hardhat run deploy.js --network ${{ github.event.inputs.network }}
+      - name: Upload ABI and address
+        uses: actions/upload-artifact@v4
+        with:
+          name: contract-artifacts
+          path: |
+            contracts/ReputationContractABI.json
+            contracts/DEPLOYED_ADDRESS.txt

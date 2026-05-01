@@ -1,0 +1,33 @@
+# configs/staging.yaml
+profile: staging
+region: eastus
+secrets:
+  vault: azure
+  vaultName: staging-keyvault
+  names:
+    - AGENT_MANAGER_SECRET
+    - AUDIT_HMAC_SECRET
+    - DB_CONN_STRING
+    - APPINSIGHTS_INSTRUMENTATIONKEY
+services:
+  - name: orchestrator-api
+    type: http
+    url: https://staging.orchestrator.example.com/health
+  - name: redis
+    type: tcp
+    host: staging-redis.example.com
+    port: 6379
+rollbackSteps:
+  - 'az deployment group create --resource-group rg-staging --template-file infra/bicep/rollback-staging.bicep'
+  - 'pwsh -NoProfile -File scripts/rollback_on_failure.ps1 -Profile staging -Reason "auto_rollback"'
+notifyOnSuccess: true
+notifyOnFailure: true
+selfHealing:
+  enabled: true
+  remediationPlaybook: remediation/staging_playbook.ps1
+metrics:
+  appInsights:
+    enabled: true
+    instrumentation_key_secret_name: APPINSIGHTS_INSTRUMENTATIONKEY
+costControl:
+  budgetId: staging-budget
