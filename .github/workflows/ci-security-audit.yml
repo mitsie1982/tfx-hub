@@ -1,0 +1,57 @@
+name: CI – Security Audit & SAST
+
+on:
+  push:
+    paths:
+      - '**/*.js'
+      - '**/*.ts'
+      - '**/*.json'
+      - '**/*.yml'
+      - '**/*.yaml'
+      - '**/Dockerfile'
+      - '**/package-lock.json'
+      - '**/requirements.txt'
+      - '.github/workflows/ci-security-audit.yml'
+  pull_request:
+    paths:
+      - '**/*.js'
+      - '**/*.ts'
+      - '**/*.json'
+      - '**/*.yml'
+      - '**/*.yaml'
+      - '**/Dockerfile'
+      - '**/package-lock.json'
+      - '**/requirements.txt'
+      - '.github/workflows/ci-security-audit.yml'
+
+jobs:
+  sast:
+    name: Static Application Security Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run CodeQL Analysis
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript, typescript
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+  dep-scan:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@v3
+        with:
+          command: test
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      - name: Upload Snyk results
+        uses: actions/upload-artifact@v4
+        with:
+          name: snyk-results
+          path: snyk*
