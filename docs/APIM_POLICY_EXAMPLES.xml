@@ -1,0 +1,23 @@
+docs/APIM_POLICY_EXAMPLES.xml
+
+<!-- Example APIM inbound policy: validate JWT and rate-limit by subscription key -->
+<policies>
+  <inbound>
+    <validate-jwt header-name="Authorization" failed-validation-httpcode="401" failed-validation-error-message="Unauthorized">
+      <openid-config url="https://login.microsoftonline.com/{tenant}/v2.0/.well-known/openid-configuration" />
+      <required-claims>
+        <claim name="aud">
+          <value>{api-audience}</value>
+        </claim>
+      </required-claims>
+    </validate-jwt>
+    <rate-limit-by-key calls="100" renewal-period="60" increment-condition="@(context.Request.Method == "GET")" />
+    <base />
+  </inbound>
+  <backend>
+    <base />
+  </backend>
+  <outbound>
+    <base />
+  </outbound>
+</policies>

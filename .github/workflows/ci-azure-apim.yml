@@ -1,0 +1,36 @@
+name: CI - Azure APIM Terraform
+
+on:
+  push:
+    paths:
+      - 'infra/azure_apim/**'
+  pull_request:
+    paths:
+      - 'infra/azure_apim/**'
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+      - name: Terraform Init
+        working-directory: infra/azure_apim
+        run: terraform init -input=false
+      - name: Terraform Validate
+        working-directory: infra/azure_apim
+        run: terraform validate
+      - name: Terraform Plan
+        working-directory: infra/azure_apim
+        run: terraform plan -out=tfplan -input=false -var-file=example.tfvars
+      - name: Upload Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: apim-tfplan
+          path: infra/azure_apim/tfplan

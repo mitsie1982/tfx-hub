@@ -1,0 +1,35 @@
+name: CI - AWS API Gateway Terraform
+
+on:
+  push:
+    paths:
+      - 'infra/aws_apigateway/**'
+  pull_request:
+    paths:
+      - 'infra/aws_apigateway/**'
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+      - name: Terraform Init
+        working-directory: infra/aws_apigateway
+        run: terraform init -input=false
+      - name: Terraform Validate
+        working-directory: infra/aws_apigateway
+        run: terraform validate
+      - name: Terraform Plan
+        working-directory: infra/aws_apigateway
+        run: terraform plan -out=tfplan -input=false -var-file=example.tfvars
+      - name: Upload Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: apigw-tfplan
+          path: infra/aws_apigateway/tfplan

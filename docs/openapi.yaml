@@ -1,0 +1,40 @@
+openapi: 3.0.3
+info:
+  title: TFX Hub Public API
+  version: 0.1.0
+  description: Public API for third-party integrations. Authentication via API key or OAuth2.
+servers:
+  - url: https://api.example.com
+paths:
+  /tasks:
+    get:
+      summary: List tasks for an Organisation
+      parameters:
+        - in: query
+          name: organisationId
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+  /webhooks:
+    post:
+      summary: Webhook receiver for third-party integrations
+      responses:
+        '200':
+          description: Accepted
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.example.com/oauth/token
+          scopes: {}
+security:
+  - ApiKeyAuth: []
