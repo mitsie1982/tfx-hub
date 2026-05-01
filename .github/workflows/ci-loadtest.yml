@@ -1,0 +1,24 @@
+name: CI – Load Test
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * *' # Daily at 2am UTC
+
+jobs:
+  loadtest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Locust
+        run: pip install locust
+      - name: Run Locust load test
+        env:
+          LOCUST_API_KEY: ${{ secrets.LOADTEST_API_KEY }}
+        run: |
+          sed -i "s/REPLACE_WITH_KEY/$LOCUST_API_KEY/g" loadtest/locustfile.py
+          locust -f loadtest/locustfile.py --headless -u 50 -r 5 -t 2m --host ${{ secrets.LOADTEST_API_HOST }}
