@@ -1,0 +1,40 @@
+name: CI - Certification Marketplace
+
+on:
+  push:
+    paths:
+      - 'int06-certification-marketplace/**'
+  pull_request:
+    paths:
+      - 'int06-certification-marketplace/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: int06-certification-marketplace
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Compile contracts
+        run: npx hardhat compile
+
+      - name: Run tests
+        run: npx hardhat test --show-stack-traces
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hardhat-artifacts
+          path: int06-certification-marketplace/artifacts
